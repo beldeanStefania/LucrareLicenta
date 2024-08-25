@@ -1,9 +1,7 @@
 package com.orar.Backend.Orar.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 
@@ -13,8 +11,10 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class Student {
     @Id
     @GeneratedValue(strategy = IDENTITY)
-    private Long id;
+    private Integer id;
+
     private String nume;
     private String prenume;
-    private int grupa;
+    private Integer grupa;
+    private Integer an;
 }
