@@ -11,6 +11,5 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProfesorRepository extends JpaRepository<Profesor, Integer> {
-//    Optional<Profesor> findByNumeAndPrenume(String nume, String prenume);
-//    Optional<Profesor> findByOra(Ora ora);
+    Optional<Profesor> findByNumeAndPrenume(String nume, String prenume);
 }

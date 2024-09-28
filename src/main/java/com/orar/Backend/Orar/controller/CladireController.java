@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 import static org.springframework.http.ResponseEntity.badRequest;
 import static org.springframework.http.ResponseEntity.ok;
 
@@ -19,6 +21,11 @@ public class CladireController {
     @Autowired
     private CladireService cladireService;
 
+    @GetMapping("/getAll")
+    public List<Cladire> getAll() {
+        return cladireService.getAll();
+    }
+
     @PostMapping("/add")
     public ResponseEntity<Cladire> addCladire(@RequestBody CladireDTO cladireDTO) {
         try {
@@ -28,7 +35,7 @@ public class CladireController {
         }
     }
 
-    @PostMapping("/update")
+    @PutMapping("/update")
     public ResponseEntity<Cladire> updateCladire(@RequestBody CladireDTO cladireDTO) {
         try {
             return ok(cladireService.update(cladireDTO));
@@ -37,7 +44,7 @@ public class CladireController {
         }
     }
 
-    @PostMapping("/delete")
+    @DeleteMapping("/delete/{numeCladire}")
     public ResponseEntity<Cladire> deleteCladire(@PathVariable String numeCladire) {
         try {
             cladireService.delete(numeCladire);

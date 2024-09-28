@@ -46,11 +46,11 @@ public class SalaController {
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<Sala> deleteSala(@PathVariable String numeSala, @PathVariable String numeCladire) {
+    public ResponseEntity<Sala> deleteSala(@PathVariable String numeSala) {
         try {
-            salaService.delete(numeSala, numeCladire);
+            salaService.delete(numeSala);
             return ok().build();
-        } catch (SalaNotFoundException | CladireNotFoundException e) {
+        } catch (SalaNotFoundException e) {
             return badRequest().build();
         }
     }

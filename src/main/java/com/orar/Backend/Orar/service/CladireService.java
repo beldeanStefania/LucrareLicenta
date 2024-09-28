@@ -8,12 +8,17 @@ import com.orar.Backend.Orar.repository.CladireRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class CladireService {
 
     @Autowired
     private CladireRepository cladireRepository;
 
+    public List<Cladire> getAll() {
+        return cladireRepository.findAll();
+    }
     public Cladire add(final CladireDTO cladireDTO) throws CladireAlreadyExistsException {
         var newCladire = buildCladire(cladireDTO);
         return add(newCladire);
@@ -46,7 +51,7 @@ public class CladireService {
         return update(newCladire);
     }
     private Cladire addNumeAdresaToCladire(final CladireDTO cladireDTO) throws CladireNotFoundException {
-        findCladire(cladireDTO);
+        //findCladire(cladireDTO);
 
         Cladire cladire = new Cladire();
         cladire.setNume(cladireDTO.getNume());

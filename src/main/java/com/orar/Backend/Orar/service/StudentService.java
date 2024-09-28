@@ -16,7 +16,7 @@ public class StudentService {
     @Autowired
     private StudentRepository studentRepository;
 
-    public List<Student> getAllStudents() throws StudentNotFoundException {
+    public List<Student> getAll() throws StudentNotFoundException {
         checkStudentExists();
         return studentRepository.findAll();
     }
@@ -38,13 +38,15 @@ public class StudentService {
     }
 
     private void checkUniqueStudent(final StudentDTO studentDTO) throws StudentAlreadyExistsException {
-        studentRepository.findByNume(studentDTO.getNume())
-                .orElseThrow(() -> new StudentAlreadyExistsException("Student already exists"));
+        if (studentRepository.findByNumeAndPrenume(studentDTO.getNume(), studentDTO.getPrenume()).isPresent()){
+            throw new StudentAlreadyExistsException("Student already exists");
+        }
     }
 
     private Student createStudent(final StudentDTO studentDTO) {
         Student student = new Student();
         student.setNume(studentDTO.getNume());
+        student.setPrenume(studentDTO.getPrenume());
         student.setGrupa(studentDTO.getGrupa());
         student.setAn(studentDTO.getAn());
         return student;
@@ -61,7 +63,7 @@ public class StudentService {
     }
 
     private Student findStudent(final StudentDTO studentDTO) throws StudentNotFoundException {
-        return studentRepository.findByNume(studentDTO.getNume())
+        return studentRepository.findByNumeAndPrenume(studentDTO.getNume(), studentDTO.getPrenume())
                 .orElseThrow(() -> new StudentNotFoundException("Student not found"));
     }
 
@@ -75,8 +77,8 @@ public class StudentService {
         return studentRepository.save(student);
     }
 
-    public void delete(final String numeStudent) throws StudentNotFoundException {
-        var student = studentRepository.findByNume(numeStudent)
+    public void delete(final String numeStudent, String prenumeStudent) throws StudentNotFoundException {
+        var student = studentRepository.findByNumeAndPrenume(numeStudent, prenumeStudent)
                 .orElseThrow(() -> new StudentNotFoundException("Student not found"));
         studentRepository.delete(student);
     }
