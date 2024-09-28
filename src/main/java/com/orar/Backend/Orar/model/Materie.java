@@ -1,15 +1,15 @@
 package com.orar.Backend.Orar.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Entity
@@ -24,6 +24,11 @@ public class Materie {
     private String nume;
     private Integer semestru;
 
-    @ManyToMany(mappedBy = "materii")
-    private List<Ora> ore = new ArrayList<>();
+    @OneToMany(mappedBy = "materie", cascade = ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Ora> ora;
+
+    @OneToMany(mappedBy = "materie", cascade = ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<CatalogStudentMaterie> catalogStudentMaterie;
 }

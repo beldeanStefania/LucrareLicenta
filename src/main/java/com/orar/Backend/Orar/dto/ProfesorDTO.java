@@ -5,9 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class StudentDTO {
+public class ProfesorDTO {
+
     private String nume;
     private String prenume;
-    private Integer grupa;
-    private Integer an;
 }

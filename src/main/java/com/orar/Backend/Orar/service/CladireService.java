@@ -40,7 +40,7 @@ public class CladireService {
         cladire.setAdresa(cladireDTO.getAdresa());
         return cladire;
     }
-    private Cladire update(final CladireDTO cladireDTO) throws CladireNotFoundException {
+    public Cladire update(final CladireDTO cladireDTO) throws CladireNotFoundException {
         findCladire(cladireDTO);
         var newCladire = addNumeAdresaToCladire(cladireDTO);
         return update(newCladire);
@@ -61,7 +61,7 @@ public class CladireService {
         return cladireRepository.save(cladire);
     }
 
-    private void delete(final String numeCladire) throws CladireNotFoundException {
+    public void delete(final String numeCladire) throws CladireNotFoundException {
         var cladire = cladireRepository.findByNume(numeCladire)
                 .orElseThrow(() -> new CladireNotFoundException("Cladire not found"));
         cladireRepository.delete(cladire);

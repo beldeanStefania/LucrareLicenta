@@ -1,10 +1,14 @@
 package com.orar.Backend.Orar.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
+import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Entity
@@ -23,4 +27,8 @@ public class Sala {
     @JoinColumn(name = "cladire_id", nullable = false)
     @JsonBackReference
     private Cladire cladire;
+
+    @OneToMany(mappedBy = "sala", cascade = ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Ora> ora;
 }

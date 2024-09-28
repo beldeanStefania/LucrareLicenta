@@ -1,10 +1,14 @@
 package com.orar.Backend.Orar.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
+import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Entity
@@ -19,8 +23,7 @@ public class Profesor {
     private String nume;
     private String prenume;
 
-    @ManyToOne
-    @JoinColumn(name = "ora_id", nullable = false)
-    @JsonBackReference
-    private Ora ora;
+    @OneToMany(mappedBy = "profesor", cascade = ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Ora> ora;
 }
