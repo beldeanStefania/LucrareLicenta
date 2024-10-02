@@ -1,5 +1,6 @@
 package com.orar.Backend.Orar.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -16,13 +17,15 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class Orar {
     @Id
     @GeneratedValue(strategy = IDENTITY)
-    private Integer Id;
+    private Integer id;
 
     @OneToMany(mappedBy = "orar", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Ora> ora;
 
+    @JsonFormat(pattern = "HH:mm:ss")
     private LocalTime oraInceput;
+    @JsonFormat(pattern = "HH:mm:ss")
     private LocalTime oraSfarsit;
     private String ziua;
 }

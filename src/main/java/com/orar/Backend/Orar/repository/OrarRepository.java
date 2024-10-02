@@ -8,6 +8,8 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface OrarRepository extends JpaRepository<Orar, Integer> {
+    Optional<Orar> findByZiua(String ziua);
 }

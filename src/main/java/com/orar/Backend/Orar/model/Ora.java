@@ -15,13 +15,16 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @Entity
 @Setter
 @Getter
+//@Table(name = "ora", uniqueConstraints = {
+//        @UniqueConstraint(columnNames = {"orar_id", "sala_id", "profesor_id", "materie_id", "tip"})
+//})
 public class Ora {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
-    private Integer Id;
+    private Integer id;
 
-    @Embedded
+    @Enumerated(EnumType.STRING)
     private TipOra tip;
 
     @ManyToOne
@@ -44,19 +47,4 @@ public class Ora {
     @JsonBackReference
     private Materie materie;
 
-//    @ManyToMany
-//    @JoinTable(
-//            name = "ora_profesor",
-//            joinColumns = @JoinColumn(name = "ora_id"),
-//            inverseJoinColumns = @JoinColumn(name = "profesor_id")
-//    )
-//    private List<Profesor> profesori = new ArrayList<>();
-//
-//    @ManyToMany
-//    @JoinTable(
-//            name = "materie_ora",
-//            joinColumns = @JoinColumn(name = "ora_id"),
-//            inverseJoinColumns = @JoinColumn(name = "materie_id")
-//    )
-//    private List<Materie> materii = new ArrayList<>();
 }
