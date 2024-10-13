@@ -35,10 +35,10 @@ public class ProfesorController {
         }
     }
 
-    @PutMapping("/update")
-    public ResponseEntity<Profesor> updateProfesor(@RequestBody ProfesorDTO profesorDTO) {
+    @PutMapping("/update/{id}")
+    public ResponseEntity<Profesor> updateProfesor(@PathVariable int id, @RequestBody ProfesorDTO profesorDTO) {
         try {
-            return ok(profesorService.update(profesorDTO));
+            return ok(profesorService.update(id, profesorDTO));
         } catch (ProfesorAlreadyExistsException | ProfesorDoesNotExistException e) {
             return badRequest().build();
         }

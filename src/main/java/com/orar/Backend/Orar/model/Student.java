@@ -1,5 +1,6 @@
 package com.orar.Backend.Orar.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,10 +20,14 @@ public class Student {
 
     private String nume;
     private String prenume;
-    private Integer grupa;
     private Integer an;
 
-    @OneToMany(mappedBy = "student", cascade = ALL, orphanRemoval = true)
+    @ManyToOne
+    @JoinColumn(name = "grupa_id", nullable = false)
+    @JsonBackReference
+    private Grupa grupa;
+
+    @OneToMany(mappedBy = "student", cascade = ALL)
     @JsonManagedReference
     private List<CatalogStudentMaterie> catalogStudentMaterie;
 }

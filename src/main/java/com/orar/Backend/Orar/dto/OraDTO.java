@@ -9,8 +9,7 @@ import lombok.Setter;
 @Setter
 public class OraDTO {
     private TipOra tip;
-    private Integer salaId;
-    private Integer profesorId;
-    private Integer materieId;
-    private Integer orarId;
+    private String sala;
+    private String profesor;
+    private String materie;
 }

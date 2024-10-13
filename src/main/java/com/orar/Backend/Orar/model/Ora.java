@@ -1,11 +1,15 @@
 package com.orar.Backend.Orar.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,9 +19,6 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @Entity
 @Setter
 @Getter
-//@Table(name = "ora", uniqueConstraints = {
-//        @UniqueConstraint(columnNames = {"orar_id", "sala_id", "profesor_id", "materie_id", "tip"})
-//})
 public class Ora {
 
     @Id
@@ -27,10 +28,9 @@ public class Ora {
     @Enumerated(EnumType.STRING)
     private TipOra tip;
 
-    @ManyToOne
-    @JoinColumn(name = "orar_id", nullable = false)
-    @JsonBackReference
-    private Orar orar;
+    @OneToMany(mappedBy = "ora", cascade = CascadeType.ALL)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private List<OrarOra> orarOre = new ArrayList<>();
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "sala_id", nullable = false)
@@ -46,5 +46,11 @@ public class Ora {
     @JoinColumn(name = "materie_id")
     @JsonBackReference
     private Materie materie;
+
+    @JsonFormat(pattern = "HH:mm:ss")
+    private LocalTime intervalOrarSfarsit;
+
+    @JsonFormat(pattern = "HH:mm:ss")
+    private LocalTime intervalOrarInceput;
 
 }

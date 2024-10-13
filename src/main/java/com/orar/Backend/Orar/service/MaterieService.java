@@ -22,7 +22,7 @@ public class MaterieService {
 
     public Materie add(final MaterieDTO materieDTO) throws MaterieAlreadyExistsException {
         var newMaterie = buildMaterie(materieDTO);
-        return add(newMaterie);
+        return materieRepository.save(newMaterie);
     }
 
     private Materie buildMaterie(final MaterieDTO materieDTO) throws MaterieAlreadyExistsException {
@@ -42,23 +42,15 @@ public class MaterieService {
         materie.setSemestru(materieDTO.getSemestru());
         return materie;
     }
-    public Materie add(final Materie materie) {
-        return materieRepository.save(materie);
-    }
 
-    public Materie update(final MaterieDTO materieDTO) throws MaterieNotFoundException {
-        findMaterie(materieDTO);
-        var newMaterie = addNumeSemestruToMaterie(materieDTO);
-        return update(newMaterie);
-    }
-
-    private Materie addNumeSemestruToMaterie(final MaterieDTO materieDTO) {
-        //findMaterie(materieDTO);
-
-        Materie materie = new Materie();
+    public Materie update(final int id, final MaterieDTO materieDTO) throws MaterieNotFoundException, MaterieAlreadyExistsException {
+        var materie = materieRepository.findById(id)
+                .orElseThrow(() -> new MaterieNotFoundException("Materie not found"));
+        //var newMaterie = buildMaterie(materieDTO);
         materie.setNume(materieDTO.getNume());
         materie.setSemestru(materieDTO.getSemestru());
-        return materie;
+        materie.setId(materie.getId());
+        return materieRepository.save(materie);
     }
 
     private void findMaterie(final MaterieDTO materieDTO) throws MaterieNotFoundException {
@@ -66,12 +58,8 @@ public class MaterieService {
                 .orElseThrow(() -> new MaterieNotFoundException("Materie not found"));
     }
 
-    private Materie update(final Materie materie) {
-        return materieRepository.save(materie);
-    }
-
-    public void delete(final String numeMaterie) throws MaterieNotFoundException {
-        var materie = materieRepository.findByNume(numeMaterie)
+    public void delete(final int id) throws MaterieNotFoundException {
+        var materie = materieRepository.findById(id)
                 .orElseThrow(() -> new MaterieNotFoundException("Materie not found"));
         materieRepository.delete(materie);
     }

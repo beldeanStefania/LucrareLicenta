@@ -36,16 +36,16 @@ public class SalaController {
         }
     }
 
-    @PutMapping("/update")
-    public ResponseEntity<Sala> updateSala(@RequestBody SalaDTO salaDTO) {
+    @PutMapping("/update/{numeSala}")
+    public ResponseEntity<Sala> updateSala(@PathVariable String numeSala, @RequestBody SalaDTO salaDTO) {
         try {
-            return ok(salaService.update(salaDTO));
+            return ok(salaService.update(numeSala, salaDTO));
         } catch (CladireNotFoundException | SalaNotFoundException e) {
             return badRequest().build();
         }
     }
 
-    @DeleteMapping("/delete")
+    @DeleteMapping("/delete{numeSala}")
     public ResponseEntity<Sala> deleteSala(@PathVariable String numeSala) {
         try {
             salaService.delete(numeSala);

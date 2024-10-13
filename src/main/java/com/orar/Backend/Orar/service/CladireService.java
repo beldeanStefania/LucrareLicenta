@@ -45,25 +45,16 @@ public class CladireService {
         cladire.setAdresa(cladireDTO.getAdresa());
         return cladire;
     }
-    public Cladire update(final CladireDTO cladireDTO) throws CladireNotFoundException {
-        findCladire(cladireDTO);
-        var newCladire = addNumeAdresaToCladire(cladireDTO);
-        return update(newCladire);
-    }
-    private Cladire addNumeAdresaToCladire(final CladireDTO cladireDTO) throws CladireNotFoundException {
-        //findCladire(cladireDTO);
-
-        Cladire cladire = new Cladire();
+    public Cladire update(String numeCladire, final CladireDTO cladireDTO) throws CladireNotFoundException {
+        Cladire cladire = findCladire(numeCladire);
         cladire.setNume(cladireDTO.getNume());
         cladire.setAdresa(cladireDTO.getAdresa());
-        return cladire;
-    }
-    private void findCladire(final CladireDTO cladireDTO) throws CladireNotFoundException {
-        cladireRepository.findByNume(cladireDTO.getNume())
-                .orElseThrow(() -> new CladireNotFoundException("Cladire not found"));
-    }
-    private Cladire update(final Cladire cladire) {
         return cladireRepository.save(cladire);
+    }
+
+    private Cladire findCladire(String numeCladire) throws CladireNotFoundException {
+        return cladireRepository.findByNume(numeCladire)
+                .orElseThrow(() -> new CladireNotFoundException("Cladire not found"));
     }
 
     public void delete(final String numeCladire) throws CladireNotFoundException {

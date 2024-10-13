@@ -23,7 +23,7 @@ public class Profesor {
     private String nume;
     private String prenume;
 
-    @OneToMany(mappedBy = "profesor", cascade = ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "profesor", cascade = ALL)
     @JsonManagedReference
     private List<Ora> ora;
 }

@@ -12,4 +12,5 @@ import java.util.Optional;
 
 public interface OrarRepository extends JpaRepository<Orar, Integer> {
     Optional<Orar> findByZiua(String ziua);
+    Optional<Orar> findById(Integer id);
 }

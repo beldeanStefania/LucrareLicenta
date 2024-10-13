@@ -1,6 +1,5 @@
 package com.orar.Backend.Orar.service;
 
-import com.orar.Backend.Orar.dto.OraDTO;
 import com.orar.Backend.Orar.dto.OrarDTO;
 import com.orar.Backend.Orar.exception.*;
 import com.orar.Backend.Orar.model.*;
@@ -8,9 +7,9 @@ import com.orar.Backend.Orar.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class OrarService {
@@ -22,121 +21,48 @@ public class OrarService {
     private OraRepository oraRepository;
 
     @Autowired
-    private OraService oraService; // Pentru a reutiliza logica din OraService
+    private GrupaRepository grupaRepository;
+
+    @Autowired
+    private OraService oraService;
+
     public List<Orar> getAll() {
         return orarRepository.findAll();
     }
 
-    public Orar getOrarById(Integer id) throws OrarNotFoundException {
-        return orarRepository.findById(id)
-                .orElseThrow(() -> new OrarNotFoundException("Orar not found with ID: " + id));
+    public Optional<Orar> getOrarById(Integer id) {
+        return orarRepository.findById(id);
     }
 
-    // Adaugă un nou orar și orele sale
+    public Orar add(OrarDTO orarDTO) throws GrupaNotFoundException {
 
-    public Orar addOrar(OrarDTO orarDTO) throws Exception {
-        // Verifică dacă există deja un orar pentru ziua respectivă
-        if (orarRepository.findByZiua(orarDTO.getZiua()).isPresent()) {
-            throw new OrarAlreadyExistsException("Orarul există deja pentru ziua: " + orarDTO.getZiua());
-        }
-
-        // Creează entitatea Orar
         Orar orar = new Orar();
         orar.setZiua(orarDTO.getZiua());
-        orar.setOraInceput(orarDTO.getOraInceput());
-        orar.setOraSfarsit(orarDTO.getOraSfarsit());
 
-        // Salvează Orarul pentru a genera ID-ul
-        Orar savedOrar = orarRepository.save(orar);
+        Grupa grupa = grupaRepository.findById(orarDTO.getGrupaId())
+                .orElseThrow(() -> new GrupaNotFoundException("Grupa nu a fost găsită!"));
+        orar.setGrupa(grupa);
 
-        // Adaugă orele asociate
-        List<OraDTO> oreDTO = orarDTO.getOre();
-        if (oreDTO != null) {
-            for (OraDTO oraDTO : oreDTO) {
-                oraDTO.setOrarId(savedOrar.getId());
+        Ora ora = oraRepository.findById(orarDTO.getOraId())
+                .orElseThrow(() -> new RuntimeException("Ora nu a fost găsită!"));
 
-                // Verifică dacă ora există deja în orar
-                boolean oraExists = oraService.existsOra(oraDTO);
-                if (oraExists) {
-                    throw new OraAlreadyExistsException("Ora există deja în orar pentru combinația specificată.");
-                }
-
-                // Verifică disponibilitatea intervalului orar
-                boolean intervalAvailable = oraService.isIntervalAvailable(oraDTO, orarDTO.getZiua());
-                if (!intervalAvailable) {
-                    throw new IntervalNotAvailableException("Intervalul orar nu este disponibil pentru ora specificată.");
-                }
-
-                // Adaugă ora
-                oraService.add(oraDTO);
-            }
-        }
-
-        return savedOrar;
+        return orarRepository.save(orar);
     }
 
-    public Orar updateOrar(Integer id, OrarDTO orarDTO) throws Exception {
-        Orar orarExistenta = orarRepository.findById(id)
-                .orElseThrow(() -> new OrarNotFoundException("Orarul nu a fost găsit cu ID-ul: " + id));
-
-        // Dacă ziua a fost schimbată, verifică dacă există deja un orar pentru noua zi
-        if (!orarExistenta.getZiua().equals(orarDTO.getZiua())) {
-            if (orarRepository.findByZiua(orarDTO.getZiua()).isPresent()) {
-                throw new OrarAlreadyExistsException("Orarul există deja pentru ziua: " + orarDTO.getZiua());
-            }
-        }
-
-        // Actualizează Orarul
-        orarExistenta.setZiua(orarDTO.getZiua());
-        orarExistenta.setOraInceput(orarDTO.getOraInceput());
-        orarExistenta.setOraSfarsit(orarDTO.getOraSfarsit());
-
-        Orar savedOrar = orarRepository.save(orarExistenta);
-
-        // Gestionarea Orelor Asociate
-        List<OraDTO> oreDTO = orarDTO.getOre();
-        if (oreDTO != null) {
-            // Șterge orele existente pentru acest orar
-            List<Ora> oreExistente = oraService.getOreByOrarId(id);
-            for (Ora ora : oreExistente) {
-                oraService.deleteOra(ora.getId());
-            }
-
-            // Adaugă noile ore
-            for (OraDTO oraDTO : oreDTO) {
-                oraDTO.setOrarId(savedOrar.getId());
-
-                // Verifică dacă ora există deja în orar
-                boolean oraExists = oraService.existsOra(oraDTO);
-                if (oraExists) {
-                    throw new OraAlreadyExistsException("Ora există deja în orar pentru combinația specificată.");
-                }
-
-                // Verifică disponibilitatea intervalului orar
-                boolean intervalAvailable = oraService.isIntervalAvailable(oraDTO, orarDTO.getZiua());
-                if (!intervalAvailable) {
-                    throw new IntervalNotAvailableException("Intervalul orar nu este disponibil pentru ora specificată.");
-                }
-
-                // Adaugă ora
-                oraService.add(oraDTO);
-            }
-        }
-
-        return savedOrar;
+    public void deleteOrar(Integer id) {
+        orarRepository.deleteById(id);
     }
 
-    public void deleteOrar(Integer id) throws OrarNotFoundException, OraNotFoundException {
-        Orar orar = orarRepository.findById(id)
-                .orElseThrow(() -> new OrarNotFoundException("Orarul nu a fost găsit cu ID-ul: " + id));
-
-        // Șterge orele asociate cu acest orar
-        List<Ora> ore = oraService.getOreByOrarId(id);
-        for (Ora oraItem : ore) {
-            oraService.deleteOra(oraItem.getId());
-        }
-
-        // Șterge Orarul
-        orarRepository.delete(orar);
+    public Orar updateOrar(Integer id, OrarDTO orarUpdated) {
+        return new Orar();
     }
+//        return orarRepository.findById(id)
+//                .map(orar -> {
+//                    orar.setGrupa(orarUpdated.getGrupa());
+//                    orar.setIntervalOrarInceput(orarUpdated.getIntervalOrarInceput());
+//                    orar.setIntervalOrarSfarsit(orarUpdated.getIntervalOrarSfarsit());
+//                    return orarRepository.save(orar);
+//                })
+//                .orElseThrow(() -> new RuntimeException("Orar nu a fost găsit!"));
+//    }
 }

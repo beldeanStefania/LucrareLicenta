@@ -19,14 +19,6 @@ import static org.springframework.http.ResponseEntity.*;
 public class StudentController {
     private final StudentService studentService;
 
-//    @GetMapping("/get/{id}")
-//    public ResponseEntity<Student> getStudent(@PathVariable Long id) {
-//        try {
-//            return ResponseEntity.ok(studentService.get(id);
-//        } catch (StudentNotFoundException e) {
-//            return ResponseEntity.notFound().build();
-//        }
-//    }
 
     @GetMapping("/getAll")
     public ResponseEntity<List<Student>> getAllStudents() {
@@ -37,16 +29,16 @@ public class StudentController {
         }
     }
     @PostMapping("/create")
-    public ResponseEntity<Student> createStudent(@RequestBody  @Valid StudentDTO studentDTO) {
+    public ResponseEntity<Student> createStudent(@RequestBody StudentDTO studentDTO) {
         try {
             return ok(studentService.add(studentDTO));
         } catch (Exception e) {
             return badRequest().build();
         }
     }
-    @PutMapping("/update")
-    public ResponseEntity<Student> updateStudent(@RequestBody @Valid Student student) {
-        return ok(studentService.update(student));
+    @PutMapping("/update/{id}")
+    public ResponseEntity<Student> updateStudent(@PathVariable int id, @RequestBody StudentDTO studentDTO) throws StudentNotFoundException {
+        return ok(studentService.update(id, studentDTO));
     }
 
     @DeleteMapping("/delete/{numeStudent}/{prenumeStudent}")

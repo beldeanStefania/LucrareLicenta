@@ -12,9 +12,9 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @Entity
 @Getter
 @Setter
-@Table(name = "catalog_student_materie", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"student_id", "materie_id"})
-})
+//@Table(name = "catalog_student_materie", uniqueConstraints = {
+//        @UniqueConstraint(columnNames = {"student_id", "materie_id"})
+//})
 public class CatalogStudentMaterie {
 
     @Id

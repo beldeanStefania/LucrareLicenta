@@ -21,7 +21,12 @@ public class OraContoller {
     @Autowired
     private OraService oraService;
 
-    // Create a new Ora
+    @GetMapping
+    public ResponseEntity<List<Ora>> getAll() {
+        List<Ora> ore = oraService.getAll();
+        return ResponseEntity.ok(ore);
+    }
+
     @PostMapping
     public ResponseEntity<?> addOra(@Valid @RequestBody OraDTO oraDTO) {
         try {
@@ -32,51 +37,11 @@ public class OraContoller {
         }
     }
 
-    // Get all Ora
-    @GetMapping
-    public ResponseEntity<List<Ora>> getAllOre() {
-        List<Ora> ore = oraService.getAll();
-        return ResponseEntity.ok(ore);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getOraById(@PathVariable Integer id) {
-        try {
-            Ora ora = oraService.getOraById(id);
-            return ResponseEntity.ok(ora);
-        } catch (OraNotFoundException e) {
-            return ResponseEntity.status(NOT_FOUND).body(e.getMessage());
-        }
-    }
-
-    // Update an existing Ora
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateOra(@PathVariable Integer id, @Valid @RequestBody OraDTO oraDTO) {
-        try {
-            Ora updatedOra = oraService.update(id, oraDTO);
-            return ResponseEntity.ok(updatedOra);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteOra(@PathVariable Integer id) {
-        try {
-            oraService.deleteOra(id);
-            return ResponseEntity.noContent().build();
-        } catch (OraNotFoundException e) {
-            return ResponseEntity.status(NOT_FOUND).body(e.getMessage());
-        }
+        oraService.deleteOra(id);
+        return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping
-    public ResponseEntity<?> deleteOra(@Valid @RequestBody OraDTO oraDTO) {
-        try {
-            oraService.deleteOra(oraDTO);
-            return ResponseEntity.noContent().build();
-        } catch (OraNotFoundException e) {
-            return ResponseEntity.status(NOT_FOUND).body(e.getMessage());
-        }
-    }
 }

@@ -24,11 +24,11 @@ public class Materie {
     private String nume;
     private Integer semestru;
 
-    @OneToMany(mappedBy = "materie", cascade = ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "materie", cascade = ALL)
     @JsonManagedReference
     private List<Ora> ora;
 
-    @OneToMany(mappedBy = "materie", cascade = ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "materie", cascade = ALL)
     @JsonManagedReference
     private List<CatalogStudentMaterie> catalogStudentMaterie;
 }

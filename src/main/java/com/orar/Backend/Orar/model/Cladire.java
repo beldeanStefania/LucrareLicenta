@@ -21,7 +21,7 @@ public class Cladire {
     private String nume;
     private String adresa;
 
-    @OneToMany(mappedBy = "cladire", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "cladire", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Sala> sala;
 }

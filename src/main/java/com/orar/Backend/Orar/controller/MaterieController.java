@@ -33,19 +33,19 @@ public class MaterieController {
         }
     }
 
-    @PostMapping("/update")
-    public ResponseEntity<Materie> updateMaterie(@RequestBody MaterieDTO materieDTO) {
+    @PutMapping("/update/{id}")
+    public ResponseEntity<Materie> updateMaterie(@PathVariable int id, @RequestBody MaterieDTO materieDTO) {
         try {
-            return ok(materieService.update(materieDTO));
+            return ok(materieService.update(id, materieDTO));
         } catch (Exception e) {
             return badRequest().build();
         }
     }
 
-    @DeleteMapping("/delete")
-    public ResponseEntity<Materie> deleteMaterie(@PathVariable String numeMaterie) {
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Materie> deleteMaterie(@PathVariable int id) {
         try {
-            materieService.delete(numeMaterie);
+            materieService.delete(id);
             return ok().build();
         } catch (Exception e) {
             return badRequest().build();

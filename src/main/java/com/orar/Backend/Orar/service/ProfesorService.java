@@ -22,7 +22,7 @@ public class ProfesorService {
 
     public Profesor add(final ProfesorDTO profesorDTO) throws ProfesorAlreadyExistsException {
         var newProfesor = buildProfesor(profesorDTO);
-        return add(newProfesor);
+        return profesorRepository.save(newProfesor);
     }
 
     private Profesor buildProfesor(final ProfesorDTO profesorDTO) throws ProfesorAlreadyExistsException {
@@ -43,30 +43,16 @@ public class ProfesorService {
         return profesor;
     }
 
-    public Profesor add(final Profesor profesor) {
-        return profesorRepository.save(profesor);
-    }
-
-    public Profesor update(final ProfesorDTO profesorDTO) throws ProfesorAlreadyExistsException, ProfesorDoesNotExistException {
-        Profesor existingProfesor = findProfesor(profesorDTO);
-        var updatedProfesor = updateProfesor(profesorDTO, existingProfesor);
-        return update(updatedProfesor);
-    }
-
-    private Profesor findProfesor(final ProfesorDTO profesorDTO) throws ProfesorAlreadyExistsException, ProfesorDoesNotExistException {
-        return profesorRepository.findByNumeAndPrenume(profesorDTO.getNume(), profesorDTO.getPrenume())
+    public Profesor update(int id, final ProfesorDTO profesorDTO) throws ProfesorAlreadyExistsException, ProfesorDoesNotExistException {
+        var profesor = profesorRepository.findById(id)
                 .orElseThrow(() -> new ProfesorDoesNotExistException("Profesor not found"));
+        var updatedProfesor = buildProfesor(profesorDTO);
+        updatedProfesor.setId(profesor.getId());
+
+        return profesorRepository.save(updatedProfesor);
     }
 
-    private Profesor updateProfesor(final ProfesorDTO profesorDTO, final Profesor existingProfesor) {
-        existingProfesor.setNume(profesorDTO.getNume());
-        existingProfesor.setPrenume(profesorDTO.getPrenume());
-        return existingProfesor;
-    }
 
-    private Profesor update(final Profesor profesor) {
-        return profesorRepository.save(profesor);
-    }
 
     public void delete(final String numeProfesor, final String prenumeProfesor) throws ProfesorAlreadyExistsException, ProfesorDoesNotExistException {
         var profesor = profesorRepository.findByNumeAndPrenume(numeProfesor, prenumeProfesor)

@@ -35,10 +35,10 @@ public class CladireController {
         }
     }
 
-    @PutMapping("/update")
-    public ResponseEntity<Cladire> updateCladire(@RequestBody CladireDTO cladireDTO) {
+    @PutMapping("/update/{numeCladire}")
+    public ResponseEntity<Cladire> updateCladire(@PathVariable String numeCladire, @RequestBody CladireDTO cladireDTO) {
         try {
-            return ok(cladireService.update(cladireDTO));
+            return ok(cladireService.update(numeCladire, cladireDTO));
         } catch (CladireNotFoundException e) {
             return badRequest().build();
         }

@@ -65,12 +65,13 @@ public class SalaService {
     }
 
     // Actualizează o sală existentă folosind SalaDTO
-    public Sala update(final SalaDTO salaDTO) throws SalaNotFoundException, CladireNotFoundException {
-        Sala sala = salaRepository.findByNume(salaDTO.getNume())
+    public Sala update(final String numeSala, final SalaDTO salaDTO) throws SalaNotFoundException, CladireNotFoundException {
+        Sala sala = salaRepository.findByNume(numeSala)
                 .orElseThrow(() -> new SalaNotFoundException("Sala not found with nume " + salaDTO.getNume()));
         Cladire cladire = findCladireByNume(salaDTO.getNumeCladire());
 
         sala.setCapacitate(salaDTO.getCapacitate());
+        sala.setNume(salaDTO.getNume());
         sala.setCladire(cladire);
 
         return salaRepository.save(sala);
