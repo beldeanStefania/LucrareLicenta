@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -18,13 +19,10 @@ public class OrarService {
     private OrarRepository orarRepository;
 
     @Autowired
-    private OraRepository oraRepository;
+    private RepartizareProfRepository repartizareProfRepository;
 
     @Autowired
-    private GrupaRepository grupaRepository;
-
-    @Autowired
-    private OraService oraService;
+    private SalaRepository salaRepository;
 
     public List<Orar> getAll() {
         return orarRepository.findAll();
@@ -34,35 +32,49 @@ public class OrarService {
         return orarRepository.findById(id);
     }
 
-    public Orar add(OrarDTO orarDTO) throws GrupaNotFoundException {
+    public Orar add(OrarDTO orarDTO) throws GrupaNotFoundException, OrarAlreadyExistsException {
+        var newOrar = buildOrar(orarDTO);
+        return orarRepository.save(newOrar);
+    }
 
+    private Orar buildOrar(OrarDTO orarDTO) throws OrarAlreadyExistsException {
+        checkOrarExists(orarDTO);
+        return createOrar(orarDTO);
+    }
+
+    private Orar createOrar(OrarDTO orarDTO) {
         Orar orar = new Orar();
-        orar.setZiua(orarDTO.getZiua());
+        orar.setGrupa(orarDTO.getGrupa());
+        orar.setZi(orarDTO.getZi());
+        orar.setOraInceput(orarDTO.getOraInceput());
+        orar.setOraSfarsit(orarDTO.getOraSfarsit());
+        orar.setZi(orarDTO.getZi());
+        RepartizareProf repartizareProf = repartizareProfRepository.findById(orarDTO.getRepartizareProfId())
+                .orElseThrow(() -> new NoSuchElementException("RepartizareProf not found"));
+        orar.setRepartizareProf(repartizareProf);
+        Sala sala = salaRepository.findById(orarDTO.getSalaId())
+                .orElseThrow(() -> new NoSuchElementException("Sala not found"));
+        orar.setSala(sala);
+        return orar;
+    }
 
-        Grupa grupa = grupaRepository.findById(orarDTO.getGrupaId())
-                .orElseThrow(() -> new GrupaNotFoundException("Grupa nu a fost găsită!"));
-        orar.setGrupa(grupa);
+    private void checkOrarExists(OrarDTO orarDTO) throws OrarAlreadyExistsException {
+        if (orarRepository.findByGrupaAndZi(orarDTO.getGrupa(), orarDTO.getZi()).isPresent()) {
+            throw new OrarAlreadyExistsException("Orar already exists");
+        }
+    }
 
-        Ora ora = oraRepository.findById(orarDTO.getOraId())
-                .orElseThrow(() -> new RuntimeException("Ora nu a fost găsită!"));
+    public void deleteOrar(Integer id) throws OrarNotFoundException {
+        var orar = orarRepository.findById(id)
+                .orElseThrow(() -> new OrarNotFoundException("Orar not found"));
+    }
 
+    public Orar updateOrar(Integer id, OrarDTO orarUpdated) throws OrarNotFoundException, OrarAlreadyExistsException {
+        var orar = orarRepository.findById(id)
+                .orElseThrow(() -> new OrarNotFoundException("Orar not found"));
+        var updatedOrar = buildOrar(orarUpdated);
+        updatedOrar.setId(orar.getId());
         return orarRepository.save(orar);
     }
 
-    public void deleteOrar(Integer id) {
-        orarRepository.deleteById(id);
-    }
-
-    public Orar updateOrar(Integer id, OrarDTO orarUpdated) {
-        return new Orar();
-    }
-//        return orarRepository.findById(id)
-//                .map(orar -> {
-//                    orar.setGrupa(orarUpdated.getGrupa());
-//                    orar.setIntervalOrarInceput(orarUpdated.getIntervalOrarInceput());
-//                    orar.setIntervalOrarSfarsit(orarUpdated.getIntervalOrarSfarsit());
-//                    return orarRepository.save(orar);
-//                })
-//                .orElseThrow(() -> new RuntimeException("Orar nu a fost găsit!"));
-//    }
 }

@@ -21,11 +21,8 @@ public class Student {
     private String nume;
     private String prenume;
     private Integer an;
+    private String grupa;
 
-    @ManyToOne
-    @JoinColumn(name = "grupa_id", nullable = false)
-    @JsonBackReference
-    private Grupa grupa;
 
     @OneToMany(mappedBy = "student", cascade = ALL)
     @JsonManagedReference

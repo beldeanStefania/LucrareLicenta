@@ -26,9 +26,9 @@ public class Materie {
 
     @OneToMany(mappedBy = "materie", cascade = ALL)
     @JsonManagedReference
-    private List<Ora> ora;
+    private List<CatalogStudentMaterie> catalogStudentMaterie;
 
     @OneToMany(mappedBy = "materie", cascade = ALL)
     @JsonManagedReference
-    private List<CatalogStudentMaterie> catalogStudentMaterie;
+    private List<RepartizareProf> repartizareProfs;
 }

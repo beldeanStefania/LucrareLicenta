@@ -8,6 +8,6 @@ import lombok.Setter;
 public class StudentDTO {
     private String nume;
     private String prenume;
-    private String grupaId;
+    private String grupa;
     private Integer an;
 }

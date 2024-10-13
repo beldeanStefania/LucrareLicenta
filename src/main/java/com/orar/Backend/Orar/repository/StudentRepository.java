@@ -6,7 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface StudentRepository extends JpaRepository<Student, Integer> {
-
-    Optional<Student> findByGrupa_Nume(String nume);
     Optional<Student> findByNumeAndPrenume(String nume, String prenume);
 }

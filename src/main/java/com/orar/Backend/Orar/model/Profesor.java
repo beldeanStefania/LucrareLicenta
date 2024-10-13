@@ -25,5 +25,5 @@ public class Profesor {
 
     @OneToMany(mappedBy = "profesor", cascade = ALL)
     @JsonManagedReference
-    private List<Ora> ora;
+    private List<RepartizareProf> repartizareProfs;
 }

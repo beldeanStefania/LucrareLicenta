@@ -44,9 +44,7 @@ public class CatalogStudentMaterieController {
         try {
             CatalogStudentMaterie updatedCatalog = catalogStudentMaterieService.update(id, dto);
             return ResponseEntity.ok(updatedCatalog);
-        } catch (CatalogStudentMaterieNotFoundException e) {
-            return ResponseEntity.status(NOT_FOUND).build();
-        } catch (StudentNotFoundException | MaterieNotFoundException e) {
+        } catch (CatalogStudentMaterieNotFoundException | StudentNotFoundException | MaterieNotFoundException e) {
             return ResponseEntity.status(NOT_FOUND).build();
         }
     }

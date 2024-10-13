@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static org.springframework.http.ResponseEntity.badRequest;
+import static org.springframework.http.ResponseEntity.ok;
+
 @RestController
 @RequestMapping("/api/orare")
 public class OrarController {
@@ -23,32 +26,36 @@ public class OrarController {
 
     // Obține toate orarele
     @Operation(summary = "Obține toate orarele", description = "Returnează o listă cu toate orarele existente")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Lista de orare",
-                    content = @Content(mediaType = "application/json",
-                            array = @ArraySchema(schema = @Schema(implementation = Orar.class))))
-    })
     @GetMapping
-    public ResponseEntity<List<Orar>> getAll() {
-        List<Orar> orare = orarService.getAll();
-        return ResponseEntity.ok(orare);
+    public List<Orar> getAll() {
+        return orarService.getAll();
     }
 
     @PostMapping
     public ResponseEntity<Orar> addOrar(@Valid @RequestBody OrarDTO orarDTO) throws Exception {
-        Orar orar = orarService.add(orarDTO);
-        return ResponseEntity.status(201).body(orar);
+        try{
+        return ok(orarService.add(orarDTO));
+        } catch (OrarAlreadyExistsException e) {
+            return badRequest().build();
+        }
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Orar> updateOrar(@PathVariable Integer id, @Valid @RequestBody OrarDTO orarDTO) throws Exception {
-        Orar updatedOrar = orarService.updateOrar(id, orarDTO);
-        return ResponseEntity.ok(updatedOrar);
+        try {
+            return ok(orarService.updateOrar(id, orarDTO));
+        } catch (OrarAlreadyExistsException | OrarNotFoundException e) {
+            return badRequest().build();
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOrar(@PathVariable Integer id) throws OrarNotFoundException, OraNotFoundException {
-        orarService.deleteOrar(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Orar> deleteOrar(@PathVariable Integer id)  {
+        try {
+            orarService.deleteOrar(id);
+            return ok().build();
+        } catch (OrarNotFoundException e) {
+            return badRequest().build();
+        }
     }
 }

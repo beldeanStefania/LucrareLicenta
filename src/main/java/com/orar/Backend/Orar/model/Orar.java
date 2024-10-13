@@ -1,36 +1,35 @@
 package com.orar.Backend.Orar.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
-import java.time.LocalTime;
-import java.util.List;
-
-import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Entity
 @Setter
 @Getter
 public class Orar {
+
     @Id
     @GeneratedValue(strategy = IDENTITY)
     private Integer id;
 
-    @OneToMany(mappedBy = "orar", cascade = CascadeType.ALL)
-    private List<OrarOra> orarOre;
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "sala_id", nullable = false)
+    @JsonBackReference
+    private Sala sala;
 
-    @OneToOne
-    @JoinColumn(name = "grupa_id", referencedColumnName = "id")
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JsonIgnore
-    private Grupa grupa;
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "repartizareProf_id", nullable = false)
+    @JsonBackReference
+    private RepartizareProf repartizareProf;
 
-    private String ziua;
+
+    private int oraInceput;
+    private int oraSfarsit;
+    private String grupa;
+    private String zi;
 }

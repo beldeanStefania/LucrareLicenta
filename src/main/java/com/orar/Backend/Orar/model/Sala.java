@@ -30,5 +30,5 @@ public class Sala {
 
     @OneToMany(mappedBy = "sala", cascade = ALL)
     @JsonManagedReference
-    private List<Ora> ora;
+    private List<Orar> orar;
 }
