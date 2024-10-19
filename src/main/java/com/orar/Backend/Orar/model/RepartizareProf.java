@@ -29,7 +29,7 @@ public class RepartizareProf {
     @GeneratedValue(strategy = IDENTITY)
     private int id;
 
-    private TIP tip;
+    private String tip;
 
     @ManyToOne(fetch = LAZY)
     @JsonBackReference

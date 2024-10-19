@@ -49,6 +49,7 @@ public class RepartizareProfService {
         Materie materie = materieRepository.findByNume(repartizareProfDTO.getMaterie()).get();
         repartizareProf.setMaterie(materie);
         Profesor profesor = profesorRepository.findByNumeAndPrenume(repartizareProfDTO.getNumeProfesor(), repartizareProfDTO.getPrenumeProfesor()).get();
+        repartizareProf.setTip(repartizareProfDTO.getTip());
         repartizareProf.setProfesor(profesor);
         return repartizareProf;
     }
@@ -56,7 +57,7 @@ public class RepartizareProfService {
     private void checkRepartizareProfExists(RepartizareProfDTO repartizareProfDTO) throws RepartizareProfAlreadyExistsException {
         Profesor profesor = profesorRepository.findByNumeAndPrenume(repartizareProfDTO.getNumeProfesor(), repartizareProfDTO.getPrenumeProfesor()).get();
         Materie materie = materieRepository.findByNume(repartizareProfDTO.getMaterie()).get();
-        var repartizareProf = repartizareProfRepository.findByProfesorAndMaterie(profesor, materie);
+        var repartizareProf = repartizareProfRepository.findByProfesorAndMaterieAndTip(profesor, materie, repartizareProfDTO.getTip());
         if (repartizareProf.isPresent()) {
             throw new RepartizareProfAlreadyExistsException("RepartizareProf already exists");
         }

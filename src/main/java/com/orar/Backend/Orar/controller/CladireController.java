@@ -5,6 +5,7 @@ import com.orar.Backend.Orar.exception.CladireAlreadyExistsException;
 import com.orar.Backend.Orar.exception.CladireNotFoundException;
 import com.orar.Backend.Orar.model.Cladire;
 import com.orar.Backend.Orar.service.CladireService;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,11 +22,14 @@ public class CladireController {
     @Autowired
     private CladireService cladireService;
 
+    @Operation(summary = "Obtine toate cladirile")
     @GetMapping("/getAll")
     public List<Cladire> getAll() {
         return cladireService.getAll();
     }
 
+
+    @Operation(summary = "Adauga cladire")
     @PostMapping("/add")
     public ResponseEntity<Cladire> addCladire(@RequestBody CladireDTO cladireDTO) {
         try {
@@ -35,6 +39,7 @@ public class CladireController {
         }
     }
 
+    @Operation(summary = "Modifica cladire")
     @PutMapping("/update/{numeCladire}")
     public ResponseEntity<Cladire> updateCladire(@PathVariable String numeCladire, @RequestBody CladireDTO cladireDTO) {
         try {
@@ -44,6 +49,7 @@ public class CladireController {
         }
     }
 
+    @Operation(summary = "Sterge cladire")
     @DeleteMapping("/delete/{numeCladire}")
     public ResponseEntity<Cladire> deleteCladire(@PathVariable String numeCladire) {
         try {

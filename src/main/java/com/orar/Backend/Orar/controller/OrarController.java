@@ -24,13 +24,14 @@ public class OrarController {
     @Autowired
     private OrarService orarService;
 
-    // Obține toate orarele
     @Operation(summary = "Obține toate orarele", description = "Returnează o listă cu toate orarele existente")
     @GetMapping
     public List<Orar> getAll() {
         return orarService.getAll();
     }
 
+
+    @Operation(summary = "Adauga orar")
     @PostMapping
     public ResponseEntity<Orar> addOrar(@Valid @RequestBody OrarDTO orarDTO) throws Exception {
         try{
@@ -40,6 +41,8 @@ public class OrarController {
         }
     }
 
+
+    @Operation(summary = "Modifica orar")
     @PutMapping("/{id}")
     public ResponseEntity<Orar> updateOrar(@PathVariable Integer id, @Valid @RequestBody OrarDTO orarDTO) throws Exception {
         try {
@@ -49,6 +52,7 @@ public class OrarController {
         }
     }
 
+    @Operation(summary = "Sterge orar")
     @DeleteMapping("/{id}")
     public ResponseEntity<Orar> deleteOrar(@PathVariable Integer id)  {
         try {

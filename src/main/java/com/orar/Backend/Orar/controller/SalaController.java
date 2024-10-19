@@ -6,6 +6,7 @@ import com.orar.Backend.Orar.exception.SalaAlreadyExistsException;
 import com.orar.Backend.Orar.exception.SalaNotFoundException;
 import com.orar.Backend.Orar.model.Sala;
 import com.orar.Backend.Orar.service.SalaService;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,11 +23,13 @@ public class SalaController {
     @Autowired
     private SalaService salaService;
 
+    @Operation(summary = "Obtine toate salile")
     @GetMapping("/getAll")
     public List<Sala> getAll() {
         return salaService.getAll();
     }
 
+    @Operation(summary = "Adauga sala")
     @PostMapping("/add")
     public ResponseEntity<Sala> addSala(@RequestBody SalaDTO salaDTO) {
         try {
@@ -36,6 +39,7 @@ public class SalaController {
         }
     }
 
+    @Operation(summary = "Modifica sala")
     @PutMapping("/update/{numeSala}")
     public ResponseEntity<Sala> updateSala(@PathVariable String numeSala, @RequestBody SalaDTO salaDTO) {
         try {
@@ -45,6 +49,7 @@ public class SalaController {
         }
     }
 
+    @Operation(summary = "Sterge sala")
     @DeleteMapping("/delete{numeSala}")
     public ResponseEntity<Sala> deleteSala(@PathVariable String numeSala) {
         try {

@@ -26,4 +26,8 @@ public class Profesor {
     @OneToMany(mappedBy = "profesor", cascade = ALL)
     @JsonManagedReference
     private List<RepartizareProf> repartizareProfs;
+
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }

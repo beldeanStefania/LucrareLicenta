@@ -23,7 +23,7 @@ public class CatalogStudentMaterieController {
     private CatalogStudentMaterieService catalogStudentMaterieService;
 
     @GetMapping("/getAll")
-    public List<CatalogStudentMaterie> getAll() {
+    public List<CatalogStudentMaterieDTO> getAll() {
         return catalogStudentMaterieService.getAll();
     }
 

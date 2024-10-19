@@ -9,5 +9,5 @@ public class CatalogStudentMaterieDTO {
     private Double nota;
     private Integer semestru;
     private Integer studentId;
-    private Integer materieId;
+    private String codMaterie;
 }

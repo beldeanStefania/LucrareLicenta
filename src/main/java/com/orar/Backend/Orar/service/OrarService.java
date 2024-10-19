@@ -59,8 +59,15 @@ public class OrarService {
     }
 
     private void checkOrarExists(OrarDTO orarDTO) throws OrarAlreadyExistsException {
-        if (orarRepository.findByGrupaAndZi(orarDTO.getGrupa(), orarDTO.getZi()).isPresent()) {
-            throw new OrarAlreadyExistsException("Orar already exists");
+//        if (orarRepository.findByGrupaAndZi(orarDTO.getGrupa(), orarDTO.getZi()).isPresent()) {
+//            throw new OrarAlreadyExistsException("Orar already exists");
+//        }
+
+        List<Orar> overlappingOrar = orarRepository.findOverlappingOrar(orarDTO.getSalaId(), orarDTO.getZi(),
+                orarDTO.getOraInceput(), orarDTO.getOraSfarsit());
+
+        if(!overlappingOrar.isEmpty()) {
+            throw new OrarAlreadyExistsException("Sala este deja ocupata in intervalul specificat");
         }
     }
 

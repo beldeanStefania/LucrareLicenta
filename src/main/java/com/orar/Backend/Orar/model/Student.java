@@ -27,4 +27,8 @@ public class Student {
     @OneToMany(mappedBy = "student", cascade = ALL)
     @JsonManagedReference
     private List<CatalogStudentMaterie> catalogStudentMaterie;
+
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }

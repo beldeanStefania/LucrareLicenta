@@ -23,6 +23,7 @@ public class Materie {
 
     private String nume;
     private Integer semestru;
+    private String cod;
 
     @OneToMany(mappedBy = "materie", cascade = ALL)
     @JsonManagedReference

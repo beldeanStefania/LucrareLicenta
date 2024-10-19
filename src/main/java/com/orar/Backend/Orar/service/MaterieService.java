@@ -31,7 +31,7 @@ public class MaterieService {
     }
 
     private void checkMaterieExists(final MaterieDTO materieDTO) throws MaterieAlreadyExistsException {
-        if (materieRepository.findByNume(materieDTO.getNume()).isPresent()) {
+        if (materieRepository.findByCod(materieDTO.getCod()).isPresent()) {
             throw new MaterieAlreadyExistsException("Materie already exists");
         }
     }
@@ -40,15 +40,16 @@ public class MaterieService {
         Materie materie = new Materie();
         materie.setNume(materieDTO.getNume());
         materie.setSemestru(materieDTO.getSemestru());
+        materie.setCod(materieDTO.getCod());
         return materie;
     }
 
     public Materie update(final int id, final MaterieDTO materieDTO) throws MaterieNotFoundException, MaterieAlreadyExistsException {
         var materie = materieRepository.findById(id)
                 .orElseThrow(() -> new MaterieNotFoundException("Materie not found"));
-        //var newMaterie = buildMaterie(materieDTO);
         materie.setNume(materieDTO.getNume());
         materie.setSemestru(materieDTO.getSemestru());
+        materie.setCod(materieDTO.getCod());
         materie.setId(materie.getId());
         return materieRepository.save(materie);
     }

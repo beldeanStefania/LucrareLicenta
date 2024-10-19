@@ -8,5 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface RepartizareProfRepository extends JpaRepository<RepartizareProf, Integer> {
-    Optional<RepartizareProf> findByProfesorAndMaterie(Profesor profesor, Materie materie);
+    Optional<RepartizareProf> findByProfesorAndMaterieAndTip(Profesor profesor, Materie materie, String tip);
 }
