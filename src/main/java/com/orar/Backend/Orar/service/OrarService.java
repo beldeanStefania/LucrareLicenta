@@ -42,6 +42,11 @@ public class OrarService {
         return createOrar(orarDTO);
     }
 
+    /**
+     *
+     * @param orarDTO
+     * @return
+     */
     private Orar createOrar(OrarDTO orarDTO) {
         Orar orar = new Orar();
         orar.setGrupa(orarDTO.getGrupa());
@@ -58,6 +63,11 @@ public class OrarService {
         return orar;
     }
 
+    /**
+     *
+     * @param orarDTO
+     * @throws OrarAlreadyExistsException
+     */
     private void checkOrarExists(OrarDTO orarDTO) throws OrarAlreadyExistsException {
 //        if (orarRepository.findByGrupaAndZi(orarDTO.getGrupa(), orarDTO.getZi()).isPresent()) {
 //            throw new OrarAlreadyExistsException("Orar already exists");

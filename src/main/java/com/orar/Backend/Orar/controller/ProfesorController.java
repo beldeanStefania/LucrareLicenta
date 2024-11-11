@@ -3,6 +3,7 @@ package com.orar.Backend.Orar.controller;
 import com.orar.Backend.Orar.dto.ProfesorDTO;
 import com.orar.Backend.Orar.exception.ProfesorAlreadyExistsException;
 import com.orar.Backend.Orar.exception.ProfesorDoesNotExistException;
+import com.orar.Backend.Orar.exception.ProfesorNotFoundException;
 import com.orar.Backend.Orar.model.Profesor;
 import com.orar.Backend.Orar.service.ProfesorService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,11 +32,7 @@ public class ProfesorController {
     @Operation(summary = "Adauga profesor")
     @PostMapping("/add")
     public ResponseEntity<Profesor> addProfesor(@RequestBody ProfesorDTO profesorDTO) {
-        try{
-            return ok(profesorService.add(profesorDTO));
-        } catch (ProfesorAlreadyExistsException e) {
-            return badRequest().build();
-        }
+        return ok(profesorService.add(profesorDTO));
     }
 
     @Operation(summary = "Modifica profesor")
@@ -43,7 +40,7 @@ public class ProfesorController {
     public ResponseEntity<Profesor> updateProfesor(@PathVariable int id, @RequestBody ProfesorDTO profesorDTO) {
         try {
             return ok(profesorService.update(id, profesorDTO));
-        } catch (ProfesorAlreadyExistsException | ProfesorDoesNotExistException e) {
+        } catch (ProfesorNotFoundException e) {
             return badRequest().build();
         }
     }

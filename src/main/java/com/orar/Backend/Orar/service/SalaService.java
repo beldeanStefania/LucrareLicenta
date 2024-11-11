@@ -26,6 +26,7 @@ public class SalaService {
 
     // Obține toate sălile
     public List<Sala> getAll() {
+
         return salaRepository.findAll();
     }
 

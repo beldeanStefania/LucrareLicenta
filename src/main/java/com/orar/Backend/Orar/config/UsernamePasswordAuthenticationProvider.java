@@ -26,6 +26,24 @@ public class UsernamePasswordAuthenticationProvider implements AuthenticationPro
         this.passwordEncoder = passwordEncoder;
     }
 
+//    @Override
+//    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+//        String username = authentication.getName();
+//        String password = authentication.getCredentials().toString();
+//
+//        Optional<User> optionalUser = userRepository.findByUsername(username);
+//        if (optionalUser.isPresent()) {
+//            User user = optionalUser.get();
+//            if (passwordEncoder.matches(password, user.getPassword())) {
+//                return new UsernamePasswordAuthenticationToken(username, password, Collections.emptyList());
+//            } else {
+//                throw new BadCredentialsException("Invalid password");
+//            }
+//        } else {
+//            throw new BadCredentialsException("No user registered with username: " + username);
+//        }
+//    }
+
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String username = authentication.getName();
@@ -34,15 +52,21 @@ public class UsernamePasswordAuthenticationProvider implements AuthenticationPro
         Optional<User> optionalUser = userRepository.findByUsername(username);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
+            System.out.println("Utilizator găsit: " + user.getUsername()); // Log pentru utilizator găsit
+
             if (passwordEncoder.matches(password, user.getPassword())) {
+                System.out.println("Parola este corectă"); // Log pentru parolă corectă
                 return new UsernamePasswordAuthenticationToken(username, password, Collections.emptyList());
             } else {
+                System.out.println("Parola este incorectă"); // Log pentru parolă incorectă
                 throw new BadCredentialsException("Invalid password");
             }
         } else {
+            System.out.println("Utilizatorul nu există"); // Log pentru utilizator inexistent
             throw new BadCredentialsException("No user registered with username: " + username);
         }
     }
+
 
     @Override
     public boolean supports(Class<?> authentication) {
