@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CatalogStudentMaterieService {
@@ -30,6 +31,22 @@ public class CatalogStudentMaterieService {
 
     public List<CatalogStudentMaterieDTO> getAll() {
         List<CatalogStudentMaterie> catalogList = catalogStudentMaterieRepository.findAll();
+
+        return catalogList.stream()
+                .map(catalog -> {
+                    CatalogStudentMaterieDTO catalogDTO = new CatalogStudentMaterieDTO();
+                    catalogDTO.setNota(catalog.getNota());
+                    catalogDTO.setSemestru(catalog.getSemestru());
+                    catalogDTO.setStudentId(catalog.getStudent().getId());
+                    catalogDTO.setCodMaterie(catalog.getMaterie().getCod());
+                    return catalogDTO;
+                })
+                .toList();
+        //return catalogStudentMaterieRepository.findAll();
+    }
+
+    public List<CatalogStudentMaterieDTO> getNoteByStudent(String numeStudent, String prenumeStudent) {
+        Optional<CatalogStudentMaterie> catalogList = catalogStudentMaterieRepository.findByStudentNumeAndStudentPrenume(numeStudent, prenumeStudent);
 
         return catalogList.stream()
                 .map(catalog -> {

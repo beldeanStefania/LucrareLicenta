@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class OrarService {
@@ -23,6 +22,10 @@ public class OrarService {
 
     @Autowired
     private SalaRepository salaRepository;
+
+    public Optional<Orar> getOrarByGrupa(String grupa) {
+        return orarRepository.findByGrupa(grupa);
+    }
 
     public List<Orar> getAll() {
         return orarRepository.findAll();
