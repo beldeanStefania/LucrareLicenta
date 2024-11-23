@@ -28,25 +28,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
         String header = request.getHeader("Authorization");
-        String token = null;
-        String username = null;
 
-        // Extract token din header-ul Authorization
-        if (header != null && header.startsWith("Bearer ")) {
-            token = header.substring(7);
-            username = jwtUtil.extractUsername(token);
+        // Skip filtering if no Authorization header
+        if (header == null || !header.startsWith("Bearer ")) {
+            chain.doFilter(request, response);
+            return;
         }
 
-        // Validează token-ul și autentifică utilizatorul
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            if (jwtUtil.validateToken(token)) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+        try {
+            String token = header.substring(7);
+            String username = jwtUtil.extractUsername(token);
+
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                if (jwtUtil.validateToken(token)) {
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+        } catch (Exception ex) {
+            System.out.println("JWT validation error: " + ex.getMessage());
         }
+
         chain.doFilter(request, response);
     }
+
 }

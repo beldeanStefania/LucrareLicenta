@@ -14,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,6 +34,11 @@ public class LoginController {
     @PostMapping("/login")
     public Map<String, String> login(@RequestBody LoginDTO loginDTO) {
         Map<String, String> response = new HashMap<>();
+
+        System.out.println("Request Body:");
+        System.out.println("Username: " + loginDTO.getUsername());
+        System.out.println("Password: " + loginDTO.getPassword());
+
         try {
             // Autentifică utilizatorul
             Authentication authentication = authenticationManager.authenticate(

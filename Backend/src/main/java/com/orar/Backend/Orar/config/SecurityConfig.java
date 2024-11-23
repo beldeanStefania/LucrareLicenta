@@ -1,6 +1,7 @@
 package com.orar.Backend.Orar.config;
 
 import com.orar.Backend.Orar.security.JwtAuthenticationFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,6 +16,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -28,7 +31,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf((csrf) -> csrf.disable())
+                .cors(withDefaults()) // Enable CORS
+                .csrf((csrf) -> csrf.disable()) // Disable CSRF
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
@@ -38,12 +42,19 @@ public class SecurityConfig {
                         .requestMatchers("/api/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
+                .exceptionHandling((exceptions) -> exceptions
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            System.out.println("Access Denied: " + accessDeniedException.getMessage());
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
+                        })
+                )
                 .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
 
 
     @Bean
