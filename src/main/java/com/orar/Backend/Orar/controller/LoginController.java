@@ -1,13 +1,21 @@
 package com.orar.Backend.Orar.controller;
 
 import com.orar.Backend.Orar.dto.LoginDTO;
+import com.orar.Backend.Orar.model.Rol;
 import com.orar.Backend.Orar.security.JwtUtil;
+import com.orar.Backend.Orar.model.User;
+import com.orar.Backend.Orar.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -19,9 +27,14 @@ public class LoginController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @PostMapping("/login")
-    public String login(@RequestBody LoginDTO loginDTO) {
+    public Map<String, String> login(@RequestBody LoginDTO loginDTO) {
+        Map<String, String> response = new HashMap<>();
         try {
+            // Autentifică utilizatorul
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginDTO.getUsername(),
@@ -29,11 +42,22 @@ public class LoginController {
                     )
             );
 
+            // Setează autentificarea în contextul de securitate
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
             // Generează token-ul JWT pentru utilizatorul autentificat
             String token = jwtUtil.generateToken(loginDTO.getUsername());
-            return token;
+
+            // Obține rolul utilizatorului din UserRepository
+            User user = userRepository.findByUsername(loginDTO.getUsername()).orElseThrow();
+
+            // Adaugă token-ul și rolul în răspuns
+            response.put("token", token);
+            response.put("role", user.getRole().getName());
+            return response;
         } catch (AuthenticationException e) {
-            return "Error: " + e.getMessage();
+            response.put("error", "Error: " + e.getMessage());
+            return response;
         }
     }
 }

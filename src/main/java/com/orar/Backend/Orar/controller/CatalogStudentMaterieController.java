@@ -27,6 +27,11 @@ public class CatalogStudentMaterieController {
         return catalogStudentMaterieService.getAll();
     }
 
+    @GetMapping("/getNote/{numeStudent}/{prenumeStudent}")
+    public List<CatalogStudentMaterieDTO> getNoteByStudent(@PathVariable String numeStudent, @PathVariable String prenumeStudent) {
+        return catalogStudentMaterieService.getNoteByStudent(numeStudent, prenumeStudent);
+    }
+
     @PostMapping("/add")
     public ResponseEntity<CatalogStudentMaterie> addCatalog(@RequestBody CatalogStudentMaterieDTO dto) {
         try {

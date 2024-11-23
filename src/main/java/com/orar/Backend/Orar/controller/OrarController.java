@@ -5,14 +5,13 @@ import com.orar.Backend.Orar.model.Orar;
 import com.orar.Backend.Orar.service.OrarService;
 import com.orar.Backend.Orar.exception.*;
 import io.swagger.v3.oas.annotations.*;
-import io.swagger.v3.oas.annotations.responses.*;
-import io.swagger.v3.oas.annotations.media.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.springframework.http.ResponseEntity.badRequest;
 import static org.springframework.http.ResponseEntity.ok;
@@ -30,9 +29,15 @@ public class OrarController {
         return orarService.getAll();
     }
 
+    @Operation(summary = "Obține orar după grupa", description = "Returnează orarul cu grupa specificata")
+    @GetMapping("/getAll/{grupa}")
+    public ResponseEntity<Optional<Orar>> getOrarByGrupa(@PathVariable String grupa) {
+        return ok(orarService.getOrarByGrupa(grupa));
+    }
+
 
     @Operation(summary = "Adauga orar")
-    @PostMapping
+    @PostMapping("/add")
     public ResponseEntity<Orar> addOrar(@Valid @RequestBody OrarDTO orarDTO) throws Exception {
         try{
         return ok(orarService.add(orarDTO));
@@ -43,7 +48,7 @@ public class OrarController {
 
 
     @Operation(summary = "Modifica orar")
-    @PutMapping("/{id}")
+    @PutMapping("/update/{id}")
     public ResponseEntity<Orar> updateOrar(@PathVariable Integer id, @Valid @RequestBody OrarDTO orarDTO) throws Exception {
         try {
             return ok(orarService.updateOrar(id, orarDTO));
@@ -53,7 +58,7 @@ public class OrarController {
     }
 
     @Operation(summary = "Sterge orar")
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Orar> deleteOrar(@PathVariable Integer id)  {
         try {
             orarService.deleteOrar(id);

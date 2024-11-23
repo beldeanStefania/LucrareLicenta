@@ -7,5 +7,5 @@ import java.util.Optional;
 
 public interface CatalogStudentMaterieRepository extends JpaRepository<CatalogStudentMaterie, Integer> {
     Optional<CatalogStudentMaterie> findByStudentNumeAndStudentPrenumeAndMaterieId(String nume, String prenume, Integer materieId);
-    Optional<CatalogStudentMaterie> findByStudentIdAndMaterieId(Integer studentId, Integer materieId);
+    Optional<CatalogStudentMaterie> findByStudentNumeAndStudentPrenume(String nume, String prenume);
 }
