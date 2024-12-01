@@ -75,18 +75,22 @@ export default class AppContent extends React.Component {
   };
 
   render() {
+    const { componentToShow } = this.state;
+  
+    if (componentToShow === "admin") {
+      return <AdminPage onLogout={this.logout} />;
+    }
+  
     return (
       <>
         <Buttons login={this.login} logout={this.logout} />
-
-        {this.state.componentToShow === "welcome" && <WelcomeContent />}
-        {this.state.componentToShow === "login" && (
+        {componentToShow === "welcome" && <WelcomeContent />}
+        {componentToShow === "login" && (
           <LoginForm onLogin={this.onLogin} onRegister={this.onRegister} />
         )}
-        {this.state.componentToShow === "messages" && <AuthContent />}
-        {this.state.componentToShow === "admin" && <AdminPage />}
-        {this.state.componentToShow === "student" && <StudentPage />}
+        {componentToShow === "messages" && <AuthContent />}
+        {componentToShow === "student" && <StudentPage />}
       </>
     );
-  }
+  }  
 }

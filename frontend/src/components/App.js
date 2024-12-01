@@ -7,7 +7,6 @@ import AppContent from "./AppContent";
 function App() {
   return (
     <div>
-      <Header pageTitle="Frontend authenticated with JWT" logoSrc={logo} />
       <AppContent />
     </div>
   );
