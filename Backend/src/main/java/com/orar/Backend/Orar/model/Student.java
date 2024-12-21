@@ -18,6 +18,7 @@ public class Student {
     @GeneratedValue(strategy = IDENTITY)
     private Integer id;
 
+    private String cod;
     private String nume;
     private String prenume;
     private Integer an;

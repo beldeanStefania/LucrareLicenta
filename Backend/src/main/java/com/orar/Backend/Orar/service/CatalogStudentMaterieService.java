@@ -37,7 +37,7 @@ public class CatalogStudentMaterieService {
                     CatalogStudentMaterieDTO catalogDTO = new CatalogStudentMaterieDTO();
                     catalogDTO.setNota(catalog.getNota());
                     catalogDTO.setSemestru(catalog.getSemestru());
-                    catalogDTO.setStudentId(catalog.getStudent().getId());
+                    catalogDTO.setStudentCod(catalog.getStudent().getCod());
                     catalogDTO.setCodMaterie(catalog.getMaterie().getCod());
                     return catalogDTO;
                 })
@@ -45,31 +45,33 @@ public class CatalogStudentMaterieService {
         //return catalogStudentMaterieRepository.findAll();
     }
 
-    public List<CatalogStudentMaterieDTO> getNoteByStudent(String numeStudent, String prenumeStudent) {
-        Optional<CatalogStudentMaterie> catalogList = catalogStudentMaterieRepository.findByStudentNumeAndStudentPrenume(numeStudent, prenumeStudent);
+    public List<CatalogStudentMaterieDTO> getNoteByStudent(String studentCod) {
+        List<CatalogStudentMaterie> catalogList = catalogStudentMaterieRepository.findByStudentCod(studentCod);
 
         return catalogList.stream()
                 .map(catalog -> {
                     CatalogStudentMaterieDTO catalogDTO = new CatalogStudentMaterieDTO();
                     catalogDTO.setNota(catalog.getNota());
                     catalogDTO.setSemestru(catalog.getSemestru());
-                    catalogDTO.setStudentId(catalog.getStudent().getId());
+                    catalogDTO.setStudentCod(catalog.getStudent().getCod());
                     catalogDTO.setCodMaterie(catalog.getMaterie().getCod());
                     return catalogDTO;
                 })
                 .toList();
-        //return catalogStudentMaterieRepository.findAll();
     }
 
 
-    public CatalogStudentMaterie add(CatalogStudentMaterieDTO catalogStudentMaterieDTO) throws CatalogStudentMaterieAlreadyExistsException, StudentNotFoundException, MaterieNotFoundException {
 
-        Student student = studentRepository.findById(catalogStudentMaterieDTO.getStudentId())
-                .orElseThrow(() -> new StudentNotFoundException("Student not found with ID: " + catalogStudentMaterieDTO.getStudentId()));
+    public CatalogStudentMaterie add(CatalogStudentMaterieDTO catalogStudentMaterieDTO) throws CatalogStudentMaterieAlreadyExistsException, StudentNotFoundException, MaterieNotFoundException {
+        Student student = studentRepository.findByCod(catalogStudentMaterieDTO.getStudentCod())
+                .orElseThrow(() -> new StudentNotFoundException("Student not found with Cod: " + catalogStudentMaterieDTO.getStudentCod()));
 
         Materie materie = materieRepository.findByCod(catalogStudentMaterieDTO.getCodMaterie())
-                .orElseThrow(() -> new MaterieNotFoundException("Materie not found with code: " + catalogStudentMaterieDTO.getCodMaterie()));
+                .orElseThrow(() -> new MaterieNotFoundException("Materie not found with Cod: " + catalogStudentMaterieDTO.getCodMaterie()));
 
+        if (catalogStudentMaterieRepository.findByStudentCodAndMaterieCod(student.getCod(), materie.getCod()).isPresent()) {
+            throw new CatalogStudentMaterieAlreadyExistsException("Catalog entry already exists for this student and subject.");
+        }
 
         CatalogStudentMaterie catalog = new CatalogStudentMaterie();
         catalog.setNota(catalogStudentMaterieDTO.getNota());
@@ -80,25 +82,16 @@ public class CatalogStudentMaterieService {
     }
 
 
-    public CatalogStudentMaterie update(Integer id, CatalogStudentMaterieDTO catalogStudentMaterieDTO) throws CatalogStudentMaterieNotFoundException, StudentNotFoundException, MaterieNotFoundException {
 
-        CatalogStudentMaterie catalog = catalogStudentMaterieRepository.findById(id)
-                .orElseThrow(() -> new CatalogStudentMaterieNotFoundException("Catalog entry not found with ID: " + id));
-        if (catalogStudentMaterieDTO.getStudentId() != null && !catalog.getStudent().getId().equals(catalogStudentMaterieDTO.getStudentId())) {
-            Student student = studentRepository.findById(catalogStudentMaterieDTO.getStudentId())
-                    .orElseThrow(() -> new StudentNotFoundException("Student not found with ID: " + catalogStudentMaterieDTO.getStudentId()));
-            catalog.setStudent(student);
-        }
+    public CatalogStudentMaterie update(String studentCod, String materieCod, CatalogStudentMaterieDTO catalogStudentMaterieDTO) throws CatalogStudentMaterieNotFoundException, StudentNotFoundException, MaterieNotFoundException {
+        CatalogStudentMaterie catalog = catalogStudentMaterieRepository.findByStudentCodAndMaterieCod(studentCod, materieCod)
+                .orElseThrow(() -> new CatalogStudentMaterieNotFoundException("Catalog entry not found for Student Cod: " + studentCod + " and Materie Cod: " + materieCod));
 
-        if (catalogStudentMaterieDTO.getCodMaterie() != null && !catalog.getMaterie().getCod().equals(catalogStudentMaterieDTO.getCodMaterie())) {
-            Materie materie = materieRepository.findByCod(catalogStudentMaterieDTO.getCodMaterie())
-                    .orElseThrow(() -> new MaterieNotFoundException("Materie not found with ID: " + catalogStudentMaterieDTO.getCodMaterie()));
-            catalog.setMaterie(materie);
-        }
         catalog.setNota(catalogStudentMaterieDTO.getNota());
         catalog.setSemestru(catalogStudentMaterieDTO.getSemestru());
         return catalogStudentMaterieRepository.save(catalog);
     }
+
 
     public void delete(Integer id) throws CatalogStudentMaterieNotFoundException {
         CatalogStudentMaterie catalog = catalogStudentMaterieRepository.findById(id)
@@ -106,14 +99,9 @@ public class CatalogStudentMaterieService {
         catalogStudentMaterieRepository.delete(catalog);
     }
 
-    public void deleteByStudentAndMaterie(String numeStudent, String prenumeStudent, Integer materieId) throws CatalogStudentMaterieNotFoundException {
-        CatalogStudentMaterie catalog = catalogStudentMaterieRepository.findByStudentNumeAndStudentPrenumeAndMaterieId(numeStudent, prenumeStudent, materieId)
-                .orElseThrow(() -> new CatalogStudentMaterieNotFoundException("Catalog entry not found for Student: " + numeStudent + " " + prenumeStudent + " and Materie ID: " + materieId));
+    public void deleteByStudentAndMaterie(String studentCod, String materieCod) throws CatalogStudentMaterieNotFoundException {
+        CatalogStudentMaterie catalog = catalogStudentMaterieRepository.findByStudentCodAndMaterieCod(studentCod, materieCod)
+                .orElseThrow(() -> new CatalogStudentMaterieNotFoundException("Catalog entry not found for Student Cod: " + studentCod + " and Materie Cod: " + materieCod));
         catalogStudentMaterieRepository.delete(catalog);
-    }
-
-    public CatalogStudentMaterie getById(Integer id) throws CatalogStudentMaterieNotFoundException {
-        return catalogStudentMaterieRepository.findById(id)
-                .orElseThrow(() -> new CatalogStudentMaterieNotFoundException("Catalog entry not found with ID: " + id));
     }
 }

@@ -5,7 +5,10 @@ import com.orar.Backend.Orar.model.Rol;
 import com.orar.Backend.Orar.security.JwtUtil;
 import com.orar.Backend.Orar.model.User;
 import com.orar.Backend.Orar.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -66,4 +69,12 @@ public class LoginController {
             return response;
         }
     }
+
+    @PostMapping("/api/auth/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        // Invalidează sesiunea curentă
+        request.getSession().invalidate();
+        return ResponseEntity.ok("Logged out successfully.");
+    }
+
 }

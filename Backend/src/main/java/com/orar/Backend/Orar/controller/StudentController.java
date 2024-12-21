@@ -31,20 +31,30 @@ public class StudentController {
         }
     }
 
+    @GetMapping("/getByAnAndGrupa/{an}/{grupa}")
+    public ResponseEntity<Student> getStudentByAnAndGrupa(@PathVariable Integer an, @PathVariable String grupa) {
+        try {
+            return ok(studentService.getByAnAndGrupa(an, grupa));
+        } catch (StudentNotFoundException e) {
+            return notFound().build();
+        }
+    }
+
     @Operation(summary = "Adauga student")
     @PostMapping("/add")
     public ResponseEntity<Student> createStudent(@RequestBody StudentDTO studentDTO) {
         try {
             return ok(studentService.add(studentDTO));
         } catch (Exception e) {
+            e.printStackTrace();
             return badRequest().build();
         }
     }
 
     @Operation(summary = "Modifica student")
-    @PutMapping("/update/{id}")
-    public ResponseEntity<Student> updateStudent(@PathVariable int id, @RequestBody StudentDTO studentDTO) throws StudentNotFoundException {
-        return ok(studentService.update(id, studentDTO));
+    @PutMapping("/update/{cod}")
+    public ResponseEntity<Student> updateStudent(@PathVariable String cod, @RequestBody StudentDTO studentDTO) throws StudentNotFoundException {
+        return ok(studentService.update(cod, studentDTO));
     }
 
     @Operation(summary = "Sterge student")

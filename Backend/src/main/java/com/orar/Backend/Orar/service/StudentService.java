@@ -65,6 +65,7 @@ public class StudentService {
         student.setPrenume(studentDTO.getPrenume());
         student.setAn(studentDTO.getAn());
         student.setGrupa(studentDTO.getGrupa());
+        student.setCod(studentDTO.getCod());
         student.setUser(user); // Asociază User-ul cu Studentul
 
         return student;
@@ -76,8 +77,8 @@ public class StudentService {
         }
     }
 
-    public Student update(int id, final StudentDTO studentDTO) throws StudentNotFoundException {
-        var existingStudent = findStudent(id);
+    public Student update(String cod, final StudentDTO studentDTO) throws StudentNotFoundException {
+        var existingStudent = findStudent(cod);
         existingStudent.setNume(studentDTO.getNume());
         existingStudent.setPrenume(studentDTO.getPrenume());
         existingStudent.setAn(studentDTO.getAn());
@@ -85,8 +86,13 @@ public class StudentService {
         return studentRepository.save(existingStudent);
     }
 
-    private Student findStudent(final int id) throws StudentNotFoundException {
-        return studentRepository.findById(id)
+    private Student findStudent(final String id) throws StudentNotFoundException {
+        return studentRepository.findByCod(id)
+                .orElseThrow(() -> new StudentNotFoundException("Student not found"));
+    }
+
+    public Student getByAnAndGrupa(final int an, final String grupa) throws StudentNotFoundException {
+        return studentRepository.findByAnAndGrupa(an, grupa)
                 .orElseThrow(() -> new StudentNotFoundException("Student not found"));
     }
 

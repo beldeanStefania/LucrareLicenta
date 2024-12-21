@@ -27,9 +27,9 @@ public class CatalogStudentMaterieController {
         return catalogStudentMaterieService.getAll();
     }
 
-    @GetMapping("/getNote/{numeStudent}/{prenumeStudent}")
-    public List<CatalogStudentMaterieDTO> getNoteByStudent(@PathVariable String numeStudent, @PathVariable String prenumeStudent) {
-        return catalogStudentMaterieService.getNoteByStudent(numeStudent, prenumeStudent);
+    @GetMapping("/getNote/{studentCod}")
+    public List<CatalogStudentMaterieDTO> getNoteByStudent(@PathVariable String studentCod) {
+        return catalogStudentMaterieService.getNoteByStudent(studentCod);
     }
 
     @PostMapping("/add")
@@ -44,26 +44,31 @@ public class CatalogStudentMaterieController {
         }
     }
 
-    @PutMapping("/update")
-    public ResponseEntity<CatalogStudentMaterie> updateCatalog(@PathVariable Integer id, @RequestBody CatalogStudentMaterieDTO dto) {
+
+    @PutMapping("/update/{studentCod}/{materieCod}")
+    public ResponseEntity<CatalogStudentMaterie> updateCatalog(
+            @PathVariable String studentCod,
+            @PathVariable String materieCod,
+            @RequestBody CatalogStudentMaterieDTO dto) {
         try {
-            CatalogStudentMaterie updatedCatalog = catalogStudentMaterieService.update(id, dto);
+            CatalogStudentMaterie updatedCatalog = catalogStudentMaterieService.update(studentCod, materieCod, dto);
             return ResponseEntity.ok(updatedCatalog);
         } catch (CatalogStudentMaterieNotFoundException | StudentNotFoundException | MaterieNotFoundException e) {
             return ResponseEntity.status(NOT_FOUND).build();
         }
     }
 
-    @DeleteMapping("/delete")
+
+    @DeleteMapping("/delete/{studentCod}/{materieCod}")
     public ResponseEntity<Void> deleteCatalog(
-            @PathVariable String numeStudent,
-            @PathVariable String prenumeStudent,
-            @PathVariable Integer materieId) {
+            @PathVariable String studentCod,
+            @PathVariable String materieCod) {
         try {
-            catalogStudentMaterieService.deleteByStudentAndMaterie(numeStudent, prenumeStudent, materieId);
+            catalogStudentMaterieService.deleteByStudentAndMaterie(studentCod, materieCod);
             return ResponseEntity.noContent().build();
         } catch (CatalogStudentMaterieNotFoundException e) {
             return ResponseEntity.status(NOT_FOUND).build();
         }
     }
+
 }

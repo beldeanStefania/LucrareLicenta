@@ -8,6 +8,6 @@ import lombok.Setter;
 public class CatalogStudentMaterieDTO {
     private Double nota;
     private Integer semestru;
-    private Integer studentId;
+    private String studentCod;
     private String codMaterie;
 }

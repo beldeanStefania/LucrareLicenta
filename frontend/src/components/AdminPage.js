@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { request } from "../helpers/axios-helper";
 
 export default function AdminPage({ onLogout }) {
@@ -141,11 +142,18 @@ export default function AdminPage({ onLogout }) {
       {students.map((student) => (
         <li key={student.cod}>
           Cod: {student.cod} - {student.nume} {student.prenume} - Grupa: {student.grupa}, An: {student.an}
+          <Link
+            to={`/student/${student.cod}`}
+            style={{ marginLeft: "10px", textDecoration: "none", color: "blue" }}
+          >
+            View Details
+          </Link>
         </li>
       ))}
     </ul>
   </section>
 )}
+
 
 
       {activeSection === "add" && (

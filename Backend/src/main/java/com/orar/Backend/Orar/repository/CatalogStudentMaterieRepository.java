@@ -3,9 +3,11 @@ package com.orar.Backend.Orar.repository;
 import com.orar.Backend.Orar.model.CatalogStudentMaterie;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface CatalogStudentMaterieRepository extends JpaRepository<CatalogStudentMaterie, Integer> {
-    Optional<CatalogStudentMaterie> findByStudentNumeAndStudentPrenumeAndMaterieId(String nume, String prenume, Integer materieId);
-    Optional<CatalogStudentMaterie> findByStudentNumeAndStudentPrenume(String nume, String prenume);
+    Optional<CatalogStudentMaterie> findByStudentCodAndMaterieCod(String studentCod, String materieCod);
+    List<CatalogStudentMaterie> findByStudentCod(String studentCod);
 }
+
