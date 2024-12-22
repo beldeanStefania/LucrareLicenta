@@ -1,191 +1,56 @@
-import * as React from "react";
-import classNames from "classnames";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { request, setAuthHeader } from "../helpers/axios-helper";
+import "./LoginForm.css";
 
-export default class LoginForm extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      active: "login",
-      firstName: "",
-      lastName: "",
-      login: "",
-      password: "",
-      onLogin: props.onLogin,
-      onRegister: props.onRegister,
-    };
-  }
+export default function LoginForm({ onLogin }) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
-  onChangeHandler = (event) => {
-    let name = event.target.name;
-    let value = event.target.value;
-    this.setState({ [name]: value });
+  const handleLogin = (e) => {
+    e.preventDefault();
+
+    // Trimite cererea de login către backend
+    request("POST", "/api/auth/login", { username, password })
+      .then((response) => {
+        const token = response.data.token; // Preluăm token-ul din răspuns
+        setAuthHeader(token); // Setăm token-ul în antet pentru cereri viitoare
+        localStorage.setItem("auth_token", token); // Salvăm token-ul în localStorage
+        //alert("Login successful!");
+        onLogin(); // Actualizăm starea globală de autentificare
+        navigate("/admin"); // Navigăm către dashboard-ul Admin
+      })
+      .catch((error) => {
+        console.error("Login failed:", error);
+        alert("Invalid credentials. Please try again.");
+      });
   };
 
-  onSubmitLogin = (e) => {
-    this.state.onLogin(e, this.state.login, this.state.password);
-  };
-
-  onSubmitRegister = (e) => {
-    this.state.onRegister(
-      e,
-      this.state.firstName,
-      this.state.lastName,
-      this.state.login,
-      this.state.password
-    );
-  };
-
-  render() {
-    return (
-      <div className="row justify-content-center">
-        <div className="col-4">
-          <ul
-            className="nav nav-pills nav-justified mb-3"
-            id="ex1"
-            role="tablist"
-          >
-            <li className="nav-item" role="presentation">
-              <button
-                className={classNames(
-                  "nav-link",
-                  this.state.active === "login" ? "active" : ""
-                )}
-                id="tab-login"
-                onClick={() => this.setState({ active: "login" })}
-              >
-                Login
-              </button>
-            </li>
-            <li className="nav-item" role="presentation">
-              <button
-                className={classNames(
-                  "nav-link",
-                  this.state.active === "register" ? "active" : ""
-                )}
-                id="tab-register"
-                onClick={() => this.setState({ active: "register" })}
-              >
-                Register
-              </button>
-            </li>
-          </ul>
-
-          <div className="tab-content">
-            <div
-              className={classNames(
-                "tab-pane",
-                "fade",
-                this.state.active === "login" ? "show active" : ""
-              )}
-              id="pills-login"
-            >
-              <form onSubmit={this.onSubmitLogin}>
-                <div className="form-outline mb-4">
-                  <input
-                    type="login"
-                    id="loginName"
-                    name="login"
-                    className="form-control"
-                    onChange={this.onChangeHandler}
-                  />
-                  <label className="form-label" htmlFor="loginName">
-                    Username
-                  </label>
-                </div>
-
-                <div className="form-outline mb-4">
-                  <input
-                    type="password"
-                    id="loginPassword"
-                    name="password"
-                    className="form-control"
-                    onChange={this.onChangeHandler}
-                  />
-                  <label className="form-label" htmlFor="loginPassword">
-                    Password
-                  </label>
-                </div>
-
-                <button
-                  type="submit"
-                  className="btn btn-primary btn-block mb-4"
-                >
-                  Sign in
-                </button>
-              </form>
-            </div>
-            <div
-              className={classNames(
-                "tab-pane",
-                "fade",
-                this.state.active === "register" ? "show active" : ""
-              )}
-              id="pills-register"
-            >
-              <form onSubmit={this.onSubmitRegister}>
-                <div className="form-outline mb-4">
-                  <input
-                    type="text"
-                    id="firstName"
-                    name="firstName"
-                    className="form-control"
-                    onChange={this.onChangeHandler}
-                  />
-                  <label className="form-label" htmlFor="firstName">
-                    First name
-                  </label>
-                </div>
-
-                <div className="form-outline mb-4">
-                  <input
-                    type="text"
-                    id="lastName"
-                    name="lastName"
-                    className="form-control"
-                    onChange={this.onChangeHandler}
-                  />
-                  <label className="form-label" htmlFor="lastName">
-                    Last name
-                  </label>
-                </div>
-
-                <div className="form-outline mb-4">
-                  <input
-                    type="text"
-                    id="login"
-                    name="login"
-                    className="form-control"
-                    onChange={this.onChangeHandler}
-                  />
-                  <label className="form-label" htmlFor="login">
-                    Username
-                  </label>
-                </div>
-
-                <div className="form-outline mb-4">
-                  <input
-                    type="password"
-                    id="registerPassword"
-                    name="password"
-                    className="form-control"
-                    onChange={this.onChangeHandler}
-                  />
-                  <label className="form-label" htmlFor="registerPassword">
-                    Password
-                  </label>
-                </div>
-
-                <button
-                  type="submit"
-                  className="btn btn-primary btn-block mb-3"
-                >
-                  Sign in
-                </button>
-              </form>
-            </div>
-          </div>
+  return (
+    <div className="login-container">
+      <h1>Login</h1>
+      <form onSubmit={handleLogin} className="login-form">
+        <div className="form-group">
+          <label>Username:</label>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
         </div>
-      </div>
-    );
-  }
+        <div className="form-group">
+          <label>Password:</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        <button type="submit" className="btn btn-primary">Login</button>
+      </form>
+    </div>
+  );
 }

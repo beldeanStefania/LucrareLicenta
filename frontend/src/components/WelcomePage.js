@@ -9,7 +9,9 @@ export default function WelcomePage() {
       <h1>Welcome to the Faculty Management System</h1>
       <p>Please log in to continue.</p>
       <div className="button-group">
-        <button className="btn btn-primary" onClick={() => navigate("/login")}>Login</button>
+        <button className="btn btn-primary" onClick={() => navigate("/login")}>
+          Login
+        </button>
       </div>
     </div>
   );

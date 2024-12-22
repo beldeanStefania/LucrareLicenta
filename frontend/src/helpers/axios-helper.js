@@ -16,26 +16,28 @@ export const decodeToken = (token) => {
 };
 
 export const setAuthHeader = (token) => {
-  if (token !== null) {
+  if (token) {
     window.localStorage.setItem("auth_token", token);
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
   } else {
+    delete axios.defaults.headers.common["Authorization"];
     window.localStorage.removeItem("auth_token");
+
   }
 };
+
 
 axios.defaults.baseURL = "http://localhost:8080";
 axios.defaults.headers.post["Content-Type"] = "application/json";
 
 export const request = (method, url, data) => {
-  let headers = {};
-  if (getAuthToken() !== null && getAuthToken() !== "null") {
-    headers = { Authorization: `Bearer ${getAuthToken()}` };
-  }
-
+  const token = getAuthToken();
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
   return axios({
-    method: method,
-    url: url,
-    headers: headers,
-    data: data,
+    method,
+    url,
+    headers,
+    data,
   });
 };
+

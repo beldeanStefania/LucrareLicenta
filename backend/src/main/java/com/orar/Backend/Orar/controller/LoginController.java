@@ -15,11 +15,16 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -33,6 +38,9 @@ public class LoginController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder; // Adaugă această linie
 
     @PostMapping("/login")
     public Map<String, String> login(@RequestBody LoginDTO loginDTO) {
@@ -77,4 +85,42 @@ public class LoginController {
         return ResponseEntity.ok("Logged out successfully.");
     }
 
+    @PostMapping("/changePassword")
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> payload) {
+        String username = payload.get("username");
+        String oldPassword = payload.get("oldPassword");
+        String newPassword = payload.get("newPassword");
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        if (passwordEncoder.matches(oldPassword, user.getPassword())) { // Folosește passwordEncoder aici
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
+            return ResponseEntity.ok("Password updated successfully");
+        } else {
+            return ResponseEntity.status(FORBIDDEN).body("Old password is incorrect");
+        }
+    }
+
+    @GetMapping("/userInfo")
+    public ResponseEntity<Map<String, String>> getUserInfo() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails)) {
+            return ResponseEntity.status(UNAUTHORIZED).build();
+        }
+
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        Map<String, String> response = new HashMap<>();
+        response.put("username", user.getUsername());
+        response.put("cod", user.getStudent() != null ? user.getStudent().getCod() : "Not available");
+        response.put("grupa", user.getStudent() != null ? user.getStudent().getGrupa() : "Not available");
+
+        return ResponseEntity.ok(response);
+    }
+
 }
+

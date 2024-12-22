@@ -101,4 +101,9 @@ public class StudentService {
                 .orElseThrow(() -> new StudentNotFoundException("Student not found"));
         studentRepository.delete(student);
     }
+
+    public void deleteByCod(String cod) throws StudentNotFoundException {
+        Student student = studentRepository.findByCod(cod).orElseThrow(() -> new StudentNotFoundException("Student not found"));
+        studentRepository.delete(student);
+    }
 }

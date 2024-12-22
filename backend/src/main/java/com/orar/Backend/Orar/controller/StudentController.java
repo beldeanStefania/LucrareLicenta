@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.springframework.http.ResponseEntity.*;
@@ -21,15 +22,27 @@ public class StudentController {
     private final StudentService studentService;
 
 
-    @Operation(summary = "Obtine toti studentii")
-    @GetMapping("/getAll")
+//    @Operation(summary = "Obtine toti studentii")
+//    @GetMapping("/getAll")
+//    public ResponseEntity<List<Student>> getAllStudents() {
+//        try {
+//            return ok(studentService.getAll());
+//        } catch (StudentNotFoundException e) {
+//            return notFound().build();
+//        }
+//    }
+
+    @GetMapping("/getAllStudents")
     public ResponseEntity<List<Student>> getAllStudents() {
-        try {
-            return ok(studentService.getAll());
+        try{
+            List<Student> students = studentService.getAll();
+            return ResponseEntity.ok(students != null ? students : new ArrayList<>());
         } catch (StudentNotFoundException e) {
             return notFound().build();
         }
+
     }
+
 
     @GetMapping("/getByAnAndGrupa/{an}/{grupa}")
     public ResponseEntity<Student> getStudentByAnAndGrupa(@PathVariable Integer an, @PathVariable String grupa) {
@@ -67,4 +80,15 @@ public class StudentController {
             return notFound().build();
         }
     }
+
+    @DeleteMapping("/delete/{cod}")
+    public ResponseEntity<Void> deleteStudent(@PathVariable String cod) {
+        try {
+            studentService.deleteByCod(cod);
+            return ok().build();
+        } catch (StudentNotFoundException e) {
+            return notFound().build();
+        }
+    }
+
 }
