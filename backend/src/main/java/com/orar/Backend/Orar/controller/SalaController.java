@@ -29,6 +29,11 @@ public class SalaController {
         return salaService.getAll();
     }
 
+    @GetMapping("/byCladire/{cladireId}")
+    public ResponseEntity<List<Sala>> getSaliByCladire(@PathVariable Integer cladireId) {
+        return ResponseEntity.ok(salaService.getSaliByCladire(cladireId));
+    }
+
     @Operation(summary = "Adauga sala")
     @PostMapping("/add")
     public ResponseEntity<Sala> addSala(@RequestBody SalaDTO salaDTO) {

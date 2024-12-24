@@ -90,6 +90,10 @@ public class SalaService {
                 .orElseThrow(() -> new SalaNotFoundException("Sala not found with nume " + nume));
     }
 
+    public List<Sala> getSaliByCladire(Integer cladireId) {
+        return salaRepository.findByCladireId(cladireId);
+    }
+
 //    @Autowired
 //    private SalaRepository salaRepository;
 //

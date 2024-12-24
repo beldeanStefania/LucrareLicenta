@@ -40,12 +40,14 @@ public class SecurityConfig {
                         .requestMatchers("/api/student/getAllStudents").hasRole("ADMIN")
                         .requestMatchers("/api/repartizareProf/**").hasAnyRole("ADMIN")
                         .requestMatchers("/api/student/**").hasAnyRole("ADMIN", "STUDENT")
-                        .requestMatchers("/api/auth/userInfo").hasAnyRole("ADMIN", "STUDENT")
+                        .requestMatchers("/api/auth/userInfo").hasAnyRole("ADMIN", "STUDENT", "PROFESOR")
                         .requestMatchers("/api/orare/getAll/{grupa}").hasAnyRole("STUDENT")
                         .requestMatchers("/getNote/{studentCod}").hasRole("STUDENT")
                         .requestMatchers("/api/orare/**").hasAnyRole("ADMIN")
                         .requestMatchers("/api/profesor/**").hasAnyRole("ADMIN", "PROFESOR")
                         .requestMatchers("/api/catalogStudentMaterie/**").hasAnyRole("ADMIN", "STUDENT")
+                        .requestMatchers("/api/sala/**").hasAnyRole("ADMIN", "PROFESOR")
+                        .requestMatchers("/api/cladire/**").hasAnyRole("ADMIN", "PROFESOR")
                         .requestMatchers("/api/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -86,4 +88,4 @@ public class SecurityConfig {
         };
     }
 
-}
+} //https://chatgpt.com/c/6767d044-d110-8004-ac6c-a9bc447ca2a6
