@@ -1,6 +1,7 @@
 package com.orar.Backend.Orar.service;
 
 import com.orar.Backend.Orar.dto.OrarDTO;
+import com.orar.Backend.Orar.dto.OrarDetailsDTO;
 import com.orar.Backend.Orar.exception.*;
 import com.orar.Backend.Orar.model.*;
 import com.orar.Backend.Orar.repository.*;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class OrarService {
@@ -23,9 +25,28 @@ public class OrarService {
     @Autowired
     private SalaRepository salaRepository;
 
-    public Optional<Orar> getOrarByGrupa(String grupa) {
+    public List<Orar> getOrarByGrupa(String grupa) {
         return orarRepository.findByGrupa(grupa);
     }
+
+    public List<OrarDetailsDTO> getOrarDetailsByGrupa(String grupa) {
+        List<Orar> orare = orarRepository.findByGrupa(grupa);
+
+        return orare.stream().map(orar -> {
+            return new OrarDetailsDTO(
+                    orar.getZi(),
+                    orar.getFormatia(),
+                    orar.getOraInceput(),
+                    orar.getOraSfarsit(),
+                    orar.getGrupa(),
+                    orar.getSala().getNume(), // Numele sălii
+                    orar.getRepartizareProf().getTip(), // Tipul (Curs, Seminar etc.)
+                    orar.getRepartizareProf().getMaterie().getNume(), // Numele disciplinei
+                    orar.getRepartizareProf().getProfesor().getNume() // Numele profesorului
+            );
+        }).collect(Collectors.toList());
+    }
+
 
     public List<Orar> getAll() {
         return orarRepository.findAll();

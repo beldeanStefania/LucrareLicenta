@@ -27,7 +27,7 @@ public class Orar {
     @JsonBackReference
     private RepartizareProf repartizareProf;
 
-
+    private String formatia;
     private int oraInceput;
     private int oraSfarsit;
     private String grupa;

@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface OrarRepository extends JpaRepository<Orar, Integer> {
 
-    Optional<Orar> findByGrupa(String grupa);
+    List<Orar> findByGrupa(String grupa);
 
     @Query("SELECT o FROM Orar o WHERE o.sala.id = :salaId AND o.zi = :zi AND "
             + "(o.oraInceput < :oraSfarsit AND o.oraSfarsit > :oraInceput)")
