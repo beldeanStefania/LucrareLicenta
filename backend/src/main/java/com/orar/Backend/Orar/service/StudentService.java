@@ -1,11 +1,13 @@
 package com.orar.Backend.Orar.service;
 
 import com.orar.Backend.Orar.dto.StudentDTO;
+import com.orar.Backend.Orar.dto.StudentGradeDTO;
 import com.orar.Backend.Orar.exception.StudentAlreadyExistsException;
 import com.orar.Backend.Orar.exception.StudentNotFoundException;
 import com.orar.Backend.Orar.model.Rol;
 import com.orar.Backend.Orar.model.Student;
 import com.orar.Backend.Orar.model.User;
+import com.orar.Backend.Orar.repository.CatalogStudentMaterieRepository;
 import com.orar.Backend.Orar.repository.RolRepository;
 import com.orar.Backend.Orar.repository.StudentRepository;
 import com.orar.Backend.Orar.repository.UserRepository;
@@ -14,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class StudentService {
@@ -29,6 +32,9 @@ public class StudentService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private CatalogStudentMaterieRepository catalogStudentMaterieRepository;
 
     public List<Student> getAll() throws StudentNotFoundException {
         if (studentRepository.findAll().isEmpty()) {

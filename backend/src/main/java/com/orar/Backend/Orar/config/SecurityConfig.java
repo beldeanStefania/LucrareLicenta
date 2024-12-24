@@ -38,9 +38,11 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
                                 "/swagger-ui.html", "/webjars/**", "/v3/api-docs/swagger-config").permitAll()
                         .requestMatchers("/api/student/getAllStudents").hasRole("ADMIN")
+                        .requestMatchers("/api/repartizareProf/**").hasAnyRole("ADMIN")
                         .requestMatchers("/api/student/**").hasAnyRole("ADMIN", "STUDENT")
                         .requestMatchers("/api/auth/userInfo").hasAnyRole("ADMIN", "STUDENT")
                         .requestMatchers("/api/orare/getAll/{grupa}").hasAnyRole("STUDENT")
+                        .requestMatchers("/getNote/{studentCod}").hasRole("STUDENT")
                         .requestMatchers("/api/orare/**").hasAnyRole("ADMIN")
                         .requestMatchers("/api/profesor/**").hasAnyRole("ADMIN", "PROFESOR")
                         .requestMatchers("/api/catalogStudentMaterie/**").hasAnyRole("ADMIN", "STUDENT")
@@ -59,8 +61,6 @@ public class SecurityConfig {
 
         return http.build();
     }
-
-
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {

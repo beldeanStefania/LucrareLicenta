@@ -1,6 +1,7 @@
 package com.orar.Backend.Orar.service;
 
 import com.orar.Backend.Orar.dto.CatalogStudentMaterieDTO;
+import com.orar.Backend.Orar.dto.StudentGradeDTO;
 import com.orar.Backend.Orar.exception.CatalogStudentMaterieAlreadyExistsException;
 import com.orar.Backend.Orar.exception.CatalogStudentMaterieNotFoundException;
 import com.orar.Backend.Orar.exception.MaterieNotFoundException;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CatalogStudentMaterieService {
@@ -59,7 +61,6 @@ public class CatalogStudentMaterieService {
                 })
                 .toList();
     }
-
 
 
     public CatalogStudentMaterie add(CatalogStudentMaterieDTO catalogStudentMaterieDTO) throws CatalogStudentMaterieAlreadyExistsException, StudentNotFoundException, MaterieNotFoundException {

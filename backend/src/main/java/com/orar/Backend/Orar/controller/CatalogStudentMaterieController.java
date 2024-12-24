@@ -1,6 +1,7 @@
 package com.orar.Backend.Orar.controller;
 
 import com.orar.Backend.Orar.dto.CatalogStudentMaterieDTO;
+import com.orar.Backend.Orar.dto.StudentGradeDTO;
 import com.orar.Backend.Orar.exception.CatalogStudentMaterieAlreadyExistsException;
 import com.orar.Backend.Orar.exception.CatalogStudentMaterieNotFoundException;
 import com.orar.Backend.Orar.exception.MaterieNotFoundException;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.*;
@@ -28,8 +30,9 @@ public class CatalogStudentMaterieController {
     }
 
     @GetMapping("/getNote/{studentCod}")
-    public List<CatalogStudentMaterieDTO> getNoteByStudent(@PathVariable String studentCod) {
-        return catalogStudentMaterieService.getNoteByStudent(studentCod);
+    public ResponseEntity<List<CatalogStudentMaterieDTO>> getNoteByStudent(@PathVariable String studentCod) {
+        List<CatalogStudentMaterieDTO> grades = catalogStudentMaterieService.getNoteByStudent(studentCod);
+        return ResponseEntity.ok(grades != null ? grades : new ArrayList<>());
     }
 
     @PostMapping("/add")
