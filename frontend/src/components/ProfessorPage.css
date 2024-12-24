@@ -1,0 +1,147 @@
+/* Stiluri generale pentru pagina profesorului */
+.professor-page {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+  }
+  
+  /* Header-ul paginii */
+  .professor-page header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px;
+    border-bottom: 2px solid #ddd;
+  }
+  
+  .professor-page header h1 {
+    margin: 0;
+    color: #333;
+  }
+  
+  .logout-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #dc3545;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .logout-btn:hover {
+    background-color: #c82333;
+    transform: scale(1.05);
+  }
+  
+  /* Stiluri pentru secțiuni */
+  .professor-page section {
+    margin-bottom: 30px;
+  }
+  
+  .professor-page h2 {
+    margin-bottom: 15px;
+    color: #007bff;
+  }
+  
+  /* Stiluri pentru formulare */
+  .professor-page label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  .professor-page input,
+  .professor-page select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+  }
+  
+  .professor-page input:focus,
+  .professor-page select:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+  
+  /* Stiluri pentru butoane */
+  .professor-page button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .professor-page button:hover {
+    transform: scale(1.05);
+  }
+  
+  button {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  button.logout-btn {
+    background-color: #dc3545;
+  }
+  
+  button.logout-btn:hover {
+    background-color: #c82333;
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Stiluri pentru liste */
+  .professor-page .students-list {
+    margin-top: 10px;
+  }
+  
+  .professor-page .students-list div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .professor-page .students-list span {
+    font-size: 14px;
+    color: #333;
+  }
+  
+  .professor-page .students-list input {
+    width: 70px;
+    margin-left: 10px;
+  }
+  
+  /* Stiluri pentru secțiunea de rezervare săli */
+  .professor-page .schedule-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  
+  .professor-page .schedule-form div {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .professor-page .schedule-form label {
+    margin-bottom: 5px;
+  }
+  
+  .professor-page .schedule-form select,
+  .professor-page .schedule-form input {
+    width: 100%;
+  }
+  

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import AdminPage from "./AdminPage";
 import StudentPage from "./StudentPage";
+import ProfessorPage from "./ProfessorPage"; // Importăm pagina pentru profesori
 import LoginForm from "./LoginForm";
 import WelcomePage from "./WelcomePage.js";
 import { getAuthToken, setAuthHeader, decodeToken } from "../helpers/axios-helper";
@@ -9,16 +10,14 @@ import "./App.css";
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState(null); // Stocăm rolul utilizatorului
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
-    // Verificăm dacă există un token de autentificare
     const token = getAuthToken();
     if (token) {
       setIsLoggedIn(true);
       setAuthHeader(token);
 
-      // Decodăm token-ul pentru a obține rolul utilizatorului
       const decodedToken = decodeToken(token);
       setUserRole(decodedToken?.role || null);
     }
@@ -30,7 +29,6 @@ export default function App() {
       setIsLoggedIn(true);
       setAuthHeader(token);
 
-      // Decodăm token-ul și actualizăm rolul
       const decodedToken = decodeToken(token);
       setUserRole(decodedToken?.role || null);
     }
@@ -63,6 +61,16 @@ export default function App() {
           element={
             isLoggedIn && userRole === "ROLE_STUDENT" ? (
               <StudentPage onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/profesor"
+          element={
+            isLoggedIn && userRole === "ROLE_PROFESOR" ? (
+              <ProfessorPage onLogout={handleLogout} />
             ) : (
               <Navigate to="/login" />
             )

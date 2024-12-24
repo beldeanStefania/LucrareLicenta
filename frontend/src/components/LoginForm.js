@@ -10,32 +10,34 @@ export default function LoginForm({ onLogin }) {
 
   const handleLogin = (e) => {
     e.preventDefault();
-
-    // Autentificare utilizator
+  
     request("POST", "/api/auth/login", { username, password })
       .then((response) => {
-        const token = response.data.token; // Primim token-ul JWT
-        setAuthHeader(token); // Salvăm token-ul în antet
-        localStorage.setItem("auth_token", token); // Salvăm token-ul în localStorage
-
-        const decodedToken = decodeToken(token); // Decodificăm token-ul pentru a obține rolul
+        const token = response.data.token;
+        setAuthHeader(token);
+        localStorage.setItem("auth_token", token);
+  
+        const decodedToken = decodeToken(token);
         const role = decodedToken?.role;
-
+  
         if (role === "ROLE_ADMIN") {
-          navigate("/admin"); // Redirecționăm către AdminPage
+          navigate("/admin");
         } else if (role === "ROLE_STUDENT") {
-          navigate("/student"); // Redirecționăm către StudentPage
+          navigate("/student");
+        } else if (role === "ROLE_PROFESOR") {
+          navigate("/profesor"); // Redirecționăm către pagina profesorului
         } else {
           alert("Unknown role. Please contact the administrator.");
         }
-
-        onLogin(); // Actualizăm starea de autentificare
+  
+        onLogin();
       })
       .catch((error) => {
         console.error("Failed to login:", error);
         alert("Invalid credentials. Please try again.");
       });
   };
+  
 
   return (
     <div className="login-container">
