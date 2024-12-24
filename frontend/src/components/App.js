@@ -4,29 +4,43 @@ import AdminPage from "./AdminPage";
 import StudentPage from "./StudentPage";
 import LoginForm from "./LoginForm";
 import WelcomePage from "./WelcomePage.js";
-import { getAuthToken, setAuthHeader } from "../helpers/axios-helper";
+import { getAuthToken, setAuthHeader, decodeToken } from "../helpers/axios-helper";
 import "./App.css";
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState(null); // Stocăm rolul utilizatorului
 
   useEffect(() => {
     // Verificăm dacă există un token de autentificare
     const token = getAuthToken();
-    setIsLoggedIn(!!token); // Setăm autentificarea în funcție de token
     if (token) {
-      setAuthHeader(token); // Setăm antetul pentru cereri
+      setIsLoggedIn(true);
+      setAuthHeader(token);
+
+      // Decodăm token-ul pentru a obține rolul utilizatorului
+      const decodedToken = decodeToken(token);
+      setUserRole(decodedToken?.role || null);
     }
   }, []);
 
   const handleLogin = () => {
-    setIsLoggedIn(true);
+    const token = getAuthToken();
+    if (token) {
+      setIsLoggedIn(true);
+      setAuthHeader(token);
+
+      // Decodăm token-ul și actualizăm rolul
+      const decodedToken = decodeToken(token);
+      setUserRole(decodedToken?.role || null);
+    }
   };
 
   const handleLogout = () => {
     localStorage.removeItem("auth_token");
     setAuthHeader(null);
     setIsLoggedIn(false);
+    setUserRole(null);
   };
 
   return (
@@ -37,7 +51,7 @@ export default function App() {
         <Route
           path="/admin"
           element={
-            isLoggedIn ? (
+            isLoggedIn && userRole === "ROLE_ADMIN" ? (
               <AdminPage onLogout={handleLogout} />
             ) : (
               <Navigate to="/login" />
@@ -47,7 +61,7 @@ export default function App() {
         <Route
           path="/student"
           element={
-            isLoggedIn ? (
+            isLoggedIn && userRole === "ROLE_STUDENT" ? (
               <StudentPage onLogout={handleLogout} />
             ) : (
               <Navigate to="/login" />

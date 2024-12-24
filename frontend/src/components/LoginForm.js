@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { request, setAuthHeader } from "../helpers/axios-helper";
+import { request, decodeToken, setAuthHeader } from "../helpers/axios-helper";
 import "./LoginForm.css";
 
 export default function LoginForm({ onLogin }) {
@@ -11,18 +11,28 @@ export default function LoginForm({ onLogin }) {
   const handleLogin = (e) => {
     e.preventDefault();
 
-    // Trimite cererea de login către backend
+    // Autentificare utilizator
     request("POST", "/api/auth/login", { username, password })
       .then((response) => {
-        const token = response.data.token; // Preluăm token-ul din răspuns
-        setAuthHeader(token); // Setăm token-ul în antet pentru cereri viitoare
+        const token = response.data.token; // Primim token-ul JWT
+        setAuthHeader(token); // Salvăm token-ul în antet
         localStorage.setItem("auth_token", token); // Salvăm token-ul în localStorage
-        //alert("Login successful!");
-        onLogin(); // Actualizăm starea globală de autentificare
-        navigate("/admin"); // Navigăm către dashboard-ul Admin
+
+        const decodedToken = decodeToken(token); // Decodificăm token-ul pentru a obține rolul
+        const role = decodedToken?.role;
+
+        if (role === "ROLE_ADMIN") {
+          navigate("/admin"); // Redirecționăm către AdminPage
+        } else if (role === "ROLE_STUDENT") {
+          navigate("/student"); // Redirecționăm către StudentPage
+        } else {
+          alert("Unknown role. Please contact the administrator.");
+        }
+
+        onLogin(); // Actualizăm starea de autentificare
       })
       .catch((error) => {
-        console.error("Login failed:", error);
+        console.error("Failed to login:", error);
         alert("Invalid credentials. Please try again.");
       });
   };
