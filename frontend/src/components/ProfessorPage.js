@@ -4,14 +4,15 @@ import "./ProfessorPage.css";
 
 export default function ProfessorPage({ onLogout }) {
   const [professorInfo, setProfessorInfo] = useState(null); // Info despre profesor
-  const [repartizari, setRepartizari] = useState([]); // Materii și activități
+  const [repartizari, setRepartizari] = useState([]); // Materii și activități repartizate
   const [students, setStudents] = useState([]); // Lista studenților
   const [selectedMaterie, setSelectedMaterie] = useState("");
-  const [selectedTip, setSelectedTip] = useState("");
   const [studentNotes, setStudentNotes] = useState({}); // Note introduse pentru studenți
   const [cladiri, setCladiri] = useState([]); // Clădiri disponibile
   const [selectedCladire, setSelectedCladire] = useState(""); // Clădire selectată
   const [rooms, setRooms] = useState([]); // Săli disponibile
+  const [selectedTip, setSelectedTip] = useState(""); // Tipul activității (ex. Curs, Laborator)
+  const [selectedFrecventa, setSelectedFrecventa] = useState(""); // Frecvența activității
   const [selectedRoom, setSelectedRoom] = useState("");
   const [schedule, setSchedule] = useState({
     grupa: "",
@@ -20,28 +21,47 @@ export default function ProfessorPage({ onLogout }) {
     zi: "",
   });
 
-  // Fetch user info, repartizari, and cladiri
+  // Fetch professor info, repartizari, and cladiri
   useEffect(() => {
     fetchProfessorInfo();
-    fetchRepartizari();
     fetchCladiri();
   }, []);
+
+  useEffect(() => {
+    if (professorInfo && professorInfo.profesorId) {
+      console.log("Fetching materii for profesorId:", professorInfo.profesorId);
+      fetchMateriiProfesor(professorInfo.profesorId);
+    }
+  }, [professorInfo]); // Se execută când professorInfo este actualizat
 
   const fetchProfessorInfo = () => {
     request("GET", "/api/auth/userInfo")
       .then((response) => {
-        setProfessorInfo(response.data);
+        console.log("Professor info:", response.data);
+        setProfessorInfo(response.data); // Setăm informațiile despre profesor
       })
-      .catch((error) => console.error("Failed to fetch professor info:", error));
+      .catch((error) =>
+        console.error("Failed to fetch professor info:", error)
+      );
   };
 
-  const fetchRepartizari = () => {
-    request("GET", "/api/repartizareProf")
+  const fetchMateriiProfesor = (profesorId) => {
+    request("GET", `/api/repartizareProf/materiiProfesor/${profesorId}`)
       .then((response) => {
-        setRepartizari(response.data);
+        if (response.data && response.data.length > 0) {
+          setRepartizari(response.data);
+          console.log("Materii pentru profesor:", response.data);
+        } else {
+          console.log("Nicio materie disponibilă pentru acest profesor.");
+          setRepartizari([]);
+        }
       })
-      .catch((error) => console.error("Failed to fetch repartizari:", error));
+      .catch((error) => {
+        console.error("Failed to fetch materiile profesorului:", error);
+        setRepartizari([]);
+      });
   };
+  
 
   const fetchCladiri = () => {
     request("GET", "/api/cladire/getAll")
@@ -67,32 +87,42 @@ export default function ProfessorPage({ onLogout }) {
         nota,
         semestru: 1, // Semestrul poate fi selectat sau hardcodat
       })
-        .then(() => alert(`Nota ${nota} adăugată pentru student ${studentCod}`))
+        .then(() =>
+          alert(`Nota ${nota} adăugată pentru student ${studentCod}`)
+        )
         .catch((error) => console.error("Failed to add grade:", error));
     });
   };
 
   const handleReserveRoom = () => {
     const repartizare = repartizari.find(
-      (r) => r.materie === selectedMaterie && r.tip === selectedTip
+      (r) =>
+        r.materie === selectedMaterie &&
+        r.tip.toUpperCase() === selectedTip.toUpperCase()
     );
-
-    if (!repartizare) {
-      alert("Selectați o materie și un tip valid.");
-      return;
-    }
-
+  
     request("POST", "/api/orare/add", {
       grupa: schedule.grupa,
-      oraInceput: schedule.oraInceput,
-      oraSfarsit: schedule.oraSfarsit,
+      oraInceput: parseInt(schedule.oraInceput.split(":")[0], 10),
+      oraSfarsit: parseInt(schedule.oraSfarsit.split(":")[0], 10),
       zi: schedule.zi,
-      repartizareProfId: repartizare.id,
+      repartizareProfId: repartizare?.id || null,
+      profesorId: professorInfo.profesorId,
+      materie: selectedMaterie,
+      tip: selectedTip,
       salaId: selectedRoom,
+      frecventa:
+        selectedTip === "Laborator" || selectedTip === "Seminar"
+          ? selectedFrecventa
+          : "",
+      semigrupa: selectedTip === "Laborator" ? schedule.semigrupa : null, // Trimite semigrupa doar pentru laborator
     })
       .then(() => alert("Sală rezervată cu succes!"))
       .catch((error) => console.error("Failed to reserve room:", error));
   };
+  
+  
+  
 
   const handleCladireChange = (cladireId) => {
     setSelectedCladire(cladireId);
@@ -102,7 +132,9 @@ export default function ProfessorPage({ onLogout }) {
   return (
     <div className="professor-page">
       <header>
-        <h1>Welcome</h1>
+        <h1>
+          Bun venit!
+        </h1>
         <button className="logout-btn" onClick={onLogout}>
           Logout
         </button>
@@ -117,27 +149,73 @@ export default function ProfessorPage({ onLogout }) {
             value={selectedMaterie}
           >
             <option value="">Selectați o materie</option>
-            {repartizari.map((r) => (
-              <option key={r.id} value={r.materie}>
-                {r.materie} ({r.tip})
+            {repartizari.map((item, index) => (
+              <option key={index} value={item.materie}>
+                {item.materie}
               </option>
             ))}
           </select>
         </div>
         {students.map((student) => (
           <div key={student.cod}>
-            <span>{student.nume} {student.prenume}</span>
+            <span>
+              {student.nume} {student.prenume}
+            </span>
             <input
               type="number"
               placeholder="Introduceți nota"
               onChange={(e) =>
-                setStudentNotes({ ...studentNotes, [student.cod]: e.target.value })
+                setStudentNotes({
+                  ...studentNotes,
+                  [student.cod]: e.target.value,
+                })
               }
             />
           </div>
         ))}
         <button onClick={handleAddNotes}>Adaugă Note</button>
       </section>
+
+      <div>
+  <label>Tip:</label>
+  <select
+    onChange={(e) => setSelectedTip(e.target.value)}
+    value={selectedTip}
+  >
+    <option value="">Selectați tipul</option>
+    <option value="Curs">Curs</option>
+    <option value="Laborator">Laborator</option>
+    <option value="Seminar">Seminar</option>
+  </select>
+</div>
+
+{/* Dacă profesorul selectează "Laborator", afișează opțiunea pentru semigrupă */}
+{selectedTip === "Laborator" && (
+  <div>
+    <label>Semigrupa:</label>
+    <input
+      type="text"
+      placeholder="Introduceți semigrupa (ex: 1 sau 2)"
+      onChange={(e) => setSchedule({ ...schedule, semigrupa: e.target.value })}
+    />
+  </div>
+)}
+
+
+      <div>
+        <label>Frecvența:</label>
+        {(selectedTip === "Laborator" || selectedTip === "Seminar") && (
+          <select
+            onChange={(e) => setSelectedFrecventa(e.target.value)}
+            value={selectedFrecventa}
+          >
+            <option value="">Selectați frecvența</option>
+            <option value="1 sapt">1 săptămână</option>
+            <option value="2 sapt">2 săptămâni</option>
+            <option value="saptamanal">Săptămânal</option>
+          </select>
+        )}
+      </div>
 
       <section>
         <h2>Rezervare sală</h2>
@@ -174,21 +252,27 @@ export default function ProfessorPage({ onLogout }) {
           <input
             type="text"
             placeholder="Introduceți grupa"
-            onChange={(e) => setSchedule({ ...schedule, grupa: e.target.value })}
+            onChange={(e) =>
+              setSchedule({ ...schedule, grupa: e.target.value })
+            }
           />
         </div>
         <div>
           <label>Ora început:</label>
           <input
             type="time"
-            onChange={(e) => setSchedule({ ...schedule, oraInceput: e.target.value })}
+            onChange={(e) =>
+              setSchedule({ ...schedule, oraInceput: e.target.value })
+            }
           />
         </div>
         <div>
           <label>Ora sfârșit:</label>
           <input
             type="time"
-            onChange={(e) => setSchedule({ ...schedule, oraSfarsit: e.target.value })}
+            onChange={(e) =>
+              setSchedule({ ...schedule, oraSfarsit: e.target.value })
+            }
           />
         </div>
         <div>
