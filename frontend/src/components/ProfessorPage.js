@@ -13,6 +13,7 @@ export default function ProfessorPage({ onLogout }) {
   const [rooms, setRooms] = useState([]); // Săli disponibile
   const [selectedTip, setSelectedTip] = useState(""); // Tipul activității (ex. Curs, Laborator)
   const [selectedFrecventa, setSelectedFrecventa] = useState(""); // Frecvența activității
+  const [materiiUnice, setMateriiUnice] = useState([]);
   const [selectedRoom, setSelectedRoom] = useState("");
   const [schedule, setSchedule] = useState({
     grupa: "",
@@ -49,8 +50,14 @@ export default function ProfessorPage({ onLogout }) {
     request("GET", `/api/repartizareProf/materiiProfesor/${profesorId}`)
       .then((response) => {
         if (response.data && response.data.length > 0) {
+          // Eliminăm duplicatele pe baza numelui materiei
+          const materiiUnice = Array.from(
+            new Set(response.data.map((item) => item.materie))
+          );
+  
           setRepartizari(response.data);
-          console.log("Materii pentru profesor:", response.data);
+          console.log("Materii unice:", materiiUnice);
+          setMateriiUnice(materiiUnice); // Setăm materiile unice în state
         } else {
           console.log("Nicio materie disponibilă pentru acest profesor.");
           setRepartizari([]);
@@ -61,6 +68,7 @@ export default function ProfessorPage({ onLogout }) {
         setRepartizari([]);
       });
   };
+  
   
 
   const fetchCladiri = () => {
@@ -145,16 +153,17 @@ export default function ProfessorPage({ onLogout }) {
         <div>
           <label>Materie:</label>
           <select
-            onChange={(e) => setSelectedMaterie(e.target.value)}
-            value={selectedMaterie}
-          >
-            <option value="">Selectați o materie</option>
-            {repartizari.map((item, index) => (
-              <option key={index} value={item.materie}>
-                {item.materie}
-              </option>
-            ))}
-          </select>
+  onChange={(e) => setSelectedMaterie(e.target.value)}
+  value={selectedMaterie}
+>
+  <option value="">Selectați o materie</option>
+  {materiiUnice.map((materie, index) => (
+    <option key={index} value={materie}>
+      {materie}
+    </option>
+  ))}
+</select>
+
         </div>
         {students.map((student) => (
           <div key={student.cod}>
