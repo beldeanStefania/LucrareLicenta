@@ -1,12 +1,14 @@
 package com.orar.Backend.Orar.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 @AllArgsConstructor
+@Builder
 public class OrarDetailsDTO {
     private String zi;
     private String formatia;
@@ -17,4 +19,5 @@ public class OrarDetailsDTO {
     private String tipul; // Tipul din RepartizareProf
     private String disciplina; // Numele materiei
     private String cadruDidactic; // Numele profesorului
+    private String frecventa;
 }

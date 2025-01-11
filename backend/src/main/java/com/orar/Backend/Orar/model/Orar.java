@@ -32,4 +32,5 @@ public class Orar {
     private int oraSfarsit;
     private String grupa;
     private String zi;
+    private String frecventa;
 }

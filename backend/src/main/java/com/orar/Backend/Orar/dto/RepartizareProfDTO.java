@@ -6,6 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class RepartizareProfDTO {
+    private Integer id;
     private String tip;
     private String numeProfesor;
     private String prenumeProfesor;

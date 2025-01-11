@@ -1,6 +1,8 @@
 package com.orar.Backend.Orar.service;
 
+import com.orar.Backend.Orar.dto.MaterieDTO;
 import com.orar.Backend.Orar.dto.RepartizareProfDTO;
+import com.orar.Backend.Orar.exception.ProfesorNotFoundException;
 import com.orar.Backend.Orar.exception.RepartizareProfAlreadyExistsException;
 import com.orar.Backend.Orar.model.Materie;
 import com.orar.Backend.Orar.model.Profesor;
@@ -13,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class RepartizareProfService {
@@ -76,4 +80,26 @@ public class RepartizareProfService {
         updatedRepartizareProf.setId(repartizareProf.getId());
         return repartizareProfRepository.save(repartizareProf);
     }
+
+    public List<RepartizareProfDTO> getMateriiProfesor(Integer profesorId) throws ProfesorNotFoundException {
+        Profesor profesor = profesorRepository.findById(profesorId)
+                .orElseThrow(() -> new ProfesorNotFoundException("Profesor not found"));
+
+        // Obține o listă de repartizări
+        List<RepartizareProf> repartizari = repartizareProfRepository.findByProfesor(profesor);
+
+        // Transformă fiecare repartizare într-un DTO
+        return repartizari.stream()
+                .map(repartizare -> {
+                    RepartizareProfDTO dto = new RepartizareProfDTO();
+                    dto.setId(repartizare.getId());
+                    dto.setMaterie(repartizare.getMaterie().getNume());
+                    dto.setTip(repartizare.getTip());
+                    dto.setNumeProfesor(repartizare.getProfesor().getNume());
+                    dto.setPrenumeProfesor(repartizare.getProfesor().getPrenume());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
 }

@@ -13,9 +13,14 @@ import java.util.List;
 @Setter
 public class OrarDTO {
     private String grupa;
+    private String semigrupa;
     private int oraInceput;
     private int oraSfarsit;
     private String zi;
-    private int repartizareProfId;
-    private int salaId;
+    private Integer repartizareProfId;
+    private Integer salaId;
+    private String tip; // Curs, Seminar, Laborator
+    private String materie; // Numele materiei
+    private Integer profesorId; // ID-ul profesorului
+    private String frecventa; // Saptamanal, Par, Impar
 }

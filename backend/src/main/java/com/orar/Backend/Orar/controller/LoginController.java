@@ -116,11 +116,26 @@ public class LoginController {
 
         Map<String, String> response = new HashMap<>();
         response.put("username", user.getUsername());
-        response.put("cod", user.getStudent() != null ? user.getStudent().getCod() : "Not available");
-        response.put("grupa", user.getStudent() != null ? user.getStudent().getGrupa() : "Not available");
+
+        if (user.getStudent() != null) {
+            response.put("cod", user.getStudent().getCod());
+            response.put("grupa", user.getStudent().getGrupa());
+        } else if (user.getProfesor() != null) {
+            response.put("profesorId", user.getProfesor().getId().toString());
+            response.put("nume", user.getProfesor().getNume());
+            response.put("prenume", user.getProfesor().getPrenume());
+        } else {
+            response.put("cod", "Not available");
+            response.put("grupa", "Not available");
+        }
+
+        // Loguri pentru debugging
+        System.out.println("UserInfo response built:");
+        System.out.println(response);
 
         return ResponseEntity.ok(response);
     }
+
 
 }
 

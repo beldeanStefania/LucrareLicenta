@@ -50,7 +50,7 @@ public class OrarController {
     @PostMapping("/add")
     public ResponseEntity<Orar> addOrar(@Valid @RequestBody OrarDTO orarDTO) throws Exception {
         try{
-        return ok(orarService.add(orarDTO));
+            return ok(orarService.add(orarDTO));
         } catch (OrarAlreadyExistsException e) {
             return badRequest().build();
         }

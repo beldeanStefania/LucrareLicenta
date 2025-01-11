@@ -7,14 +7,7 @@ import com.orar.Backend.Orar.service.RepartizareProfService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -28,31 +21,55 @@ public class RepartizareProfController {
     @Autowired
     private RepartizareProfService repartizareProfService;
 
+    /**
+     * Endpoint pentru a obține toate repartizările profesorilor
+     */
     @GetMapping
     public List<RepartizareProf> getAll() {
         return repartizareProfService.getAll();
     }
 
+    /**
+     * Endpoint pentru a obține repartizările unui profesor specific
+     */
+    @GetMapping("/materiiProfesor/{profesorId}")
+    public ResponseEntity<List<RepartizareProfDTO>> getMateriiProfesor(@PathVariable Integer profesorId) {
+        try {
+            return ok(repartizareProfService.getMateriiProfesor(profesorId));
+        } catch (Exception e) {
+            return badRequest().build();
+        }
+    }
+
+    /**
+     * Endpoint pentru a adăuga o repartizare
+     */
     @PostMapping
-    public ResponseEntity<RepartizareProf> addRepartizareProf(@Valid @RequestBody RepartizareProfDTO repartizareProfDTO) throws Exception {
+    public ResponseEntity<RepartizareProf> addRepartizareProf(@Valid @RequestBody RepartizareProfDTO repartizareProfDTO) {
         try {
             return ok(repartizareProfService.add(repartizareProfDTO));
         } catch (RepartizareProfAlreadyExistsException e) {
-            return badRequest().build();
+            return badRequest().body(null);
         }
     }
 
+    /**
+     * Endpoint pentru a actualiza o repartizare
+     */
     @PutMapping("/{id}")
-    public ResponseEntity<RepartizareProf> updateRepartizareProf(@PathVariable Integer id, @Valid @RequestBody RepartizareProfDTO repartizareProfDTO) throws Exception {
+    public ResponseEntity<RepartizareProf> updateRepartizareProf(@PathVariable Integer id, @Valid @RequestBody RepartizareProfDTO repartizareProfDTO) {
         try {
             return ok(repartizareProfService.updateRepartizareProf(id, repartizareProfDTO));
         } catch (RepartizareProfAlreadyExistsException e) {
-            return badRequest().build();
+            return badRequest().body(null);
         }
     }
 
+    /**
+     * Endpoint pentru a șterge o repartizare
+     */
     @DeleteMapping("/{id}")
-    public ResponseEntity<RepartizareProf> deleteRepartizareProf(@PathVariable Integer id) {
+    public ResponseEntity<Void> deleteRepartizareProf(@PathVariable Integer id) {
         try {
             repartizareProfService.delete(id);
             return ok().build();
@@ -60,5 +77,4 @@ public class RepartizareProfController {
             return badRequest().build();
         }
     }
-
 }
