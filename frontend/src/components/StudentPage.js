@@ -81,6 +81,7 @@ export default function StudentPage({ onLogout }) {
       <thead>
         <tr>
           <th>Materie</th>
+          <th>Cod</th>
           <th>Nota</th>
           <th>Semestru</th>
         </tr>
@@ -88,8 +89,11 @@ export default function StudentPage({ onLogout }) {
       <tbody>
         {grades.map((grade, index) => (
           <tr key={index}>
+            <td>{grade.numeMaterie}</td>
             <td>{grade.codMaterie}</td>
-            <td>{grade.nota}</td>
+            <td style={{ color: grade.nota < 5 ? 'red' : 'black' }}>
+              {grade.nota}
+            </td>
             <td>{grade.semestru}</td>
           </tr>
         ))}

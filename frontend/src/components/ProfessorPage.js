@@ -3,74 +3,83 @@ import { request } from "../helpers/axios-helper";
 import "./ProfessorPage.css";
 
 export default function ProfessorPage({ onLogout }) {
-  const [professorInfo, setProfessorInfo] = useState(null); // Info despre profesor
-  const [repartizari, setRepartizari] = useState([]); // Materii și activități repartizate
-  const [students, setStudents] = useState([]); // Lista studenților
-  const [selectedMaterie, setSelectedMaterie] = useState("");
-  const [studentNotes, setStudentNotes] = useState({}); // Note introduse pentru studenți
-  const [cladiri, setCladiri] = useState([]); // Clădiri disponibile
-  const [selectedCladire, setSelectedCladire] = useState(""); // Clădire selectată
-  const [rooms, setRooms] = useState([]); // Săli disponibile
-  const [selectedTip, setSelectedTip] = useState(""); // Tipul activității (ex. Curs, Laborator)
-  const [selectedFrecventa, setSelectedFrecventa] = useState(""); // Frecvența activității
+  // State-uri pentru informațiile profesorului, materii, repartizări, clădiri și săli
+  const [professorInfo, setProfessorInfo] = useState(null);
+  const [repartizari, setRepartizari] = useState([]);
   const [materiiUnice, setMateriiUnice] = useState([]);
+  const [cladiri, setCladiri] = useState([]);
+  const [rooms, setRooms] = useState([]);
+  const [selectedCladire, setSelectedCladire] = useState("");
   const [selectedRoom, setSelectedRoom] = useState("");
+  const [selectedTip, setSelectedTip] = useState("");
+  const [selectedFrecventa, setSelectedFrecventa] = useState("");
   const [schedule, setSchedule] = useState({
     grupa: "",
     oraInceput: "",
     oraSfarsit: "",
     zi: "",
+    semigrupa: "",
   });
 
-  // Fetch professor info, repartizari, and cladiri
+  // State-uri dedicate secțiunii de acordare a notelor
+  const [selectedGradeMaterie, setSelectedGradeMaterie] = useState("");
+  const [selectedGradeGroup, setSelectedGradeGroup] = useState("");
+  const [gradeStudentNotes, setGradeStudentNotes] = useState({});
+  const [students, setStudents] = useState([]); // Listă studenți pentru grupa selectată
+
+  // La montare, se preiau informațiile profesorului și clădirile
   useEffect(() => {
     fetchProfessorInfo();
     fetchCladiri();
   }, []);
 
+  // Când avem informațiile profesorului, preluăm materii/repartizări
   useEffect(() => {
     if (professorInfo && professorInfo.profesorId) {
-      console.log("Fetching materii for profesorId:", professorInfo.profesorId);
       fetchMateriiProfesor(professorInfo.profesorId);
     }
-  }, [professorInfo]); // Se execută când professorInfo este actualizat
+  }, [professorInfo]);
 
+  // Când se selectează o grupă pentru notare, preluăm studenții aferenți
+  useEffect(() => {
+    if (selectedGradeGroup) {
+      fetchStudentsByGroup(selectedGradeGroup);
+    }
+  }, [selectedGradeGroup]);
+
+  // Funcție pentru a prelua informațiile profesorului
   const fetchProfessorInfo = () => {
     request("GET", "/api/auth/userInfo")
       .then((response) => {
-        console.log("Professor info:", response.data);
-        setProfessorInfo(response.data); // Setăm informațiile despre profesor
+        setProfessorInfo(response.data);
       })
-      .catch((error) =>
-        console.error("Failed to fetch professor info:", error)
-      );
+      .catch((error) => console.error("Failed to fetch professor info:", error));
   };
 
+  // Funcție pentru a prelua materiile/repartizările profesorului
   const fetchMateriiProfesor = (profesorId) => {
     request("GET", `/api/repartizareProf/materiiProfesor/${profesorId}`)
       .then((response) => {
         if (response.data && response.data.length > 0) {
-          // Eliminăm duplicatele pe baza numelui materiei
-          const materiiUnice = Array.from(
-            new Set(response.data.map((item) => item.materie))
-          );
-  
-          setRepartizari(response.data);
-          console.log("Materii unice:", materiiUnice);
-          setMateriiUnice(materiiUnice); // Setăm materiile unice în state
+          // Salvează o listă cu obiecte care conțin codul și denumirea materiei
+          const materiiUnice = response.data.map((item) => ({
+            cod: item.codMaterie, // Codul materiei (ex: MLR5000)
+            denumire: item.materie, // Numele complet al materiei
+          }));
+          setMateriiUnice(materiiUnice);
         } else {
           console.log("Nicio materie disponibilă pentru acest profesor.");
-          setRepartizari([]);
+          setMateriiUnice([]);
         }
       })
       .catch((error) => {
         console.error("Failed to fetch materiile profesorului:", error);
-        setRepartizari([]);
+        setMateriiUnice([]);
       });
   };
   
-  
 
+  // Funcție pentru a prelua clădirile disponibile
   const fetchCladiri = () => {
     request("GET", "/api/cladire/getAll")
       .then((response) => {
@@ -79,6 +88,7 @@ export default function ProfessorPage({ onLogout }) {
       .catch((error) => console.error("Failed to fetch cladiri:", error));
   };
 
+  // Funcție pentru a prelua sălile pentru o anumită clădire
   const fetchRoomsByCladire = (cladireId) => {
     request("GET", `/api/sala/byCladire/${cladireId}`)
       .then((response) => {
@@ -87,28 +97,48 @@ export default function ProfessorPage({ onLogout }) {
       .catch((error) => console.error("Failed to fetch rooms:", error));
   };
 
-  const handleAddNotes = () => {
-    Object.entries(studentNotes).forEach(([studentCod, nota]) => {
-      request("POST", "/api/catalogStudentMaterie/add", {
-        studentCod,
-        codMaterie: selectedMaterie,
-        nota,
-        semestru: 1, // Semestrul poate fi selectat sau hardcodat
+  // Funcție pentru a prelua studenții după grupa selectată în secțiunea de note
+  const fetchStudentsByGroup = (grupa) => {
+    request("GET", `/api/student/getByGrupa/${grupa}`)
+      .then((response) => {
+        // Se presupune că endpointul întoarce un array de studenți
+        setStudents(Array.isArray(response.data) ? response.data : [response.data]);
       })
-        .then(() =>
-          alert(`Nota ${nota} adăugată pentru student ${studentCod}`)
-        )
+      .catch((error) => {
+        console.error("Failed to fetch students by group:", error);
+        setStudents([]);
+      });
+  };
+
+  // Funcție pentru a trimite notele acordate studenților
+  const handleAddGrades = () => {
+    // Parcurgi "gradeStudentNotes" care arată { "codStudent1": 9, "codStudent2": 7, ...}
+    Object.entries(gradeStudentNotes).forEach(([studentCod, nota]) => {
+      const payload = {
+        studentCod,
+        codMaterie: selectedGradeMaterie, // ex. "MLR5000"
+        nota: parseFloat(nota),
+        semestru: 1,
+      };
+
+      console.log("payload trimis:", payload);
+
+      request("POST", "/api/catalogStudentMaterie/add", payload)
+        .then(() => {
+          alert(`Nota ${nota} a fost adăugată pentru studentul ${studentCod}`);
+        })
         .catch((error) => console.error("Failed to add grade:", error));
     });
   };
-
+  
+  // Funcție pentru a trimite cererea de rezervare a sălii
   const handleReserveRoom = () => {
     const repartizare = repartizari.find(
       (r) =>
-        r.materie === selectedMaterie &&
+        r.materie === selectedGradeMaterie &&
         r.tip.toUpperCase() === selectedTip.toUpperCase()
     );
-  
+
     request("POST", "/api/orare/add", {
       grupa: schedule.grupa,
       oraInceput: parseInt(schedule.oraInceput.split(":")[0], 10),
@@ -116,22 +146,20 @@ export default function ProfessorPage({ onLogout }) {
       zi: schedule.zi,
       repartizareProfId: repartizare?.id || null,
       profesorId: professorInfo.profesorId,
-      materie: selectedMaterie,
+      materie: selectedGradeMaterie, // folosim materia selectată pentru notare (poate fi reutilizată)
       tip: selectedTip,
       salaId: selectedRoom,
       frecventa:
         selectedTip === "Laborator" || selectedTip === "Seminar"
           ? selectedFrecventa
           : "",
-      semigrupa: selectedTip === "Laborator" ? schedule.semigrupa : null, // Trimite semigrupa doar pentru laborator
+      semigrupa: selectedTip === "Laborator" ? schedule.semigrupa : null,
     })
       .then(() => alert("Sală rezervată cu succes!"))
       .catch((error) => console.error("Failed to reserve room:", error));
   };
-  
-  
-  
 
+  // Funcție pentru schimbarea clădirii (și preluarea sălilor aferente)
   const handleCladireChange = (cladireId) => {
     setSelectedCladire(cladireId);
     fetchRoomsByCladire(cladireId);
@@ -140,92 +168,65 @@ export default function ProfessorPage({ onLogout }) {
   return (
     <div className="professor-page">
       <header>
-        <h1>
-          Bun venit!
-        </h1>
+        <h1>Bun venit!</h1>
         <button className="logout-btn" onClick={onLogout}>
           Logout
         </button>
       </header>
 
+      {/* Secțiunea de acordare a notelor */}
       <section>
-        <h2>Adaugă note pentru studenți</h2>
-        <div>
-          <label>Materie:</label>
-          <select
-  onChange={(e) => setSelectedMaterie(e.target.value)}
-  value={selectedMaterie}
->
-  <option value="">Selectați o materie</option>
-  {materiiUnice.map((materie, index) => (
-    <option key={index} value={materie}>
-      {materie}
-    </option>
-  ))}
-</select>
-
-        </div>
-        {students.map((student) => (
-          <div key={student.cod}>
-            <span>
-              {student.nume} {student.prenume}
-            </span>
-            <input
-              type="number"
-              placeholder="Introduceți nota"
-              onChange={(e) =>
-                setStudentNotes({
-                  ...studentNotes,
-                  [student.cod]: e.target.value,
-                })
-              }
-            />
-          </div>
-        ))}
-        <button onClick={handleAddNotes}>Adaugă Note</button>
-      </section>
-
-      <div>
-  <label>Tip:</label>
-  <select
-    onChange={(e) => setSelectedTip(e.target.value)}
-    value={selectedTip}
-  >
-    <option value="">Selectați tipul</option>
-    <option value="Curs">Curs</option>
-    <option value="Laborator">Laborator</option>
-    <option value="Seminar">Seminar</option>
-  </select>
-</div>
-
-{/* Dacă profesorul selectează "Laborator", afișează opțiunea pentru semigrupă */}
-{selectedTip === "Laborator" && (
+  <h2>Acordă note studenților</h2>
   <div>
-    <label>Semigrupa:</label>
+    <label>Materie pentru note:</label>
+    <select
+      onChange={(e) => setSelectedGradeMaterie(e.target.value)}
+      value={selectedGradeMaterie}
+    >
+      <option value="">Selectează materie</option>
+      {materiiUnice.map((materie, index) => (
+        <option key={index} value={materie.denumire}>
+          {materie.denumire}
+        </option>
+      ))}
+    </select>
+  </div>
+  <div>
+    <label>Grupa studenților:</label>
     <input
       type="text"
-      placeholder="Introduceți semigrupa (ex: 1 sau 2)"
-      onChange={(e) => setSchedule({ ...schedule, semigrupa: e.target.value })}
+      placeholder="Introdu grupa pentru note"
+      onChange={(e) => setSelectedGradeGroup(e.target.value)}
     />
   </div>
-)}
+  <div className="students-list">
+    {students && students.length > 0 ? (
+      students.map((student) => (
+        <div key={student.cod}>
+          <span>
+            {student.nume} {student.prenume}
+          </span>
+          <input
+            type="number"
+            placeholder="Introdu nota"
+            onChange={(e) =>
+              setGradeStudentNotes({
+                ...gradeStudentNotes,
+                [student.cod]: e.target.value,
+              })
+            }
+          />
+        </div>
+      ))
+    ) : (
+      <p>Nu au fost găsiți studenți pentru grupa specificată.</p>
+    )}
+  </div>
+  <button onClick={handleAddGrades}>Adaugă Note</button>
+</section>
 
 
-      <div>
-        <label>Frecvența:</label>
-        {(selectedTip === "Laborator" || selectedTip === "Seminar") && (
-          <select
-            onChange={(e) => setSelectedFrecventa(e.target.value)}
-            value={selectedFrecventa}
-          >
-            <option value="">Selectați frecvența</option>
-            <option value="1 sapt">1 săptămână</option>
-            <option value="2 sapt">2 săptămâni</option>
-            <option value="saptamanal">Săptămânal</option>
-          </select>
-        )}
-      </div>
-
+      {/* Secțiunea pentru rezervarea sălii */}
       <section>
         <h2>Rezervare sală</h2>
         <div>
@@ -234,7 +235,7 @@ export default function ProfessorPage({ onLogout }) {
             onChange={(e) => handleCladireChange(e.target.value)}
             value={selectedCladire}
           >
-            <option value="">Selectați clădirea</option>
+            <option value="">Selectează clădirea</option>
             {cladiri.map((cladire) => (
               <option key={cladire.id} value={cladire.id}>
                 {cladire.nume}
@@ -248,7 +249,7 @@ export default function ProfessorPage({ onLogout }) {
             onChange={(e) => setSelectedRoom(e.target.value)}
             value={selectedRoom}
           >
-            <option value="">Selectați sala</option>
+            <option value="">Selectează sala</option>
             {rooms.map((room) => (
               <option key={room.id} value={room.id}>
                 {room.nume}
@@ -257,10 +258,10 @@ export default function ProfessorPage({ onLogout }) {
           </select>
         </div>
         <div>
-          <label>Grupa:</label>
+          <label>Grupa pentru rezervare:</label>
           <input
             type="text"
-            placeholder="Introduceți grupa"
+            placeholder="Introdu grupa"
             onChange={(e) =>
               setSchedule({ ...schedule, grupa: e.target.value })
             }
@@ -287,10 +288,12 @@ export default function ProfessorPage({ onLogout }) {
         <div>
           <label>Ziua:</label>
           <select
-            onChange={(e) => setSchedule({ ...schedule, zi: e.target.value })}
+            onChange={(e) =>
+              setSchedule({ ...schedule, zi: e.target.value })
+            }
             value={schedule.zi}
           >
-            <option value="">Selectați ziua</option>
+            <option value="">Selectează ziua</option>
             <option value="Luni">Luni</option>
             <option value="Marti">Marți</option>
             <option value="Miercuri">Miercuri</option>
@@ -298,6 +301,48 @@ export default function ProfessorPage({ onLogout }) {
             <option value="Vineri">Vineri</option>
           </select>
         </div>
+        {selectedTip && (
+          <>
+            <div>
+              <label>Tip:</label>
+              <select
+                onChange={(e) => setSelectedTip(e.target.value)}
+                value={selectedTip}
+              >
+                <option value="">Selectează tipul</option>
+                <option value="Curs">Curs</option>
+                <option value="Laborator">Laborator</option>
+                <option value="Seminar">Seminar</option>
+              </select>
+            </div>
+            {(selectedTip === "Laborator" || selectedTip === "Seminar") && (
+              <div>
+                <label>Frecvența:</label>
+                <select
+                  onChange={(e) => setSelectedFrecventa(e.target.value)}
+                  value={selectedFrecventa}
+                >
+                  <option value="">Selectează frecvența</option>
+                  <option value="1 sapt">1 săptămână</option>
+                  <option value="2 sapt">2 săptămâni</option>
+                  <option value="saptamanal">Săptămânal</option>
+                </select>
+              </div>
+            )}
+            {selectedTip === "Laborator" && (
+              <div>
+                <label>Semigrupa:</label>
+                <input
+                  type="text"
+                  placeholder="Introdu semigrupa (ex: 1 sau 2)"
+                  onChange={(e) =>
+                    setSchedule({ ...schedule, semigrupa: e.target.value })
+                  }
+                />
+              </div>
+            )}
+          </>
+        )}
         <button onClick={handleReserveRoom}>Rezervă Sală</button>
       </section>
     </div>

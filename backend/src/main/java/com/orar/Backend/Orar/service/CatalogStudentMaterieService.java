@@ -57,6 +57,7 @@ public class CatalogStudentMaterieService {
                     catalogDTO.setSemestru(catalog.getSemestru());
                     catalogDTO.setStudentCod(catalog.getStudent().getCod());
                     catalogDTO.setCodMaterie(catalog.getMaterie().getCod());
+                    catalogDTO.setNumeMaterie(catalog.getMaterie().getNume());
                     return catalogDTO;
                 })
                 .toList();

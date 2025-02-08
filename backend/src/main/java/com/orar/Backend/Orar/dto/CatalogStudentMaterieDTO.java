@@ -10,4 +10,5 @@ public class CatalogStudentMaterieDTO {
     private Integer semestru;
     private String studentCod;
     private String codMaterie;
+    private String numeMaterie;
 }
