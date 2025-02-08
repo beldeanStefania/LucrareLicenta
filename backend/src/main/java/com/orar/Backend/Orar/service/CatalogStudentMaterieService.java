@@ -67,8 +67,9 @@ public class CatalogStudentMaterieService {
         Student student = studentRepository.findByCod(catalogStudentMaterieDTO.getStudentCod())
                 .orElseThrow(() -> new StudentNotFoundException("Student not found with Cod: " + catalogStudentMaterieDTO.getStudentCod()));
 
-        Materie materie = materieRepository.findByCod(catalogStudentMaterieDTO.getCodMaterie())
-                .orElseThrow(() -> new MaterieNotFoundException("Materie not found with Cod: " + catalogStudentMaterieDTO.getCodMaterie()));
+        Materie materie = materieRepository.findByNume(catalogStudentMaterieDTO.getCodMaterie())
+                .orElseThrow(() -> new MaterieNotFoundException("Materie not found with Name: " + catalogStudentMaterieDTO.getCodMaterie()));
+
 
         if (catalogStudentMaterieRepository.findByStudentCodAndMaterieCod(student.getCod(), materie.getCod()).isPresent()) {
             throw new CatalogStudentMaterieAlreadyExistsException("Catalog entry already exists for this student and subject.");

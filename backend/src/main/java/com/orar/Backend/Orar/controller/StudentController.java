@@ -53,6 +53,15 @@ public class StudentController {
         }
     }
 
+    @GetMapping("/getByGrupa/{grupa}")
+    public ResponseEntity<Student> getStudentByNumeAndPrenume(@PathVariable String grupa) {
+        try {
+            return ok(studentService.getByGrupa(grupa));
+        } catch (StudentNotFoundException e) {
+            return notFound().build();
+        }
+    }
+
     @Operation(summary = "Adauga student")
     @PostMapping("/add")
     public ResponseEntity<Student> createStudent(@RequestBody StudentDTO studentDTO) {

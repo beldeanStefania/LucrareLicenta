@@ -10,4 +10,5 @@ public interface MaterieRepository extends JpaRepository<Materie, Integer> {
     Optional<Materie> findByNume(String nume);
 
     Optional<Materie> findByCod(String cod);
+
 }

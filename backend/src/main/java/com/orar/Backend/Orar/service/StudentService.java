@@ -112,4 +112,8 @@ public class StudentService {
         Student student = studentRepository.findByCod(cod).orElseThrow(() -> new StudentNotFoundException("Student not found"));
         studentRepository.delete(student);
     }
+
+    public Student getByGrupa(String grupa) throws StudentNotFoundException {
+        return studentRepository.findByGrupa(grupa).orElseThrow(() -> new StudentNotFoundException("Student not found"));
+    }
 }

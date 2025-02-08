@@ -37,6 +37,7 @@ public class CatalogStudentMaterieController {
 
     @PostMapping("/add")
     public ResponseEntity<CatalogStudentMaterie> addCatalog(@RequestBody CatalogStudentMaterieDTO dto) {
+        System.out.println("addCatalog endpoint was hit with: " + dto);
         try {
             CatalogStudentMaterie createdCatalog = catalogStudentMaterieService.add(dto);
             return ResponseEntity.status(CREATED).body(createdCatalog);
@@ -46,6 +47,7 @@ public class CatalogStudentMaterieController {
             return ResponseEntity.status(NOT_FOUND).build();
         }
     }
+
 
 
     @PutMapping("/update/{studentCod}/{materieCod}")

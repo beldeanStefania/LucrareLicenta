@@ -41,6 +41,16 @@ public class RepartizareProfController {
         }
     }
 
+    @GetMapping("/materiiProfesorDistincte/{profesorId}")
+    public ResponseEntity<List<String>> getMateriiDistincteProfesor(@PathVariable Integer profesorId) {
+        try {
+            return ok(repartizareProfService.getMateriiDistincteProfesor(profesorId));
+        } catch (Exception e) {
+            return badRequest().build();
+        }
+    }
+
+
     /**
      * Endpoint pentru a adăuga o repartizare
      */

@@ -25,9 +25,6 @@ public class RepartizareProfService {
     private RepartizareProfRepository repartizareProfRepository;
 
     @Autowired
-    private OrarRepository orarRepository;
-
-    @Autowired
     private ProfesorRepository profesorRepository;
 
     @Autowired
@@ -101,5 +98,17 @@ public class RepartizareProfService {
                 })
                 .collect(Collectors.toList());
     }
+
+    public List<String> getMateriiDistincteProfesor(Integer profesorId) throws ProfesorNotFoundException {
+        Profesor profesor = profesorRepository.findById(profesorId)
+                .orElseThrow(() -> new ProfesorNotFoundException("Profesor not found"));
+
+        // Obține materiile distincte pentru profesor
+        return repartizareProfRepository.findByProfesor(profesor).stream()
+                .map(repartizare -> repartizare.getMaterie().getNume()) // Extrage numele materiei
+                .distinct() // Elimină duplicatele
+                .collect(Collectors.toList());
+    }
+
 
 }
