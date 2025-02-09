@@ -42,6 +42,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/student/**").hasAnyRole("ADMIN", "STUDENT", "PROFESOR")
                         .requestMatchers("/api/auth/userInfo").hasAnyRole("ADMIN", "STUDENT", "PROFESOR")
                         .requestMatchers("/api/orare/getAll/{grupa}").hasAnyRole("STUDENT")
+                        .requestMatchers("/api/orare/getAllProfesor/{profesorId}").hasAnyRole("PROFESOR")
                         .requestMatchers("/getNote/{studentCod}").hasRole("STUDENT")
                         .requestMatchers("/api/orare/**").hasAnyRole("ADMIN", "PROFESOR")
                         .requestMatchers("/api/profesor/**").hasAnyRole("ADMIN", "PROFESOR")

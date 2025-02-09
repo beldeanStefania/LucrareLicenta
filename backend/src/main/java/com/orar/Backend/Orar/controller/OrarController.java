@@ -45,6 +45,12 @@ public class OrarController {
         return ResponseEntity.ok(orarDetails != null ? orarDetails : new ArrayList<>());
     }
 
+    @GetMapping("/getAllProfesor/{profesorId}")
+    public ResponseEntity<List<OrarDetailsDTO>> getOrarDetailsByProfesor(@PathVariable Integer profesorId) {
+        List<OrarDetailsDTO> orarDetails = orarService.getOrarDetailsByProfesor(profesorId);
+        return ResponseEntity.ok(orarDetails != null ? orarDetails : new ArrayList<>());
+    }
+
 
     @Operation(summary = "Adauga orar")
     @PostMapping("/add")

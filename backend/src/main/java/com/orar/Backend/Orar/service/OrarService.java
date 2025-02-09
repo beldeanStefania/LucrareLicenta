@@ -124,8 +124,6 @@ public class OrarService {
     }
 
 
-
-
     private RepartizareProf createRepartizareProfIfNotExists(OrarDTO orarDTO) {
         Profesor profesor = profesorRepository.findById(orarDTO.getProfesorId())
                 .orElseThrow(() -> new NoSuchElementException("Profesor not found"));
@@ -150,8 +148,6 @@ public class OrarService {
         return repartizareProfRepository.save(newRepartizare);
     }
 
-
-
     private String determineFormatia(String grupa, String tip, String semigrupa) {
         String formatia;
         if ("Curs".equalsIgnoreCase(tip)) {
@@ -166,8 +162,6 @@ public class OrarService {
         System.out.println("Determinată formație: " + formatia); // Debugging
         return formatia;
     }
-
-
 
 
     /**
@@ -201,4 +195,24 @@ public class OrarService {
         return orarRepository.save(orar);
     }
 
+    public List<OrarDetailsDTO> getOrarDetailsByProfesor(Integer profesorId) {
+        List<Orar> orarList = orarRepository.findByRepartizareProf_Profesor_Id(profesorId);
+
+        return orarList.stream()
+                .map(orar -> {
+                    OrarDetailsDTO orarDetailsDTO = new OrarDetailsDTO();
+                    orarDetailsDTO.setZi(orar.getZi());
+                    orarDetailsDTO.setFormatia(orar.getFormatia());
+                    orarDetailsDTO.setOraInceput(orar.getOraInceput());
+                    orarDetailsDTO.setOraSfarsit(orar.getOraSfarsit());
+                    orarDetailsDTO.setGrupa(orar.getGrupa());
+                    orarDetailsDTO.setSala(orar.getSala().getNume());
+                    orarDetailsDTO.setTipul(orar.getRepartizareProf().getTip());
+                    orarDetailsDTO.setFrecventa(orar.getFrecventa());
+                    orarDetailsDTO.setDisciplina(orar.getRepartizareProf().getMaterie().getNume());
+
+                    return orarDetailsDTO;
+                })
+                .toList();
+    }
 }

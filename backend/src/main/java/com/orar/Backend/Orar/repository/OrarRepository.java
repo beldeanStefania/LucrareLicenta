@@ -18,4 +18,6 @@ public interface OrarRepository extends JpaRepository<Orar, Integer> {
                                    @Param("zi") String zi,
                                    @Param("oraInceput") int oraInceput,
                                    @Param("oraSfarsit") int oraSfarsit);
+
+    List<Orar> findByRepartizareProf_Profesor_Id(Integer profesorId);
 }

@@ -16,24 +16,27 @@ export default function ProfessorPage({ onLogout }) {
   const [selectedRoom, setSelectedRoom] = useState("");
 
   // =================== State-uri pentru acordarea notelor ===================
-  const [materiiUnice, setMateriiUnice] = useState([]); // Aceasta e lista (cod, denumire) folosită la notare
+  const [materiiUnice, setMateriiUnice] = useState([]); // Lista (cod, denumire) pentru notare
   const [selectedGradeMaterie, setSelectedGradeMaterie] = useState("");
   const [selectedGradeGroup, setSelectedGradeGroup] = useState("");
   const [gradeStudentNotes, setGradeStudentNotes] = useState({});
   const [students, setStudents] = useState([]);
 
   // =================== State-uri pentru rezervare sală (orar) ===================
-  // Am separat materie pentru orar de materie pentru note
+  // Se folosește o materie diferită față de cea de notare
   const [selectedMaterieForSchedule, setSelectedMaterieForSchedule] = useState("");
   const [selectedTip, setSelectedTip] = useState("");
   const [selectedFrecventa, setSelectedFrecventa] = useState("");
-  const [schedule, setSchedule] = useState({
+  const [scheduleData, setScheduleData] = useState({
     grupa: "",
     oraInceput: "",
     oraSfarsit: "",
     zi: "",
     semigrupa: "",
   });
+
+  // =================== State pentru orarul profesorului ===================
+  const [profSchedule, setProfSchedule] = useState([]);
 
   // =================== useEffect-uri ===================
   useEffect(() => {
@@ -44,10 +47,11 @@ export default function ProfessorPage({ onLogout }) {
   useEffect(() => {
     if (professorInfo && professorInfo.profesorId) {
       fetchMateriiProfesor(professorInfo.profesorId);
+      fetchProfessorSchedule(professorInfo.profesorId);
     }
   }, [professorInfo]);
 
-  // Când se schimbă grupa pentru notare, încărcăm studenții
+  // Când se schimbă grupa pentru notare, se aduc studenții aferenți
   useEffect(() => {
     if (selectedGradeGroup) {
       fetchStudentsByGroup(selectedGradeGroup);
@@ -55,6 +59,7 @@ export default function ProfessorPage({ onLogout }) {
   }, [selectedGradeGroup]);
 
   // =================== API Calls ===================
+
   const fetchProfessorInfo = () => {
     request("GET", "/api/auth/userInfo")
       .then((response) => {
@@ -63,18 +68,16 @@ export default function ProfessorPage({ onLogout }) {
       .catch((error) => console.error("Failed to fetch professor info:", error));
   };
 
-  // Această funcție aduce "repartizări" (materii + tip) de la backend
-  // Și de obicei conține ceva ca: {id, materie, tip, codMaterie, profesorId, ...}
+  // Adună repartizările (materii + tip) pentru profesor
   const fetchMateriiProfesor = (profesorId) => {
     request("GET", `/api/repartizareProf/materiiProfesor/${profesorId}`)
       .then((response) => {
         if (response.data && response.data.length > 0) {
           setRepartizari(response.data);
-          // Pentru notare, dacă vrei doar un simplu "cod" și "denumire",
-          // atunci extragi partea care te interesează:
+          // Extragem doar codul și denumirea materiei pentru notare
           const materiiExtract = response.data.map((item) => ({
-            cod: item.codMaterie,     // Ex. "MLR5000"
-            denumire: item.materie,  // Ex. "Matematică logică"
+            cod: item.codMaterie,     // Ex: "MLR5000"
+            denumire: item.materie,     // Ex: "Matematică logică"
           }));
           setMateriiUnice(materiiExtract);
         } else {
@@ -118,14 +121,26 @@ export default function ProfessorPage({ onLogout }) {
       });
   };
 
+  // Nou: fetch orarul profesorului (folosind profesorId, prin relația RepartizareProf -> Profesor)
+  const fetchProfessorSchedule = (profesorId) => {
+    request("GET", `/api/orare/getAllProfesor/${profesorId}`)
+      .then((response) => {
+        setProfSchedule(response.data);
+      })
+      .catch((error) => {
+        console.error("Failed to fetch professor schedule:", error);
+        setProfSchedule([]);
+      });
+  };
+
   // =================== Handlers ===================
-  // A. NOTARE STUDENȚI
+
+  // A. Acordare note studenților
   const handleAddGrades = () => {
     Object.entries(gradeStudentNotes).forEach(([studentCod, nota]) => {
       const payload = {
         studentCod,
-        // Trimitem "selectedGradeMaterie". Observă că, în loc să fie un cod,
-        // s-ar putea să fie un nume. Depinde cum e backend-ul tău setat.
+        // Folosim valoarea selectată; asigură-te că backend-ul așteaptă codul sau numele corespunzător
         codMaterie: selectedGradeMaterie,
         nota: parseFloat(nota),
         semestru: 1,
@@ -140,31 +155,30 @@ export default function ProfessorPage({ onLogout }) {
     });
   };
 
-  // B. REZERVARE SALĂ (similar cu versiunea veche)
+  // B. Rezervare sală (orar)
   const handleReserveRoom = () => {
-    // Căutăm în `repartizari` obiectul care se potrivește cu materia + tipul selectate
+    // Căutăm în repartizări obiectul potrivit (care corespunde materiei și tipului selectate)
     const repartizare = repartizari.find(
       (r) =>
-        // r.materie poate fi exact denumirea. Depinde cum e structurat "repartizare" la tine
         r.materie === selectedMaterieForSchedule &&
         r.tip.toUpperCase() === selectedTip.toUpperCase()
     );
 
     const payload = {
-      grupa: schedule.grupa,
-      oraInceput: parseInt(schedule.oraInceput.split(":")[0], 10),
-      oraSfarsit: parseInt(schedule.oraSfarsit.split(":")[0], 10),
-      zi: schedule.zi,
+      grupa: scheduleData.grupa,
+      oraInceput: parseInt(scheduleData.oraInceput.split(":")[0], 10),
+      oraSfarsit: parseInt(scheduleData.oraSfarsit.split(":")[0], 10),
+      zi: scheduleData.zi,
       repartizareProfId: repartizare?.id || null,
       profesorId: professorInfo.profesorId,
-      materie: selectedMaterieForSchedule, // atenție: poate fi nume materie sau cod
+      materie: selectedMaterieForSchedule,
       tip: selectedTip,
       salaId: selectedRoom,
       frecventa:
         selectedTip === "Laborator" || selectedTip === "Seminar"
           ? selectedFrecventa
           : "",
-      semigrupa: selectedTip === "Laborator" ? schedule.semigrupa : null,
+      semigrupa: selectedTip === "Laborator" ? scheduleData.semigrupa : null,
     };
 
     console.log("Rezervare sala payload:", payload);
@@ -190,9 +204,7 @@ export default function ProfessorPage({ onLogout }) {
         </button>
       </header>
 
-      {/* --------------------------------------------------
-          1) Acordă note studenților 
-      -------------------------------------------------- */}
+      {/* 1) Acordă note studenților */}
       <section>
         <h2>Acordă note studenților</h2>
         <div>
@@ -243,13 +255,9 @@ export default function ProfessorPage({ onLogout }) {
         <button onClick={handleAddGrades}>Adaugă Note</button>
       </section>
 
-      {/* --------------------------------------------------
-          2) Rezervare sală (Orar)
-      -------------------------------------------------- */}
+      {/* 2) Rezervare sală (Orar) */}
       <section>
         <h2>Rezervare sală</h2>
-
-        {/* Materie pentru orar (diferită de materie pentru note) */}
         <div>
           <label>Materie pentru orar:</label>
           <select
@@ -264,7 +272,6 @@ export default function ProfessorPage({ onLogout }) {
             ))}
           </select>
         </div>
-
         <div>
           <label>Tip:</label>
           <select
@@ -277,8 +284,6 @@ export default function ProfessorPage({ onLogout }) {
             <option value="Seminar">Seminar</option>
           </select>
         </div>
-
-        {/* Frecvența apare doar pentru Laborator/Seminar */}
         {(selectedTip === "Laborator" || selectedTip === "Seminar") && (
           <div>
             <label>Frecvența:</label>
@@ -293,8 +298,6 @@ export default function ProfessorPage({ onLogout }) {
             </select>
           </div>
         )}
-
-        {/* Semigrupa apare doar pentru Laborator */}
         {selectedTip === "Laborator" && (
           <div>
             <label>Semigrupa:</label>
@@ -302,12 +305,11 @@ export default function ProfessorPage({ onLogout }) {
               type="text"
               placeholder="ex: 1 sau 2"
               onChange={(e) =>
-                setSchedule({ ...schedule, semigrupa: e.target.value })
+                setScheduleData({ ...scheduleData, semigrupa: e.target.value })
               }
             />
           </div>
         )}
-
         <div>
           <label>Clădire:</label>
           <select
@@ -322,7 +324,6 @@ export default function ProfessorPage({ onLogout }) {
             ))}
           </select>
         </div>
-
         <div>
           <label>Sală:</label>
           <select
@@ -337,13 +338,14 @@ export default function ProfessorPage({ onLogout }) {
             ))}
           </select>
         </div>
-
         <div>
           <label>Grupa:</label>
           <input
             type="text"
             placeholder="Introduceți grupa"
-            onChange={(e) => setSchedule({ ...schedule, grupa: e.target.value })}
+            onChange={(e) =>
+              setScheduleData({ ...scheduleData, grupa: e.target.value })
+            }
           />
         </div>
         <div>
@@ -351,7 +353,7 @@ export default function ProfessorPage({ onLogout }) {
           <input
             type="time"
             onChange={(e) =>
-              setSchedule({ ...schedule, oraInceput: e.target.value })
+              setScheduleData({ ...scheduleData, oraInceput: e.target.value })
             }
           />
         </div>
@@ -360,15 +362,17 @@ export default function ProfessorPage({ onLogout }) {
           <input
             type="time"
             onChange={(e) =>
-              setSchedule({ ...schedule, oraSfarsit: e.target.value })
+              setScheduleData({ ...scheduleData, oraSfarsit: e.target.value })
             }
           />
         </div>
         <div>
           <label>Ziua:</label>
           <select
-            onChange={(e) => setSchedule({ ...schedule, zi: e.target.value })}
-            value={schedule.zi}
+            onChange={(e) =>
+              setScheduleData({ ...scheduleData, zi: e.target.value })
+            }
+            value={scheduleData.zi}
           >
             <option value="">Selectează ziua</option>
             <option value="Luni">Luni</option>
@@ -378,8 +382,42 @@ export default function ProfessorPage({ onLogout }) {
             <option value="Vineri">Vineri</option>
           </select>
         </div>
-
         <button onClick={handleReserveRoom}>Rezervă Sală</button>
+      </section>
+
+      {/* 3) Afișare orar profesor */}
+      <section>
+        <h2>Orarul meu</h2>
+        {profSchedule.length > 0 ? (
+          <table className="schedule-table">
+            <thead>
+              <tr>
+                <th>Ziua</th>
+                <th>Orele</th>
+                <th>Frecvența</th>
+                <th>Sala</th>
+                <th>Tipul</th>
+                <th>Formația</th>
+                <th>Disciplina</th>
+              </tr>
+            </thead>
+            <tbody>
+              {profSchedule.map((item, index) => (
+                <tr key={index}>
+                  <td>{item.zi}</td>
+                  <td>{`${item.oraInceput}:00 - ${item.oraSfarsit}:00`}</td>
+                  <td>{item.frecventa || "N/A"}</td>
+                  <td>{item.sala}</td>
+                  <td>{item.tipul}</td>
+                  <td>{item.formatia}</td>
+                  <td>{item.disciplina}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p>Nicio oră planificată pentru acest profesor.</p>
+        )}
       </section>
     </div>
   );
