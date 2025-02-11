@@ -74,12 +74,15 @@ export default function ProfessorPage({ onLogout }) {
       .then((response) => {
         if (response.data && response.data.length > 0) {
           setRepartizari(response.data);
-          // Extragem doar codul și denumirea materiei pentru notare
-          const materiiExtract = response.data.map((item) => ({
-            cod: item.codMaterie,     // Ex: "MLR5000"
-            denumire: item.materie,     // Ex: "Matematică logică"
+  
+          // Eliminăm duplicatele folosind un Set
+          const materiiUnice = Array.from(
+            new Set(response.data.map((item) => item.materie))
+          ).map((materie) => ({
+            denumire: materie, // Ex: "Matematică Logică"
           }));
-          setMateriiUnice(materiiExtract);
+  
+          setMateriiUnice(materiiUnice);
         } else {
           setRepartizari([]);
           setMateriiUnice([]);
@@ -92,6 +95,7 @@ export default function ProfessorPage({ onLogout }) {
         setMateriiUnice([]);
       });
   };
+  
 
   const fetchCladiri = () => {
     request("GET", "/api/cladire/getAll")
@@ -208,7 +212,7 @@ export default function ProfessorPage({ onLogout }) {
       <section>
         <h2>Acordă note studenților</h2>
         <div>
-          <label>Materie pentru note:</label>
+          <label>Materie:</label>
           <select
             onChange={(e) => setSelectedGradeMaterie(e.target.value)}
             value={selectedGradeMaterie}
@@ -259,18 +263,18 @@ export default function ProfessorPage({ onLogout }) {
       <section>
         <h2>Rezervare sală</h2>
         <div>
-          <label>Materie pentru orar:</label>
+          <label>Materie:</label>
           <select
             onChange={(e) => setSelectedMaterieForSchedule(e.target.value)}
             value={selectedMaterieForSchedule}
           >
             <option value="">Selectează materie</option>
-            {repartizari.map((item, index) => (
-              <option key={index} value={item.materie}>
-                {item.materie}
-              </option>
-            ))}
-          </select>
+            {materiiUnice.map((materie, index) => (
+    <option key={index} value={materie.denumire}>
+      {materie.denumire}
+    </option>
+  ))}
+</select>
         </div>
         <div>
           <label>Tip:</label>
@@ -406,7 +410,7 @@ export default function ProfessorPage({ onLogout }) {
                 <tr key={index}>
                   <td>{item.zi}</td>
                   <td>{`${item.oraInceput}:00 - ${item.oraSfarsit}:00`}</td>
-                  <td>{item.frecventa || "N/A"}</td>
+                  <td>{item.frecventa === "saptamanal" ? "" : item.frecventa}</td>
                   <td>{item.sala}</td>
                   <td>{item.tipul}</td>
                   <td>{item.formatia}</td>

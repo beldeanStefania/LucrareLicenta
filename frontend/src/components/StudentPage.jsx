@@ -128,7 +128,7 @@ export default function StudentPage({ onLogout }) {
     <tr key={index}>
       <td>{item.zi}</td>
       <td>{`${item.oraInceput}:00 - ${item.oraSfarsit}:00`}</td>
-      <td>{item.frecventa || "N/A"}</td>
+      <td>{item.frecventa === "saptamanal" ? "" : item.frecventa}</td>
       <td>{item.sala}</td>
       <td>{item.tipul}</td>
       <td>{item.formatia}</td>
