@@ -91,6 +91,15 @@ public class OrarService {
      */
     private Orar createOrar(OrarDTO orarDTO) {
         Orar newOrar = new Orar();
+
+        if (orarDTO.getGrupa() == null || orarDTO.getGrupa().isEmpty()) {
+            throw new IllegalArgumentException("Grupa este obligatorie!");
+        }
+
+        if (orarDTO.getZi() == null || orarDTO.getZi().isEmpty()) {
+            throw new IllegalArgumentException("Ziua este obligatorie!");
+        }
+
         newOrar.setGrupa(orarDTO.getGrupa());
         newOrar.setZi(orarDTO.getZi());
         newOrar.setOraInceput(orarDTO.getOraInceput());

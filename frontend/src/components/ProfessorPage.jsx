@@ -27,6 +27,7 @@ export default function ProfessorPage({ onLogout }) {
   const [selectedMaterieForSchedule, setSelectedMaterieForSchedule] = useState("");
   const [selectedTip, setSelectedTip] = useState("");
   const [selectedFrecventa, setSelectedFrecventa] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [scheduleData, setScheduleData] = useState({
     grupa: "",
     oraInceput: "",
@@ -37,6 +38,7 @@ export default function ProfessorPage({ onLogout }) {
 
   // =================== State pentru orarul profesorului ===================
   const [profSchedule, setProfSchedule] = useState([]);
+  
 
   // =================== useEffect-uri ===================
   useEffect(() => {
@@ -141,59 +143,74 @@ export default function ProfessorPage({ onLogout }) {
 
   // A. Acordare note studenților
   const handleAddGrades = () => {
+    if (!selectedGradeMaterie) {
+      setErrorMessage("Selectează o materie!");
+      return;
+    }
+    
+    if (!selectedGradeGroup) {
+      setErrorMessage("Introdu grupa studenților!");
+      return;
+    }
+  
+    const hasEmptyGrades = Object.values(gradeStudentNotes).some(nota => !nota);
+  
+    if (hasEmptyGrades) {
+      setErrorMessage("Toți studenții trebuie să aibă o notă!");
+      return;
+    }
+  
+    // Dacă toate câmpurile sunt completate, resetăm mesajul de eroare
+    setErrorMessage("");
+  
     Object.entries(gradeStudentNotes).forEach(([studentCod, nota]) => {
-      const materieNume = selectedGradeMaterie; // Folosim direct numele materiei
-
       const payload = {
         studentCod,
-        numeMaterie: materieNume, // Trimitem numele materiei, nu codul
+        numeMaterie: selectedGradeMaterie,
         nota: parseFloat(nota),
         semestru: 1,
       };
-
+  
       console.log("Payload trimis:", payload);
-
+  
       request("POST", "/api/catalogStudentMaterie/add", payload)
         .then(() =>
           alert(`Nota ${nota} a fost adăugată pentru studentul ${studentCod}`)
         )
         .catch((error) => console.error("Failed to add grade:", error));
     });
-};
+  };
 
 
   // B. Rezervare sală (orar)
   const handleReserveRoom = () => {
-    // Căutăm în repartizări obiectul potrivit (care corespunde materiei și tipului selectate)
-    const repartizare = repartizari.find(
-      (r) =>
-        r.materie === selectedMaterieForSchedule &&
-        r.tip.toUpperCase() === selectedTip.toUpperCase()
-    );
-
+    if (!selectedMaterieForSchedule || !selectedTip || !selectedCladire || !selectedRoom || !scheduleData.zi || !scheduleData.oraInceput || !scheduleData.oraSfarsit) {
+      setErrorMessage("Toate câmpurile trebuie completate pentru a rezerva sala!");
+      return;
+    }
+  
+    setErrorMessage(""); // Resetăm mesajul de eroare
+  
     const payload = {
       grupa: scheduleData.grupa,
       oraInceput: parseInt(scheduleData.oraInceput.split(":")[0], 10),
       oraSfarsit: parseInt(scheduleData.oraSfarsit.split(":")[0], 10),
       zi: scheduleData.zi,
-      repartizareProfId: repartizare?.id || null,
       profesorId: professorInfo.profesorId,
       materie: selectedMaterieForSchedule,
       tip: selectedTip,
       salaId: selectedRoom,
-      frecventa:
-        selectedTip === "Laborator" || selectedTip === "Seminar"
-          ? selectedFrecventa
-          : "",
+      frecventa: selectedTip === "Laborator" || selectedTip === "Seminar" ? selectedFrecventa : "",
       semigrupa: selectedTip === "Laborator" ? scheduleData.semigrupa : null,
     };
-
-    console.log("Rezervare sala payload:", payload);
-
+  
+    console.log("Rezervare sală payload:", payload);
+  
     request("POST", "/api/orare/add", payload)
       .then(() => alert("Sală rezervată cu succes!"))
       .catch((error) => console.error("Failed to reserve room:", error));
   };
+  
 
   // C. Când selectăm o clădire, aducem sălile
   const handleCladireChange = (cladireId) => {
@@ -236,30 +253,44 @@ export default function ProfessorPage({ onLogout }) {
             onChange={(e) => setSelectedGradeGroup(e.target.value)}
           />
         </div>
-        <div className="students-list">
-          {students && students.length > 0 ? (
-            students.map((student) => (
-              <div key={student.cod}>
-                <span>
-                  {student.nume} {student.prenume}
-                </span>
-                <input
-                  type="number"
-                  placeholder="Introdu nota"
-                  onChange={(e) =>
-                    setGradeStudentNotes({
-                      ...gradeStudentNotes,
-                      [student.cod]: e.target.value,
-                    })
-                  }
-                />
-              </div>
-            ))
-          ) : (
-            <p>Nu au fost găsiți studenți pentru grupa specificată.</p>
-          )}
-        </div>
-        <button onClick={handleAddGrades}>Adaugă Note</button>
+<div className="students-list">
+  {students && students.length > 0 ? (
+    students.map((student) => (
+      <div key={student.cod}>
+        <span>
+          {student.nume} {student.prenume}
+        </span>
+        <input
+          type="number"
+          placeholder="Introdu nota"
+          value={gradeStudentNotes[student.cod] || ""}
+          onChange={(e) => {
+            const nota = e.target.value.trim();
+
+            setGradeStudentNotes((prevNotes) => {
+              if (nota === "") {
+                // Dacă utilizatorul șterge nota, eliminăm studentul din obiect
+                const updatedNotes = { ...prevNotes };
+                delete updatedNotes[student.cod];
+                return updatedNotes;
+              } else {
+                return {
+                  ...prevNotes,
+                  [student.cod]: nota, // Salvăm doar dacă inputul nu este gol
+                };
+              }
+            });
+          }}
+        />
+      </div>
+    ))
+  ) : (
+    <p>Nu au fost găsiți studenți pentru grupa specificată.</p>
+  )}
+</div>
+{errorMessage && <p className="error-message">{errorMessage}</p>}
+<button onClick={handleAddGrades}>Adaugă Note</button>
+
       </section>
 
       {/* 2) Rezervare sală (Orar) */}
@@ -389,6 +420,7 @@ export default function ProfessorPage({ onLogout }) {
             <option value="Vineri">Vineri</option>
           </select>
         </div>
+        {errorMessage && <p className="error-message">{errorMessage}</p>}
         <button onClick={handleReserveRoom}>Rezervă Sală</button>
       </section>
 

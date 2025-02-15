@@ -67,6 +67,18 @@ public class CatalogStudentMaterieService {
     public CatalogStudentMaterie addOrUpdate(CatalogStudentMaterieDTO catalogStudentMaterieDTO)
             throws StudentNotFoundException, MaterieNotFoundException {
 
+        if (catalogStudentMaterieDTO.getStudentCod() == null || catalogStudentMaterieDTO.getStudentCod().isEmpty()) {
+            throw new IllegalArgumentException("Codul studentului este obligatoriu!");
+        }
+
+        if (catalogStudentMaterieDTO.getNumeMaterie() == null || catalogStudentMaterieDTO.getNumeMaterie().isEmpty()) {
+            throw new IllegalArgumentException("Numele materiei este obligatoriu!");
+        }
+
+        if (catalogStudentMaterieDTO.getNota() == null) {
+            throw new IllegalArgumentException("Nota este obligatorie!");
+        }
+
         Student student = studentRepository.findByCod(catalogStudentMaterieDTO.getStudentCod())
                 .orElseThrow(() -> new StudentNotFoundException("Student not found with Cod: " + catalogStudentMaterieDTO.getStudentCod()));
 
@@ -76,21 +88,18 @@ public class CatalogStudentMaterieService {
         Optional<CatalogStudentMaterie> existingEntry = catalogStudentMaterieRepository.findByStudentCodAndMaterieCod(student.getCod(), materie.getCod());
 
         if (existingEntry.isPresent()) {
-            // UPDATE: Dacă nota deja există, o actualizăm
             CatalogStudentMaterie catalog = existingEntry.get();
             catalog.setNota(catalogStudentMaterieDTO.getNota());
-            catalog.setSemestru(catalogStudentMaterieDTO.getSemestru());
             return catalogStudentMaterieRepository.save(catalog);
         } else {
-            // CREATE: Dacă nu există, creăm o nouă înregistrare
             CatalogStudentMaterie catalog = new CatalogStudentMaterie();
             catalog.setNota(catalogStudentMaterieDTO.getNota());
-            catalog.setSemestru(catalogStudentMaterieDTO.getSemestru());
             catalog.setStudent(student);
             catalog.setMaterie(materie);
             return catalogStudentMaterieRepository.save(catalog);
         }
     }
+
 
 
 
