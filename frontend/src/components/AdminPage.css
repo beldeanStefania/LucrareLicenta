@@ -156,3 +156,53 @@ h1 {
     align-items: center;
     margin-top: 20px;
 }
+
+/* Container scrollabil pentru listele de studenți și profesori */
+.list-container {
+    max-height: 400px; /* Înălțimea maximă a listei */
+    overflow-y: auto; /* Scroll vertical */
+    border: 1px solid #ccc; /* Bordură discretă */
+    border-radius: 5px; /* Colțuri rotunjite */
+    padding: 10px; /* Spațiere interioară */
+    background-color: #fff; /* Fundal alb */
+}
+
+/* Stiluri pentru tabelul din lista scrollabilă */
+.students-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.students-table th,
+.students-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+/* Fixare antet (header) tabel la scroll */
+.students-table thead {
+    position: sticky;
+    top: 0;
+    background: #f2f2f2;
+    z-index: 10;
+}
+
+/* Ajustarea dimensiunii rândurilor pentru o vizualizare mai bună */
+.students-table tbody tr {
+    height: 40px;
+}
+
+/* Ascunderea scrollbarului în Chrome, Edge și Safari */
+.list-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.list-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.list-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}

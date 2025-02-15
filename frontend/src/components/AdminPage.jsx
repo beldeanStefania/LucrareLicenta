@@ -119,13 +119,14 @@ export default function AdminPage({ onLogout }) {
 
   
   
-  const renderStudentList = () => (
-    <div className="list-container">
-      <h2>Students List</h2>
-      <button className="btn add-btn" onClick={handleAddStudent}>
-        Add Student
-      </button>
-      {students.length > 0 ? (
+const renderStudentList = () => (
+  <div className="list-container">
+    <h2>Students List</h2>
+    <button className="btn add-btn" onClick={handleAddStudent}>
+      Add Student
+    </button>
+    {students.length > 0 ? (
+      <div className="scroll-container">
         <table className="students-table">
           <thead>
             <tr>
@@ -144,28 +145,20 @@ export default function AdminPage({ onLogout }) {
                 <td>{student.an}</td>
                 <td>{student.cod || "N/A"}</td>
                 <td>
-                  <button
-                    className="btn edit-btn"
-                    onClick={() => handleEditStudent(student)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="btn delete-btn"
-                    onClick={() => handleDeleteStudent(student.cod)}
-                  >
-                    Delete
-                  </button>
+                  <button className="btn edit-btn" onClick={() => handleEditStudent(student)}>Edit</button>
+                  <button className="btn delete-btn" onClick={() => handleDeleteStudent(student.cod)}>Delete</button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      ) : (
-        <p>No students available</p>
-      )}
-    </div>
-  );
+      </div>
+    ) : (
+      <p>No students available</p>
+    )}
+  </div>
+);
+
 
   const renderStudentForm = () => (
     <div className="form-container">
@@ -334,50 +327,39 @@ export default function AdminPage({ onLogout }) {
         Add Professor
       </button>
       {professors.length > 0 ? (
-        <table className="students-table">
-          <thead>
-            <tr>
-              <th>First Name</th>
-              <th>Last Name</th>
-              <th>Username</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {professors.map((prof) => (
-              <tr key={prof.id}>
-                <td>{prof.nume}</td>
-                <td>{prof.prenume}</td>
-                <td>{prof.user?.username || "N/A"}</td>
-                <td>
-                  <button
-                    className="btn edit-btn"
-                    onClick={() => handleEditProfessor(prof)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="btn delete-btn"
-                    onClick={() => handleDeleteProfessor(prof)}
-                  >
-                    Delete
-                  </button>
-                  <button
-                    className="btn add-btn"
-                    onClick={() => handleOpenSubjectForm(prof)}
-                  >
-                    Add Subject
-                  </button>
-                </td>
+        <div className="scroll-container">
+          <table className="students-table">
+            <thead>
+              <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Username</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {professors.map((prof) => (
+                <tr key={prof.id}>
+                  <td>{prof.nume}</td>
+                  <td>{prof.prenume}</td>
+                  <td>{prof.user?.username || "N/A"}</td>
+                  <td>
+                    <button className="btn edit-btn" onClick={() => handleEditProfessor(prof)}>Edit</button>
+                    <button className="btn delete-btn" onClick={() => handleDeleteProfessor(prof)}>Delete</button>
+                    <button className="btn add-btn" onClick={() => handleOpenSubjectForm(prof)}>Add Subject</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
         <p>No professors available</p>
       )}
     </div>
   );
+  
+ 
 
   const renderProfessorForm = () => (
     <div className="form-container">
