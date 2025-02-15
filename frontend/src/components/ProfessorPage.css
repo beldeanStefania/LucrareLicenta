@@ -123,6 +123,17 @@
     width: 70px;
     margin-left: 10px;
   }
+
+  .professor-page .students-list div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%; /* Ocupă toată lățimea containerului */
+    max-width: 500px; /* Asigură că inputurile nu sunt prea mari */
+    padding: 10px;
+}
+
+
   
   /* Stiluri pentru secțiunea de rezervare săli */
   .professor-page .schedule-form {

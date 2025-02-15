@@ -39,10 +39,8 @@ public class CatalogStudentMaterieController {
     public ResponseEntity<CatalogStudentMaterie> addCatalog(@RequestBody CatalogStudentMaterieDTO dto) {
         System.out.println("addCatalog endpoint was hit with: " + dto);
         try {
-            CatalogStudentMaterie createdCatalog = catalogStudentMaterieService.add(dto);
+            CatalogStudentMaterie createdCatalog = catalogStudentMaterieService.addOrUpdate(dto);
             return ResponseEntity.status(CREATED).body(createdCatalog);
-        } catch (CatalogStudentMaterieAlreadyExistsException e) {
-            return ResponseEntity.status(CONFLICT).build();
         } catch (StudentNotFoundException | MaterieNotFoundException e) {
             return ResponseEntity.status(NOT_FOUND).build();
         }

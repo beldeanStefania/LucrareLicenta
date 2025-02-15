@@ -213,6 +213,7 @@ public class OrarService {
 
                     return orarDetailsDTO;
                 })
+                .sorted((a, b) -> compareDays(a.getZi(), b.getZi()))
                 .toList();
     }
 }

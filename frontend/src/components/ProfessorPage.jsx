@@ -142,14 +142,16 @@ export default function ProfessorPage({ onLogout }) {
   // A. Acordare note studenților
   const handleAddGrades = () => {
     Object.entries(gradeStudentNotes).forEach(([studentCod, nota]) => {
+      const materieNume = selectedGradeMaterie; // Folosim direct numele materiei
+
       const payload = {
         studentCod,
-        // Folosim valoarea selectată; asigură-te că backend-ul așteaptă codul sau numele corespunzător
-        codMaterie: selectedGradeMaterie,
+        numeMaterie: materieNume, // Trimitem numele materiei, nu codul
         nota: parseFloat(nota),
         semestru: 1,
       };
-      console.log("payload trimis:", payload);
+
+      console.log("Payload trimis:", payload);
 
       request("POST", "/api/catalogStudentMaterie/add", payload)
         .then(() =>
@@ -157,7 +159,8 @@ export default function ProfessorPage({ onLogout }) {
         )
         .catch((error) => console.error("Failed to add grade:", error));
     });
-  };
+};
+
 
   // B. Rezervare sală (orar)
   const handleReserveRoom = () => {

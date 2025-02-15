@@ -64,25 +64,34 @@ public class CatalogStudentMaterieService {
     }
 
 
-    public CatalogStudentMaterie add(CatalogStudentMaterieDTO catalogStudentMaterieDTO) throws CatalogStudentMaterieAlreadyExistsException, StudentNotFoundException, MaterieNotFoundException {
+    public CatalogStudentMaterie addOrUpdate(CatalogStudentMaterieDTO catalogStudentMaterieDTO)
+            throws StudentNotFoundException, MaterieNotFoundException {
+
         Student student = studentRepository.findByCod(catalogStudentMaterieDTO.getStudentCod())
                 .orElseThrow(() -> new StudentNotFoundException("Student not found with Cod: " + catalogStudentMaterieDTO.getStudentCod()));
 
-        Materie materie = materieRepository.findByNume(catalogStudentMaterieDTO.getCodMaterie())
-                .orElseThrow(() -> new MaterieNotFoundException("Materie not found with Name: " + catalogStudentMaterieDTO.getCodMaterie()));
+        Materie materie = materieRepository.findByNume(catalogStudentMaterieDTO.getNumeMaterie())
+                .orElseThrow(() -> new MaterieNotFoundException("Materie not found with Name: " + catalogStudentMaterieDTO.getNumeMaterie()));
 
+        Optional<CatalogStudentMaterie> existingEntry = catalogStudentMaterieRepository.findByStudentCodAndMaterieCod(student.getCod(), materie.getCod());
 
-        if (catalogStudentMaterieRepository.findByStudentCodAndMaterieCod(student.getCod(), materie.getCod()).isPresent()) {
-            throw new CatalogStudentMaterieAlreadyExistsException("Catalog entry already exists for this student and subject.");
+        if (existingEntry.isPresent()) {
+            // UPDATE: Dacă nota deja există, o actualizăm
+            CatalogStudentMaterie catalog = existingEntry.get();
+            catalog.setNota(catalogStudentMaterieDTO.getNota());
+            catalog.setSemestru(catalogStudentMaterieDTO.getSemestru());
+            return catalogStudentMaterieRepository.save(catalog);
+        } else {
+            // CREATE: Dacă nu există, creăm o nouă înregistrare
+            CatalogStudentMaterie catalog = new CatalogStudentMaterie();
+            catalog.setNota(catalogStudentMaterieDTO.getNota());
+            catalog.setSemestru(catalogStudentMaterieDTO.getSemestru());
+            catalog.setStudent(student);
+            catalog.setMaterie(materie);
+            return catalogStudentMaterieRepository.save(catalog);
         }
-
-        CatalogStudentMaterie catalog = new CatalogStudentMaterie();
-        catalog.setNota(catalogStudentMaterieDTO.getNota());
-        catalog.setSemestru(catalogStudentMaterieDTO.getSemestru());
-        catalog.setStudent(student);
-        catalog.setMaterie(materie);
-        return catalogStudentMaterieRepository.save(catalog);
     }
+
 
 
 
