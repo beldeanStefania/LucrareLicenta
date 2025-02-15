@@ -1,6 +1,7 @@
 package com.orar.Backend.Orar.controller;
 
 import com.orar.Backend.Orar.dto.StudentDTO;
+import com.orar.Backend.Orar.exception.StudentAlreadyExistsException;
 import com.orar.Backend.Orar.exception.StudentNotFoundException;
 import com.orar.Backend.Orar.model.Student;
 import com.orar.Backend.Orar.service.StudentService;
@@ -54,7 +55,7 @@ public class StudentController {
     }
 
     @GetMapping("/getByGrupa/{grupa}")
-    public ResponseEntity<Student> getStudentByNumeAndPrenume(@PathVariable String grupa) {
+    public ResponseEntity<List<Student>> getStudentByNumeAndPrenume(@PathVariable String grupa) {
         try {
             return ok(studentService.getByGrupa(grupa));
         } catch (StudentNotFoundException e) {
@@ -64,12 +65,13 @@ public class StudentController {
 
     @Operation(summary = "Adauga student")
     @PostMapping("/add")
-    public ResponseEntity<Student> createStudent(@RequestBody StudentDTO studentDTO) {
+    public ResponseEntity<?> createStudent(@RequestBody StudentDTO studentDTO) {
         try {
             return ok(studentService.add(studentDTO));
+        } catch (StudentAlreadyExistsException e) {
+            return ResponseEntity.status(409).body("{\"error\": \"" + e.getMessage() + "\"}");
         } catch (Exception e) {
-            e.printStackTrace();
-            return badRequest().build();
+            return ResponseEntity.status(400).body("{\"error\": \"Eroare la adăugarea studentului: " + e.getMessage() + "\"}");
         }
     }
 

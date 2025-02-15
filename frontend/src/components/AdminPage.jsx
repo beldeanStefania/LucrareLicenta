@@ -70,43 +70,55 @@ export default function AdminPage({ onLogout }) {
 
   const handleSaveStudent = (student) => {
     const endpoint =
-      viewMode === "add"
-        ? "/api/student/add"
-        : `/api/student/update/${student.cod}`;
+        viewMode === "add"
+            ? "/api/student/add"
+            : `/api/student/update/${student.cod}`;
     const method = viewMode === "add" ? "POST" : "PUT";
 
-    // La update, NU vrem să modificăm username/parola/cod
     if (viewMode === "update") {
-      delete student.password;
-      delete student.username;
-      delete student.cod;
+        delete student.password;
+        delete student.username;
+        delete student.cod;
     }
 
     request(method, endpoint, student)
-      .then(() => {
-        alert(
-          viewMode === "add"
-            ? "Student added successfully!"
-            : "Student updated successfully!"
-        );
-        setViewMode("list");
-        fetchStudents();
-      })
-      .catch((error) => {
-        console.error(
-          viewMode === "add"
-            ? "Failed to add student:"
-            : "Failed to update student:",
-          error
-        );
-        alert(
-          viewMode === "add"
-            ? "Failed to add student. Please try again."
-            : "Failed to update student. Please try again."
-        );
-      });
-  };
+        .then(() => {
+            alert(viewMode === "add" ? "Student added successfully!" : "Student updated successfully!");
+            setViewMode("list");
+            fetchStudents();
+        })
+        .catch((error) => {
+            console.error("Error:", error);
 
+            if (error.response) {
+                console.log("Răspuns Backend:", error.response);
+                
+                let errorMessage = "Eroare necunoscută.";
+                
+                if (error.response.data) {
+                    if (typeof error.response.data === "string") {
+                        errorMessage = error.response.data;
+                    } else if (error.response.data.error) {
+                        errorMessage = error.response.data.error;
+                    } else if (error.response.data.message) {
+                        errorMessage = error.response.data.message;
+                    }
+                } else if (error.response.status === 400) {
+                    errorMessage = "Date invalide! Verifică dacă ai completat corect toate câmpurile.";
+                } else if (error.response.status === 409) {
+                    errorMessage = "Codul studentului trebuie să fie unic! Un student cu acest cod există deja.";
+                }
+
+                alert(`Eroare: ${errorMessage}`);
+            } else {
+                alert("Eroare: Nu s-a putut contacta serverul.");
+            }
+        });
+};
+
+
+  
+  
   const renderStudentList = () => (
     <div className="list-container">
       <h2>Students List</h2>

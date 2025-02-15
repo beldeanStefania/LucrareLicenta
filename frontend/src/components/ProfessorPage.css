@@ -117,7 +117,9 @@
   .professor-page .students-list span {
     font-size: 14px;
     color: #333;
-  }
+    font-weight: bold; /* Face numele cu bold */
+}
+
   
   .professor-page .students-list input {
     width: 70px;
@@ -128,10 +130,20 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 100%; /* Ocupă toată lățimea containerului */
-    max-width: 500px; /* Asigură că inputurile nu sunt prea mari */
-    padding: 10px;
+    margin-bottom: 5px; /* Spațiu mai mic între studenți */
+    padding: 5px 10px; /* Ajustare padding */
 }
+
+.professor-page .students-list {
+  max-height: 250px; /* Setează înălțimea maximă a listei */
+  overflow-y: auto; /* Activează scroll-ul vertical */
+  border: 1px solid #ccc; /* Bordură pentru vizualizare clară */
+  border-radius: 5px; /* Colțuri rotunjite */
+  padding: 5px; /* Puțin spațiu interior */
+  background-color: #fff; /* Fundal alb */
+}
+
+
 
 .error-message {
   color: red;

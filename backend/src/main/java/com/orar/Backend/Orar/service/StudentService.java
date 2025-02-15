@@ -53,7 +53,11 @@ public class StudentService {
         return createStudent(studentDTO);
     }
 
-    private Student createStudent(final StudentDTO studentDTO) {
+    private Student createStudent(final StudentDTO studentDTO) throws StudentAlreadyExistsException {
+        if (studentRepository.findByCod(studentDTO.getCod()).isPresent()) {
+            throw new StudentAlreadyExistsException("Codul studentului trebuie să fie unic! Un student cu acest cod există deja.");
+        }
+
         // Recuperăm rolul STUDENT din baza de date
         Rol studentRole = rolRepository.findByName("STUDENT")
                 .orElseThrow(() -> new RuntimeException("Rolul STUDENT nu există în baza de date"));
@@ -113,7 +117,7 @@ public class StudentService {
         studentRepository.delete(student);
     }
 
-    public Student getByGrupa(String grupa) throws StudentNotFoundException {
+    public List<Student> getByGrupa(String grupa) throws StudentNotFoundException {
         return studentRepository.findByGrupa(grupa).orElseThrow(() -> new StudentNotFoundException("Student not found"));
     }
 }

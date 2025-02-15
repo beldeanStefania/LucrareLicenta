@@ -143,27 +143,14 @@ export default function ProfessorPage({ onLogout }) {
 
   // A. Acordare note studenților
   const handleAddGrades = () => {
-    if (!selectedGradeMaterie) {
-      setErrorMessage("Selectează o materie!");
-      return;
-    }
+    const studentEntries = Object.entries(gradeStudentNotes);
     
-    if (!selectedGradeGroup) {
-      setErrorMessage("Introdu grupa studenților!");
+    if (studentEntries.length === 0) {
+      alert("Nu există note de adăugat!");
       return;
     }
   
-    const hasEmptyGrades = Object.values(gradeStudentNotes).some(nota => !nota);
-  
-    if (hasEmptyGrades) {
-      setErrorMessage("Toți studenții trebuie să aibă o notă!");
-      return;
-    }
-  
-    // Dacă toate câmpurile sunt completate, resetăm mesajul de eroare
-    setErrorMessage("");
-  
-    Object.entries(gradeStudentNotes).forEach(([studentCod, nota]) => {
+    const requests = studentEntries.map(([studentCod, nota]) => {
       const payload = {
         studentCod,
         numeMaterie: selectedGradeMaterie,
@@ -171,15 +158,32 @@ export default function ProfessorPage({ onLogout }) {
         semestru: 1,
       };
   
-      console.log("Payload trimis:", payload);
+      return request("POST", "/api/catalogStudentMaterie/add", payload)
+        .then(() => ({ success: true, studentCod, nota }))
+        .catch((error) => ({ success: false, studentCod, error }));
+    });
   
-      request("POST", "/api/catalogStudentMaterie/add", payload)
-        .then(() =>
-          alert(`Nota ${nota} a fost adăugată pentru studentul ${studentCod}`)
-        )
-        .catch((error) => console.error("Failed to add grade:", error));
+    Promise.all(requests).then((results) => {
+      const succesuri = results.filter((res) => res.success);
+      const erori = results.filter((res) => !res.success);
+  
+      if (succesuri.length > 0) {
+        if (succesuri.length === 1) {
+          alert(
+            `Nota ${succesuri[0].nota} a fost adăugată pentru studentul ${succesuri[0].studentCod}`
+          );
+        } else {
+          alert(`Notele au fost adăugate pentru ${succesuri.length} studenți.`);
+        }
+      }
+  
+      if (erori.length > 0) {
+        console.error("Erori la adăugarea notelor:", erori);
+        alert(`Eroare la adăugarea notelor pentru ${erori.length} studenți.`);
+      }
     });
   };
+  
 
 
   // B. Rezervare sală (orar)
@@ -253,34 +257,21 @@ export default function ProfessorPage({ onLogout }) {
             onChange={(e) => setSelectedGradeGroup(e.target.value)}
           />
         </div>
-<div className="students-list">
+        <div className="students-list">
   {students && students.length > 0 ? (
     students.map((student) => (
-      <div key={student.cod}>
-        <span>
-          {student.nume} {student.prenume}
-        </span>
+      <div key={student.cod} className="student-entry">
+        <span className="student-name">{student.nume} {student.prenume}</span>
         <input
           type="number"
           placeholder="Introdu nota"
           value={gradeStudentNotes[student.cod] || ""}
-          onChange={(e) => {
-            const nota = e.target.value.trim();
-
-            setGradeStudentNotes((prevNotes) => {
-              if (nota === "") {
-                // Dacă utilizatorul șterge nota, eliminăm studentul din obiect
-                const updatedNotes = { ...prevNotes };
-                delete updatedNotes[student.cod];
-                return updatedNotes;
-              } else {
-                return {
-                  ...prevNotes,
-                  [student.cod]: nota, // Salvăm doar dacă inputul nu este gol
-                };
-              }
-            });
-          }}
+          onChange={(e) =>
+            setGradeStudentNotes({
+              ...gradeStudentNotes,
+              [student.cod]: e.target.value,
+            })
+          }
         />
       </div>
     ))
@@ -288,6 +279,8 @@ export default function ProfessorPage({ onLogout }) {
     <p>Nu au fost găsiți studenți pentru grupa specificată.</p>
   )}
 </div>
+
+
 {errorMessage && <p className="error-message">{errorMessage}</p>}
 <button onClick={handleAddGrades}>Adaugă Note</button>
 
