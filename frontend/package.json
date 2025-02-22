@@ -19,7 +19,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "npx vitest run"
+    "test": "npx vitest run --passWithNoTests"
   },
   "eslintConfig": {
     "extends": [
