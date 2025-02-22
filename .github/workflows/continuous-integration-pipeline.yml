@@ -19,10 +19,10 @@ jobs:
           java-version: "17"
 
       - name: Build Docker Images
-        run: docker-compose build
+        run: docker compose build
 
       - name: Start Services
-        run: docker-compose up -d
+        run: docker compose up -d
 
       - name: Build & Test Spring Boot App
         working-directory: ./backend
