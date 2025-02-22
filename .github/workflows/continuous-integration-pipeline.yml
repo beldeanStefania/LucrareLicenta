@@ -45,7 +45,7 @@ jobs:
         working-directory: ./frontend
         run: |
           npm install
-          npm run test -- --watchAll=false
+          npm run test
 
       - name: Tear Down Services
         run: docker compose down
