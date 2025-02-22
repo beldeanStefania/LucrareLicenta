@@ -30,6 +30,10 @@ jobs:
 
       - name: Build & Test Spring Boot App
         working-directory: ./backend
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/orar
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: { { secrets.MYSQL_ROOT_PASSWORD } }
         run: mvn clean install
 
       - name: Set up Node.js
