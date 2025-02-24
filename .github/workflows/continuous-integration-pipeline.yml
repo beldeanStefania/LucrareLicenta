@@ -5,6 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+env:
+  SQL_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -35,7 +38,7 @@ jobs:
         env:
           SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/orar
           SPRING_DATASOURCE_USERNAME: root
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          SPRING_DATASOURCE_PASSWORD: SQL_PASSWORD
         run: mvn clean install
 
       - name: Set up Node.js
@@ -69,7 +72,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/orar
           SPRING_DATASOURCE_USERNAME: root
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          SPRING_DATASOURCE_PASSWORD: SQL_PASSWORD
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=beldeanStefania_LucrareLicenta
 
       - name: Scan Backend Image with Trivy
@@ -82,31 +85,3 @@ jobs:
 
       - name: Tear Down Services
         run: docker compose down
-
-  # image_build_scan_push:
-  #   runs-on: ubuntu-latest
-  #   needs: build-test
-  #   steps:
-  #     - name: Checkout Code
-  #       uses: actions/checkout@v4
-
-  #     - name: Build Docker Images via Docker Compose
-  #       run: docker-compose build
-
-  #     - name: Scan Images with Trivy
-  #       run: |
-  #         trivy image my-backend-image:latest
-  #         trivy image my-frontend-image:latest
-
-  #     - name: Push Images to Registry
-  #       env:
-  #         REGISTRY_URL: ${{ secrets.REGISTRY_URL }}
-  #         REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
-  #         REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
-  #       run: |
-  #         # Example for Docker Hub or any Docker registry
-  #         docker login $REGISTRY_URL -u $REGISTRY_USER -p $REGISTRY_PASSWORD
-  #         docker tag my-backend-image:latest $REGISTRY_URL/my-backend-image:latest
-  #         docker push $REGISTRY_URL/my-backend-image:latest
-  #         docker tag my-frontend-image:latest $REGISTRY_URL/my-frontend-image:latest
-  #         docker push $REGISTRY_URL/my-frontend-image:latest
