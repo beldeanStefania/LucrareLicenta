@@ -1,6 +1,6 @@
 FROM mysql:8.0
 
-ENV MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+ENV MYSQL_ROOT_PASSWORD=SQL_PASSWORD
 ENV MYSQL_DATABASE=orar
 
 # Declare a volume for persistence (data will persist in /var/lib/mysql)
