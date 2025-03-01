@@ -10,7 +10,7 @@ env:
   SQL_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
 
 jobs:
-  Unit Test: 
+  build: 
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -86,3 +86,20 @@ jobs:
 
       - name: Tear Down Services
         run: docker compose down
+  
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy to EC2
+      uses: appleboy/ssh-action@v0.1.8
+      with:
+        host: ${{ vars.EC2_HOST }}        # Set this to your Elastic IP or domain name
+        username: ${{ vars.c }}  # For example, "ubuntu"
+        key: ${{ secrets.EC2_PRIVATE_KEY }}    # The contents of your PEM file
+        script: |
+          cd /home/ubuntu/your_project_directory
+          git pull origin main
+          docker compose down
+          docker compose up -d
+
