@@ -13,95 +13,88 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: simple command
-        uses: appleboy/ssh-action@v1.2.1
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Build Docker Images
+        run: docker compose build
+
+      - name: Start Services
+        run: docker compose up -d
+
+      - name: Build & Test Spring Boot App
+        working-directory: ./backend
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/orar
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: SQL_PASSWORD
+        run: mvn clean install
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install and Test React App
+        working-directory: ./frontend
+        run: |
+          npm install
+          npm run test
+
+      - name: Cache SonarQube packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: SonarCloud Scan
+        working-directory: ./backend
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/orar
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: SQL_PASSWORD
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=beldeanStefania_LucrareLicenta
+
+      - name: Scan Backend Image with Trivy
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image lucrarelicenta-backend:latest
+
+      - name: Scan Frontend Image with Trivy
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image lucrarelicenta-frontend:latest
+
+      - name: Tear Down Services
+        run: docker compose down
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.1.8
         with:
           host: ${{ vars.EC2_HOST }}
           username: ${{ vars.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          script: whoami
-      # - name: Checkout Code
-      #   uses: actions/checkout@v4
-      #   with:
-      #     fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
-
-      # - name: Set up JDK 17
-      #   uses: actions/setup-java@v2
-      #   with:
-      #     distribution: temurin
-      #     java-version: "17"
-
-      # - name: Build Docker Images
-      #   run: docker compose build
-
-      # - name: Start Services
-      #   run: docker compose up -d
-
-      # - name: Build & Test Spring Boot App
-      #   working-directory: ./backend
-      #   env:
-      #     SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/orar
-      #     SPRING_DATASOURCE_USERNAME: root
-      #     SPRING_DATASOURCE_PASSWORD: SQL_PASSWORD
-      #   run: mvn clean install
-
-      # - name: Set up Node.js
-      #   uses: actions/setup-node@v4
-      #   with:
-      #     node-version: "20"
-
-      # - name: Install and Test React App
-      #   working-directory: ./frontend
-      #   run: |
-      #     npm install
-      #     npm run test
-
-      # - name: Cache SonarQube packages
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ~/.sonar/cache
-      #     key: ${{ runner.os }}-sonar
-      #     restore-keys: ${{ runner.os }}-sonar
-
-      # - name: Cache Maven packages
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ~/.m2
-      #     key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-      #     restore-keys: ${{ runner.os }}-m2
-
-      # - name: SonarCloud Scan
-      #   working-directory: ./backend
-      #   env:
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      #     SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/orar
-      #     SPRING_DATASOURCE_USERNAME: root
-      #     SPRING_DATASOURCE_PASSWORD: SQL_PASSWORD
-      #   run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=beldeanStefania_LucrareLicenta
-
-      # - name: Scan Backend Image with Trivy
-      #   run: |
-      #     docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image lucrarelicenta-backend:latest
-
-      # - name: Scan Frontend Image with Trivy
-      #   run: |
-      #     docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image lucrarelicenta-frontend:latest
-
-      # - name: Tear Down Services
-      #   run: docker compose down
-
-  # deploy:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Deploy to EC2
-  #       uses: appleboy/ssh-action@v0.1.8
-  #       with:
-  #         host: ${{ vars.EC2_HOST }} # Set this to your Elastic IP or domain name
-  #         username: ${{ vars.c }} # For example, "ubuntu"
-  #         key: ${{ secrets.EC2_PRIVATE_KEY }} # The contents of your PEM file
-  #         script: |
-  #           cd /home/ubuntu
-  #           git pull origin main
-  #           docker compose down
-  #           docker compose up -d --build
+          script: |
+            cd /home/ubuntu
+            git pull origin main
+            docker compose down
+            docker compose up -d --build
