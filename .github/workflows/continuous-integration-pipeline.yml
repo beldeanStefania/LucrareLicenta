@@ -2,14 +2,15 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
 
 env:
   SQL_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
 
 jobs:
-  build:
+  Unit Test: 
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
