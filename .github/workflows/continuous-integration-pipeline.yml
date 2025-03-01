@@ -105,6 +105,7 @@ jobs:
             cd /home/ubuntu/app
             git pull origin main
             export SQL_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}"
+            sudo docker image prune -a -f
             sudo -E docker compose pull
             sudo -E docker compose down
             sudo -E docker compose up -d
