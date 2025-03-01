@@ -1,4 +1,4 @@
-FROM 3.8.6-openjdk-18-slim AS build
+FROM 3.8.6-amazoncorretto-17 AS build
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
