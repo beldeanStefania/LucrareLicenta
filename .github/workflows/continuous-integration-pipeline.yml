@@ -18,6 +18,7 @@ jobs:
         env:
           MYSQL_ROOT_PASSWORD: SQL_PASSWORD
           MYSQL_DATABASE: orar
+          MYSQL_ROOT_HOST: "%"
         ports:
           - 3306:3306
         options: >-
@@ -47,7 +48,6 @@ jobs:
             sleep 2
           done
           echo "MySQL did not become ready in time" && exit 1
-
 
       - name: Test Spring Boot App
         working-directory: ./backend
