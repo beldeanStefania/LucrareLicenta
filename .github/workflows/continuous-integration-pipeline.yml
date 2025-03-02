@@ -100,7 +100,7 @@ jobs:
         with:
           host: ${{ vars.EC2_HOST }}
           username: ${{ vars.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          key: ${{ secrets.EC2_PRIVATE_KEY2 }}
           script: |
             cd /home/ubuntu/app
             git pull origin main
