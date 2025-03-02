@@ -102,5 +102,5 @@ jobs:
           username: ${{ vars.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY2 }}
           script: |
-            chmod +x /tmp/deploy.sh
+            chmod +x /deploy.sh
             SQL_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}" /deploy.sh
