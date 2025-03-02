@@ -27,6 +27,7 @@ public class User {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "rol_id", nullable = false)
+    @JsonBackReference
     private Rol role;
 
     @OneToOne(mappedBy = "user")

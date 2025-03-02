@@ -1,5 +1,7 @@
 package com.orar.Backend.Orar.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -19,12 +21,13 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @NoArgsConstructor
 public class Rol {
     @Id
-    @GeneratedValue(strategy=IDENTITY)
+    @GeneratedValue(strategy = IDENTITY)
     private int id;
 
     private String name;
 
-    @OneToMany
+    @OneToMany(mappedBy = "role")
+    @JsonManagedReference
     private List<User> users;
 
     public Rol(String student) {
