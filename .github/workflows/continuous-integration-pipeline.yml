@@ -102,10 +102,5 @@ jobs:
           username: ${{ vars.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY2 }}
           script: |
-            cd /home/ubuntu/app
-            git pull origin main
-            export SQL_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}"
-            sudo docker image prune -a -f
-            sudo -E docker compose pull
-            sudo -E docker compose down
-            sudo -E docker compose up -d
+            chmod +x /tmp/deploy.sh
+            SQL_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}" /tmp/deploy.sh
