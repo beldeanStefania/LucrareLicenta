@@ -158,7 +158,6 @@ jobs:
           script: |
             cd /home/ubuntu/LucrareLicenta || { echo "Failed to change directory"; exit 1; }
             echo "SQL_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" > .env
-            echo "REACT_APP_API_BASE_URL=http://${{ vars.EC2_HOST }}:8080" >> .env
             echo ".env file created with SQL_PASSWORD and REACT_APP_API_BASE_URL"
 
 
