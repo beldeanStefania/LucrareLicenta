@@ -92,7 +92,6 @@ jobs:
   #         docker push ${{ vars.DOCKERHUB_USERNAME }}/lucrarelicenta-frontend:latest
 
   deploy:
-    #needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -133,16 +132,18 @@ jobs:
           script: |
             # Use the repository URL directly from your vars
             REPO_URL="${{ vars.GH_REPOSITORY_URL }}"
-            TARGET_DIR="/home/ubuntu"
-            if [ ! -d "$TARGET_DIR" ]; then
-              echo "Directory $TARGET_DIR does not exist. Cloning repository..."
-              git clone "$REPO_URL" "$TARGET_DIR" || { echo "Failed to clone repository"; exit 1; }
+            HOME_DIR="/home/ubuntu"
+            REPO_DIR="$HOME_DIR/LucrareLicenta"
+            if [ ! -d "$REPO_DIR" ]; then
+              echo "Directory $REPO_DIR does not exist. Cloning repository..."
+              cd "$HOME_DIR" || { echo "Failed to change directory to $HOME_DIR"; exit 1; }
+              git clone "$REPO_URL" || { echo "Failed to clone repository"; exit 1; }
             else
-              echo "Directory $TARGET_DIR exists."
+              echo "Directory $REPO_DIR exists."
             fi
-            cd "$TARGET_DIR" || { echo "Failed to change directory to $TARGET_DIR"; exit 1; }
+            cd "$REPO_DIR" || { echo "Failed to change directory to $REPO_DIR"; exit 1; }
             if [ ! -d .git ]; then
-              echo "Directory $TARGET_DIR is not a git repository."
+              echo "Directory $REPO_DIR is not a git repository."
             fi
             echo "Pulling latest changes..."
             git pull origin main || { echo "Failed to pull latest changes"; exit 1; }
@@ -164,8 +165,7 @@ jobs:
           username: ${{ vars.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY2 }}
           script: |
-            # Ensure SQL_PASSWORD is set for docker-compose environment substitution
-            cd /home/ubuntu/LucrareLicenta
+            cd /home/ubuntu/LucrareLicenta || { echo "Failed to change directory"; exit 1; }
             export SQL_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}"
             echo "Pulling new Docker images..."
             sudo docker-compose pull || { echo "Failed to pull new Docker images"; exit 1; }
@@ -177,7 +177,7 @@ jobs:
           username: ${{ vars.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY2 }}
           script: |
-            cd /home/ubuntu/LucrareLicenta
+            cd /home/ubuntu/LucrareLicenta || { echo "Failed to change directory"; exit 1; }
             export SQL_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}"
             echo "Taking down current Docker containers..."
             sudo docker-compose down || { echo "Failed to bring down Docker containers"; exit 1; }
@@ -189,7 +189,7 @@ jobs:
           username: ${{ vars.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY2 }}
           script: |
-            cd /home/ubuntu/LucrareLicenta
+            cd /home/ubuntu/LucrareLicenta || { echo "Failed to change directory"; exit 1; }
             export SQL_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}"
             echo "Starting Docker containers..."
             sudo docker-compose up -d || { echo "Failed to start Docker containers"; exit 1; }
