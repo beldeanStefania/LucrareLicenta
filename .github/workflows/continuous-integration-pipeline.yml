@@ -8,7 +8,7 @@ on:
 
 env:
   SQL_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
-  GITHUB_REPOSITORY: ${{ github.repository }}
+  GITHUB_REPOSITORY: ${{ vars.GH_REPOSITORY_URL }}
 
 jobs:
   build:
