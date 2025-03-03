@@ -147,7 +147,7 @@ jobs:
               echo "Directory $REPO_DIR is not a git repository."
             fi
             echo "Pulling latest changes..."
-            git pull origin main || { echo "Failed to pull latest changes"; exit 1; }
+            git pull origin main --rebase|| { echo "Failed to pull latest changes"; exit 1; }
 
       - name: Create .env file for docker-compose
         uses: appleboy/ssh-action@v0.1.8
