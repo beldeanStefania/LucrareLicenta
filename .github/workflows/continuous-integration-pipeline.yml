@@ -144,7 +144,7 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY2 }}
           script: |
             echo "Pruning old Docker images..."
-            docker image prune -a -f || { echo "Failed to prune Docker images"; exit 1; }
+            sudo docker image prune -a -f || { echo "Failed to prune Docker images"; exit 1; }
 
       - name: Pull new Docker images
         uses: appleboy/ssh-action@v0.1.8
@@ -156,7 +156,7 @@ jobs:
             # Ensure SQL_PASSWORD is set for docker-compose environment substitution
             export SQL_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}"
             echo "Pulling new Docker images..."
-            docker compose pull || { echo "Failed to pull new Docker images"; exit 1; }
+            sudo docker compose pull || { echo "Failed to pull new Docker images"; exit 1; }
 
       - name: Bring down current Docker containers
         uses: appleboy/ssh-action@v0.1.8
@@ -167,7 +167,7 @@ jobs:
           script: |
             export SQL_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}"
             echo "Taking down current Docker containers..."
-            docker compose down || { echo "Failed to bring down Docker containers"; exit 1; }
+            sudo docker compose down || { echo "Failed to bring down Docker containers"; exit 1; }
 
       - name: Start Docker containers
         uses: appleboy/ssh-action@v0.1.8
@@ -178,4 +178,4 @@ jobs:
           script: |
             export SQL_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}"
             echo "Starting Docker containers..."
-            docker compose up -d || { echo "Failed to start Docker containers"; exit 1; }
+            sudo docker compose up -d || { echo "Failed to start Docker containers"; exit 1; }
