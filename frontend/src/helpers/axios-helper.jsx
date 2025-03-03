@@ -27,7 +27,7 @@ export const setAuthHeader = (token) => {
 };
 
 
-axios.defaults.baseURL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8080";
+axios.defaults.baseURL = process.env.REACT_APP_API_BASE_URL || "http://176.34.129.151:8080";
 axios.defaults.headers.post["Content-Type"] = "application/json";
 
 export const request = (method, url, data) => {
