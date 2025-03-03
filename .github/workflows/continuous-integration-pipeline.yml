@@ -158,7 +158,9 @@ jobs:
           script: |
             cd /home/ubuntu/LucrareLicenta || { echo "Failed to change directory"; exit 1; }
             echo "SQL_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" > .env
-            echo ".env file created with SQL_PASSWORD"
+            echo "REACT_APP_API_BASE_URL=http://${{ vars.EC2_HOST }}:8080" >> .env
+            echo ".env file created with SQL_PASSWORD and REACT_APP_API_BASE_URL"
+
 
       - name: Prune old Docker images
         uses: appleboy/ssh-action@v0.1.8
@@ -203,4 +205,4 @@ jobs:
             cd /home/ubuntu/LucrareLicenta || { echo "Failed to change directory"; exit 1; }
             export SQL_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}"
             echo "Starting Docker containers..."
-            sudo docker-compose up || { echo "Failed to start Docker containers"; exit 1; }
+            sudo docker-compose up -d || { echo "Failed to start Docker containers"; exit 1; }
