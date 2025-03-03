@@ -11,88 +11,88 @@ env:
   GITHUB_REPOSITORY: ${{ vars.GH_REPOSITORY_URL }}
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    services:
-      mysql:
-        image: mysql:8
-        env:
-          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
-          MYSQL_DATABASE: orar
-          MYSQL_ROOT_HOST: "%"
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping --silent" 
-          --health-interval=10s 
-          --health-timeout=5s 
-          --health-retries=5
+  # build:
+  #   runs-on: ubuntu-latest
+  #   services:
+  #     mysql:
+  #       image: mysql:8
+  #       env:
+  #         MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+  #         MYSQL_DATABASE: orar
+  #         MYSQL_ROOT_HOST: "%"
+  #       ports:
+  #         - 3306:3306
+  #       options: >-
+  #         --health-cmd="mysqladmin ping --silent"
+  #         --health-interval=10s
+  #         --health-timeout=5s
+  #         --health-retries=5
 
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v2
-        with:
-          distribution: temurin
-          java-version: "17"
+  #     - name: Set up JDK 17
+  #       uses: actions/setup-java@v2
+  #       with:
+  #         distribution: temurin
+  #         java-version: "17"
 
-      - name: Wait for MySQL
-        run: |
-          for i in {1..30}; do
-            nc -z 127.0.0.1 3306 && echo "MySQL is up" && exit 0
-            echo "Waiting for MySQL..."
-            sleep 2
-          done
-          echo "MySQL did not become ready in time" && exit 1
+  #     - name: Wait for MySQL
+  #       run: |
+  #         for i in {1..30}; do
+  #           nc -z 127.0.0.1 3306 && echo "MySQL is up" && exit 0
+  #           echo "Waiting for MySQL..."
+  #           sleep 2
+  #         done
+  #         echo "MySQL did not become ready in time" && exit 1
 
-      - name: Test Spring Boot App
-        working-directory: ./backend
-        env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/orar
-          SPRING_DATASOURCE_USERNAME: root
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
-        run: mvn clean test
+  #     - name: Test Spring Boot App
+  #       working-directory: ./backend
+  #       env:
+  #         SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/orar
+  #         SPRING_DATASOURCE_USERNAME: root
+  #         SPRING_DATASOURCE_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+  #       run: mvn clean test
 
-      # ----- Frontend Testing -----
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
+  #     # ----- Frontend Testing -----
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: "20"
 
-      - name: Test React App
-        working-directory: ./frontend
-        run: |
-          npm install
-          npm run test
+  #     - name: Test React App
+  #       working-directory: ./frontend
+  #       run: |
+  #         npm install
+  #         npm run test
 
-      # ----- Build and Push Docker Images -----
-      - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login --username ${{ vars.DOCKERHUB_USERNAME }} --password-stdin
+  #     # ----- Build and Push Docker Images -----
+  #     - name: Log in to Docker Hub
+  #       run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login --username ${{ vars.DOCKERHUB_USERNAME }} --password-stdin
 
-      # Build, tag, and push the backend image
-      - name: Build Backend Docker Image
-        run: docker build -t lucrarelicenta-backend:latest ./backend
+  #     # Build, tag, and push the backend image
+  #     - name: Build Backend Docker Image
+  #       run: docker build -t lucrarelicenta-backend:latest ./backend
 
-      - name: Tag and Push Backend Image
-        run: |
-          docker tag lucrarelicenta-backend:latest ${{ vars.DOCKERHUB_USERNAME }}/lucrarelicenta-backend:latest
-          docker push ${{ vars.DOCKERHUB_USERNAME }}/lucrarelicenta-backend:latest
+  #     - name: Tag and Push Backend Image
+  #       run: |
+  #         docker tag lucrarelicenta-backend:latest ${{ vars.DOCKERHUB_USERNAME }}/lucrarelicenta-backend:latest
+  #         docker push ${{ vars.DOCKERHUB_USERNAME }}/lucrarelicenta-backend:latest
 
-      # Build, tag, and push the frontend image
-      - name: Build Frontend Docker Image
-        run: docker build -t lucrarelicenta-frontend:latest ./frontend
+  #     # Build, tag, and push the frontend image
+  #     - name: Build Frontend Docker Image
+  #       run: docker build -t lucrarelicenta-frontend:latest ./frontend
 
-      - name: Tag and Push Frontend Image
-        run: |
-          docker tag lucrarelicenta-frontend:latest ${{ vars.DOCKERHUB_USERNAME }}/lucrarelicenta-frontend:latest
-          docker push ${{ vars.DOCKERHUB_USERNAME }}/lucrarelicenta-frontend:latest
+  #     - name: Tag and Push Frontend Image
+  #       run: |
+  #         docker tag lucrarelicenta-frontend:latest ${{ vars.DOCKERHUB_USERNAME }}/lucrarelicenta-frontend:latest
+  #         docker push ${{ vars.DOCKERHUB_USERNAME }}/lucrarelicenta-frontend:latest
 
   deploy:
-    needs: build
+    #needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -116,12 +116,11 @@ jobs:
 
             # Check if Docker Compose (v2) is installed
             if ! docker compose version &> /dev/null; then
-              echo "Docker Compose is not installed. Installing Docker Compose plugin manually..."
-              DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
-              mkdir -p $DOCKER_CONFIG/cli-plugins
-              curl -SL https://github.com/docker/compose/releases/download/v2.19.1/docker-compose-linux-x86_64 \
-                -o $DOCKER_CONFIG/cli-plugins/docker-compose
-              chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
+              echo "Docker Compose is not installed. Installing Docker Compose plugin globally..."
+              sudo mkdir -p /usr/local/lib/docker/cli-plugins
+              sudo curl -SL https://github.com/docker/compose/releases/download/v2.19.1/docker-compose-linux-x86_64 \
+                -o /usr/local/lib/docker/cli-plugins/docker-compose
+              sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
             else
               echo "Docker Compose is already installed."
             fi
