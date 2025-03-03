@@ -105,7 +105,8 @@ jobs:
           username: ${{ vars.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY2 }}
           script: |
-            REPO_URL="https://github.com/${GITHUB_REPOSITORY}.git"
+            # Use the repository URL directly from your vars
+            REPO_URL="${{ vars.GH_REPOSITORY_URL }}"
             TARGET_DIR="/home/ubuntu/LucrareLicenta"
             if [ ! -d "$TARGET_DIR" ]; then
               echo "Directory $TARGET_DIR does not exist. Cloning repository..."
