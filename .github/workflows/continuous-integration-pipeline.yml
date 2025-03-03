@@ -158,7 +158,10 @@ jobs:
           script: |
             cd /home/ubuntu/LucrareLicenta || { echo "Failed to change directory"; exit 1; }
             echo "SQL_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" > .env
-            echo ".env file created with SQL_PASSWORD and REACT_APP_API_BASE_URL"
+            echo "API_BASE_URL=http://${{ vars.EC2_HOST }}:8080" >> .env
+            echo "REACT_APP_API_BASE_URL=http://${{ vars.EC2_HOST }}:8080" >> .env
+            echo "FRONTEND_ORIGIN=http://${{ vars.EC2_HOST }}:3000" >> .env
+            echo ".env file created with SQL_PASSWORD, API_BASE_URL, REACT_APP_API_BASE_URL and FRONTEND_ORIGIN"
 
 
       - name: Prune old Docker images
