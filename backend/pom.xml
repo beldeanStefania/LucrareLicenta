@@ -124,7 +124,8 @@
 				<artifactId>flyway-maven-plugin</artifactId>
 				<version>9.22.3</version>
 				<configuration>
-					<url>jdbc:mysql://mysql:3306/orar</url>
+				<!-- before was mysql -->
+					<url>jdbc:mysql://localhost:3306/orar</url>
 					<user>root</user>
 					<password>3676</password>
 				</configuration>
