@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { request } from "../helpers/axios-helper";
 import NavigationHeader from "./NavigationHeader";
-import { UserInfo } from "../types/UserInfo";
 import { 
   FaGraduationCap, FaBook, FaCalendarAlt, FaChalkboardTeacher, 
   FaRegFileAlt, FaClock, FaMapMarkerAlt 
@@ -9,7 +8,7 @@ import {
 import "./StudentPage.css";
 
 export default function StudentPage({ onLogout }) {
-  const [userData, setUserData] = useState<UserInfo | null>(null);
+  const [userData, setUserData] = useState(null);
   const [schedule, setSchedule] = useState([]);
   const [grades, setGrades] = useState([]);
   const [loading, setLoading] = useState({
