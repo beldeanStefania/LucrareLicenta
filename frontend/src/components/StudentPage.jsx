@@ -1,29 +1,49 @@
 import React, { useEffect, useState } from "react";
 import { request } from "../helpers/axios-helper";
+import NavigationHeader from "./NavigationHeader";
+import { 
+  FaGraduationCap, FaBook, FaCalendarAlt, FaChalkboardTeacher, 
+  FaRegFileAlt, FaClock, FaMapMarkerAlt 
+} from "react-icons/fa";
 import "./StudentPage.css";
 
 export default function StudentPage({ onLogout }) {
+  const [userData, setUserData] = useState(null);
   const [schedule, setSchedule] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [grades, setGrades] = useState([]);
-
+  const [loading, setLoading] = useState({
+    user: true,
+    schedule: true,
+    grades: true
+  });
 
   useEffect(() => {
-    fetchSchedule();
-    fetchGrades();
+    fetchUserInfo();
   }, []);
 
-  const fetchSchedule = () => {
-    request("GET", "/api/auth/userInfo") // Fetch user info to get group
+  const fetchUserInfo = () => {
+    request("GET", "/api/auth/userInfo")
       .then((response) => {
-        const userGroup = response.data.grupa; // Group of the student
-        return request("GET", `/api/orare/getAll/${userGroup}`); // Fetch schedule by group
+        setUserData(response.data);
+        setLoading(prev => ({ ...prev, user: false }));
+        
+        // After we have user info, fetch grades and schedule
+        fetchGrades(response.data.cod);
+        fetchSchedule(response.data.grupa);
       })
+      .catch((error) => {
+        console.error("Failed to fetch user info:", error);
+        setLoading(prev => ({ ...prev, user: false }));
+      });
+  };
+
+  const fetchSchedule = (userGroup) => {
+    request("GET", `/api/orare/getAll/${userGroup}`)
       .then((response) => {
         if (Array.isArray(response.data)) {
-          setSchedule(response.data); // Store schedule if it's an array
+          setSchedule(response.data);
         } else {
-          setSchedule([]); // No data or incorrect format
+          setSchedule([]);
           console.error("Invalid schedule data format:", response.data);
         }
       })
@@ -32,118 +52,240 @@ export default function StudentPage({ onLogout }) {
         setSchedule([]);
       })
       .finally(() => {
-        setLoading(false);
+        setLoading(prev => ({ ...prev, schedule: false }));
       });
   };
 
-  const fetchGrades = () => {
-    request("GET", "/api/auth/userInfo") // Preluăm informațiile utilizatorului pentru a obține codul studentului
-      .then((response) => {
-        const studentCod = response.data.cod; // Codul studentului
-        return request("GET", `/api/catalogStudentMaterie/getNote/${studentCod}`); // Preluăm notele pe baza codului
-      })
+  const fetchGrades = (studentCode) => {
+    request("GET", `/api/catalogStudentMaterie/getNote/${studentCode}`)
       .then((response) => {
         if (Array.isArray(response.data)) {
-          setGrades(response.data); // Stocăm notele în state dacă răspunsul este valid
+          setGrades(response.data);
         } else {
-          setGrades([]); // Dacă nu există date, setăm o listă goală
+          setGrades([]);
           console.error("Invalid grades data format:", response.data);
         }
       })
       .catch((error) => {
         console.error("Failed to fetch grades:", error);
         setGrades([]);
+      })
+      .finally(() => {
+        setLoading(prev => ({ ...prev, grades: false }));
       });
   };
   
+  // Calculate statistics for dashboard
+  const getPassingGradesCount = () => {
+    return grades.filter(grade => grade.nota >= 5).length;
+  };
   
+  const getAverageGrade = () => {
+    if (grades.length === 0) return 0;
+    const sum = grades.reduce((total, grade) => total + grade.nota, 0);
+    return (sum / grades.length).toFixed(2);
+  };
+  
+  const getUpcomingClassesCount = () => {
+    const today = new Date();
+    const dayNames = ['Duminica', 'Luni', 'Marti', 'Miercuri', 'Joi', 'Vineri', 'Sambata'];
+    const todayName = dayNames[today.getDay()];
+    
+    return schedule.filter(item => item.zi === todayName).length;
+  };
 
-  if (loading) {
-    return <div>Loading...</div>;
+  // Loading state
+  if (loading.user) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <div className="loading-text">Loading student information...</div>
+      </div>
+    );
   }
 
   return (
     <div className="student-page">
-      {/* Header-ul paginii */}
-      <div className="student-header">
-        <h1>Student Dashboard</h1>
-        <button className="logout-btn" onClick={onLogout}>
-          Logout
-        </button>
+      <NavigationHeader 
+        userRole="ROLE_STUDENT" 
+        userName={userData ? `${userData.nume} ${userData.prenume}` : 'Student'} 
+        onLogout={onLogout} 
+      />
+
+      <div className="student-content">
+        {/* Welcome section */}
+        <div className="dashboard-welcome">
+          <h1 className="welcome-title">Welcome, {userData ? userData.prenume : 'Student'}!</h1>
+          <p className="welcome-subtitle">
+            Here's an overview of your academic status
+          </p>
+        </div>
+
+        {/* Stats dashboard */}
+        <div className="dashboard-grid">
+          <div className="stat-card">
+            <div className="stat-icon">
+              <FaGraduationCap size={24} />
+            </div>
+            <div className="stat-value">{getAverageGrade()}</div>
+            <div className="stat-label">Average Grade</div>
+          </div>
+          
+          <div className="stat-card">
+            <div className="stat-icon">
+              <FaBook size={24} />
+            </div>
+            <div className="stat-value">{grades.length}</div>
+            <div className="stat-label">Total Courses</div>
+          </div>
+          
+          <div className="stat-card">
+            <div className="stat-icon">
+              <FaCalendarAlt size={24} />
+            </div>
+            <div className="stat-value">{getUpcomingClassesCount()}</div>
+            <div className="stat-label">Today's Classes</div>
+          </div>
+        </div>
+
+        {/* Grades section */}
+        <div id="grades" className="section-container">
+          <div className="section-header">
+            <h2>
+              <FaRegFileAlt style={{ marginRight: '10px' }} />
+              Your Grades
+            </h2>
+          </div>
+          <div className="section-content">
+            {loading.grades ? (
+              <div className="loading-container">
+                <div className="loading-spinner"></div>
+                <p>Loading grades...</p>
+              </div>
+            ) : grades.length > 0 ? (
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Course</th>
+                    <th>Code</th>
+                    <th>Grade</th>
+                    <th>Semester</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {grades.map((grade, index) => (
+                    <tr key={index}>
+                      <td>{grade.numeMaterie}</td>
+                      <td>{grade.codMaterie}</td>
+                      <td className={grade.nota >= 5 ? 'grade-passing' : 'grade-failing'}>
+                        {grade.nota}
+                      </td>
+                      <td>{grade.semestru}</td>
+                      <td>
+                        {grade.nota >= 5 ? (
+                          <span className="grade-passing">Passed</span>
+                        ) : (
+                          <span className="grade-failing">Failed</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="empty-state">
+                <div className="empty-state-icon">
+                  <FaRegFileAlt />
+                </div>
+                <div className="empty-state-text">No grades available</div>
+                <div className="empty-state-subtext">Grades will appear here once they are assigned by professors</div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Schedule section */}
+        <div id="schedule" className="section-container">
+          <div className="section-header">
+            <h2>
+              <FaCalendarAlt style={{ marginRight: '10px' }} />
+              Class Schedule
+            </h2>
+          </div>
+          <div className="section-content">
+            {loading.schedule ? (
+              <div className="loading-container">
+                <div className="loading-spinner"></div>
+                <p>Loading schedule...</p>
+              </div>
+            ) : schedule.length > 0 ? (
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Day</th>
+                    <th>Time</th>
+                    <th>Course</th>
+                    <th>Type</th>
+                    <th>Room</th>
+                    <th>Professor</th>
+                    <th>Frequency</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {schedule.map((item, index) => {
+                    // Determine class for type-based highlighting
+                    let itemClass = '';
+                    if (item.tipul === 'Curs') itemClass = 'schedule-item-course';
+                    else if (item.tipul === 'Laborator') itemClass = 'schedule-item-lab';
+                    else if (item.tipul === 'Seminar') itemClass = 'schedule-item-seminar';
+                    
+                    return (
+                      <tr key={index} className={itemClass}>
+                        <td>
+                          <span style={{ display: 'flex', alignItems: 'center' }}>
+                            <FaCalendarAlt style={{ marginRight: '8px', opacity: 0.7 }} />
+                            {item.zi}
+                          </span>
+                        </td>
+                        <td>
+                          <span style={{ display: 'flex', alignItems: 'center' }}>
+                            <FaClock style={{ marginRight: '8px', opacity: 0.7 }} />
+                            {`${item.oraInceput}:00 - ${item.oraSfarsit}:00`}
+                          </span>
+                        </td>
+                        <td>{item.disciplina}</td>
+                        <td>{item.tipul}</td>
+                        <td>
+                          <span style={{ display: 'flex', alignItems: 'center' }}>
+                            <FaMapMarkerAlt style={{ marginRight: '8px', opacity: 0.7 }} />
+                            {item.sala}
+                          </span>
+                        </td>
+                        <td>
+                          <span style={{ display: 'flex', alignItems: 'center' }}>
+                            <FaChalkboardTeacher style={{ marginRight: '8px', opacity: 0.7 }} />
+                            {item.cadruDidactic}
+                          </span>
+                        </td>
+                        <td>{item.frecventa === "saptamanal" ? "Weekly" : item.frecventa}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            ) : (
+              <div className="empty-state">
+                <div className="empty-state-icon">
+                  <FaCalendarAlt />
+                </div>
+                <div className="empty-state-text">No schedule available</div>
+                <div className="empty-state-subtext">Your class schedule will appear here once it's published</div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-
-
-      {/* Note */}
-      <section>
-  <h2>Your Grades</h2>
-  {grades.length > 0 ? (
-    <table className="grades-table">
-      <thead>
-        <tr>
-          <th>Materie</th>
-          <th>Cod</th>
-          <th>Nota</th>
-          <th>Semestru</th>
-        </tr>
-      </thead>
-      <tbody>
-        {grades.map((grade, index) => (
-          <tr key={index}>
-            <td>{grade.numeMaterie}</td>
-            <td>{grade.codMaterie}</td>
-            <td style={{ color: grade.nota < 5 ? 'red' : 'black' }}>
-              {grade.nota}
-            </td>
-            <td>{grade.semestru}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  ) : (
-    <p>No grades available for this student.</p>
-  )}
-</section>
-
-
-
-      {/* Orar */}
-      <section>
-        <h2>Your Schedule</h2>
-        {schedule.length > 0 ? (
-          <table className="schedule-table">
-          <thead>
-            <tr>
-              <th>Ziua</th>
-              <th>Orele</th>
-              <th>Frecvența</th>
-              <th>Sala</th>
-              <th>Tipul</th>
-              <th>Formația</th>
-              <th>Disciplina</th>
-              <th>Cadru Didactic</th>
-            </tr>
-          </thead>
-          <tbody>
-  {schedule.map((item, index) => (
-    <tr key={index}>
-      <td>{item.zi}</td>
-      <td>{`${item.oraInceput}:00 - ${item.oraSfarsit}:00`}</td>
-      <td>{item.frecventa === "saptamanal" ? "" : item.frecventa}</td>
-      <td>{item.sala}</td>
-      <td>{item.tipul}</td>
-      <td>{item.formatia}</td>
-      <td>{item.disciplina}</td>
-      <td>{item.cadruDidactic}</td>
-    </tr>
-  ))}
-</tbody>
-
-        </table>
-        
-        ) : (
-          <p>No schedule available for your group.</p>
-        )}
-      </section>
     </div>
   );
 }

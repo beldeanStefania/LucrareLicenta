@@ -1,45 +1,153 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-secondary);
+  background-image: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+}
+
 .login-container {
-    max-width: 400px;
-    margin: 50px auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    background-color: #fff;
-    text-align: center;
-    font-family: Arial, sans-serif;
-  }
-  
-  h1 {
-    margin-bottom: 20px;
-  }
-  
-  .login-form .form-group {
-    margin-bottom: 15px;
-    text-align: left;
-  }
-  
-  .login-form .form-group label {
-    margin-bottom: 5px;
-    display: block;
-  }
-  
-  .login-form .form-group input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
-  .login-form .btn {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    background-color: #007bff;
-    color: white;
-    cursor: pointer;
-  }
-  
-  .login-form .btn:hover {
-    background-color: #0056b3;
-  }
-  
+  max-width: 450px;
+  width: 100%;
+  margin: 20px;
+  padding: var(--spacing-xl);
+  border-radius: var(--border-radius-lg);
+  background-color: var(--bg-primary);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.login-container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.login-logo {
+  margin-bottom: var(--spacing-xl);
+}
+
+.login-logo img {
+  max-width: 120px;
+  height: auto;
+}
+
+.login-title {
+  color: var(--primary-color);
+  font-family: var(--font-family-heading);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-3xl);
+  margin-bottom: var(--spacing-lg);
+  position: relative;
+  display: inline-block;
+}
+
+.login-title::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  width: 50px;
+  height: 3px;
+  background-color: var(--secondary-color);
+  transform: translateX(-50%);
+}
+
+.login-subtitle {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xl);
+}
+
+.login-form {
+  text-align: left;
+}
+
+.login-form .form-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.login-form .form-group label {
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--spacing-xs);
+  display: block;
+  font-size: var(--font-size-sm);
+}
+
+.login-form .form-group input {
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  background-color: var(--bg-secondary);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  font-size: var(--font-size-base);
+}
+
+.login-form .form-group input:focus {
+  border-color: var(--secondary-color);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+}
+
+.login-form .btn {
+  display: block;
+  width: 100%;
+  padding: var(--spacing-md);
+  margin-top: var(--spacing-xl);
+  border: none;
+  border-radius: var(--border-radius-md);
+  background-color: var(--secondary-color);
+  color: white;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.login-form .btn:hover {
+  background-color: var(--secondary-light);
+  transform: translateY(-2px);
+}
+
+.login-form .btn:active {
+  transform: translateY(1px);
+}
+
+.login-footer {
+  margin-top: var(--spacing-xl);
+  color: var(--text-light);
+  font-size: var(--font-size-sm);
+}
+
+.login-footer a {
+  color: var(--secondary-color);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.login-footer a:hover {
+  color: var(--secondary-light);
+  text-decoration: underline;
+}
+
+/* Add subtle animation to input fields */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.login-form .form-group:nth-child(1) {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.login-form .form-group:nth-child(2) {
+  animation: fadeIn 0.5s ease-out 0.1s forwards;
+  opacity: 0;
+}
+
+.login-form .btn {
+  animation: fadeIn 0.5s ease-out 0.2s forwards;
+  opacity: 0;
+}

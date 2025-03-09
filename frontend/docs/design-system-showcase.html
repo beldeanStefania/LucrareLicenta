@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Management System - Design System Showcase</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Color Palette */
+            --primary-color: #2c3e50;
+            --primary-light: #34495e;
+            --secondary-color: #3498db;
+            --secondary-light: #5dade2;
+            --accent-color: #e74c3c;
+            --accent-light: #ec7063;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #c0392b;
+            
+            /* Text Colors */
+            --text-primary: #2c3e50;
+            --text-secondary: #576574;
+            --text-light: #7f8c8d;
+            --text-on-dark: #ecf0f1;
+            
+            /* Background Colors */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f6fa;
+            --bg-tertiary: #e5e8e8;
+            --bg-dark: #2c3e50;
+            
+            /* Border Colors */
+            --border-color: #dcdde1;
+            --border-light: #f1f2f6;
+            
+            /* Shadow */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+            --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+            
+            /* Typography */
+            --font-family-base: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen', 'Ubuntu', sans-serif;
+            --font-family-heading: 'Roboto Slab', 'Times New Roman', serif;
+            
+            /* Font Sizes */
+            --font-size-xs: 0.75rem;
+            --font-size-sm: 0.875rem;
+            --font-size-base: 1rem;
+            --font-size-lg: 1.125rem;
+            --font-size-xl: 1.25rem;
+            --font-size-2xl: 1.5rem;
+            --font-size-3xl: 1.875rem;
+            --font-size-4xl: 2.25rem;
+            
+            /* Font Weights */
+            --font-weight-light: 300;
+            --font-weight-normal: 400;
+            --font-weight-medium: 500;
+            --font-weight-bold: 700;
+            
+            /* Spacing */
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --spacing-2xl: 3rem;
+            
+            /* Border Radius */
+            --border-radius-sm: 0.25rem;
+            --border-radius-md: 0.5rem;
+            --border-radius-lg: 0.75rem;
+            --border-radius-full: 9999px;
+            
+            /* Transitions */
+            --transition-fast: 150ms ease-in-out;
+            --transition-normal: 250ms ease-in-out;
+            --transition-slow: 350ms ease-in-out;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family-base);
+            color: var(--text-primary);
+            background-color: var(--bg-secondary);
+            line-height: 1.5;
+            padding: var(--spacing-lg);
+        }
+
+        .showcase-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: var(--bg-primary);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-md);
+            padding: var(--spacing-xl);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: var(--spacing-2xl);
+            padding-bottom: var(--spacing-xl);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            font-family: var(--font-family-heading);
+            font-size: var(--font-size-4xl);
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-md);
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: var(--font-size-lg);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        section {
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        section h2 {
+            font-family: var(--font-family-heading);
+            font-size: var(--font-size-2xl);
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-lg);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+        }
+
+        .color-swatch {
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-lg);
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .color-swatch p {
+            font-family: monospace;
+            font-size: var(--font-size-sm);
+        }
+
+        .color-swatch.primary {
+            background-color: var(--primary-color);
+            color: var(--text-on-dark);
+        }
+
+        .color-swatch.primary-light {
+            background-color: var(--primary-light);
+            color: var(--text-on-dark);
+        }
+
+        .color-swatch.secondary {
+            background-color: var(--secondary-color);
+            color: var(--text-on-dark);
+        }
+
+        .color-swatch.secondary-light {
+            background-color: var(--secondary-light);
+            color: var(--text-on-dark);
+        }
+
+        .color-swatch.accent {
+            background-color: var(--accent-color);
+            color: var(--text-on-dark);
+        }
+
+        .color-swatch.success {
+            background-color: var(--success-color);
+            color: var(--text-on-dark);
+        }
+
+        .color-swatch.warning {
+            background-color: var(--warning-color);
+            color: var(--text-on-dark);
+        }
+
+        .color-swatch.danger {
+            background-color: var(--danger-color);
+            color: var(--text-on-dark);
+        }
+
+        .typography-showcase {
+            display: grid;
+            gap: var(--spacing-lg);
+        }
+
+        .type-example {
+            padding: var(--spacing-md);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+            background-color: var(--bg-secondary);
+        }
+
+        .type-example small {
+            display: block;
+            font-family: monospace;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .heading-4xl {
+            font-family: var(--font-family-heading);
+            font-size: var(--font-size-4xl);
+            font-weight: var(--font-weight-bold);
+        }
+
+        .heading-3xl {
+            font-family: var(--font-family-heading);
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+        }
+
+        .heading-2xl {
+            font-family: var(--font-family-heading);
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+        }
+
+        .heading-xl {
+            font-family: var(--font-family-heading);
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+        }
+
+        .body-lg {
+            font-size: var(--font-size-lg);
+        }
+
+        .body-base {
+            font-size: var(--font-size-base);
+        }
+
+        .body-sm {
+            font-size: var(--font-size-sm);
+        }
+
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: var(--spacing-xl);
+        }
+
+        .component-card {
+            background-color: var(--bg-primary);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-sm);
+            padding: var(--spacing-lg);
+            transition: all var(--transition-normal);
+        }
+
+        .component-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .component-card h3 {
+            font-family: var(--font-family-heading);
+            font-size: var(--font-size-xl);
+            margin-bottom: var(--spacing-md);
+            color: var(--primary-color);
+        }
+
+        .button-showcase {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+
+        .btn {
+            display: inline-block;
+            font-weight: var(--font-weight-medium);
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            user-select: none;
+            border: 2px solid transparent;
+            padding: var(--spacing-sm) var(--spacing-lg);
+            font-size: var(--font-size-base);
+            line-height: 1.5;
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--text-on-dark);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-light);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: var(--text-on-dark);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--secondary-light);
+        }
+
+        .btn-accent {
+            background-color: var(--accent-color);
+            color: var(--text-on-dark);
+        }
+
+        .btn-accent:hover {
+            background-color: var(--accent-light);
+        }
+
+        .form-showcase {
+            display: grid;
+            gap: var(--spacing-md);
+            max-width: 400px;
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-secondary);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+            font-size: var(--font-size-base);
+            transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+        }
+
+        .form-group input:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+        }
+
+        .table-showcase {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--font-size-sm);
+        }
+
+        .data-table th {
+            background-color: var(--bg-secondary);
+            color: var(--text-secondary);
+            font-weight: var(--font-weight-bold);
+            text-align: left;
+            padding: var(--spacing-md);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .data-table td {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .data-table tbody tr:hover {
+            background-color: var(--bg-secondary);
+        }
+
+        .schedule-item-course {
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .schedule-item-lab {
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .schedule-item-seminar {
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        @media (max-width: 768px) {
+            .color-palette, .component-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="showcase-container">
+        <header>
+            <h1>University Management System - Design System</h1>
+            <p>This document showcases the design system components and styles implemented for the University Management System application.</p>
+        </header>
+
+        <section>
+            <h2>Color Palette</h2>
+            <div class="color-palette">
+                <div class="color-swatch primary">
+                    <p>Primary Color</p>
+                    <p>#2c3e50</p>
+                </div>
+                <div class="color-swatch primary-light">
+                    <p>Primary Light</p>
+                    <p>#34495e</p>
+                </div>
+                <div class="color-swatch secondary">
+                    <p>Secondary Color</p>
+                    <p>#3498db</p>
+                </div>
+                <div class="color-swatch secondary-light">
+                    <p>Secondary Light</p>
+                    <p>#5dade2</p>
+                </div>
+                <div class="color-swatch accent">
+                    <p>Accent Color</p>
+                    <p>#e74c3c</p>
+                </div>
+                <div class="color-swatch success">
+                    <p>Success Color</p>
+                    <p>#27ae60</p>
+                </div>
+                <div class="color-swatch warning">
+                    <p>Warning Color</p>
+                    <p>#f39c12</p>
+                </div>
+                <div class="color-swatch danger">
+                    <p>Danger Color</p>
+                    <p>#c0392b</p>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>Typography</h2>
+            <div class="typography-showcase">
+                <div class="type-example">
+                    <small>--font-size-4xl (2.25rem/36px) + --font-family-heading</small>
+                    <div class="heading-4xl">Heading 1 Example</div>
+                </div>
+                <div class="type-example">
+                    <small>--font-size-3xl (1.875rem/30px) + --font-family-heading</small>
+                    <div class="heading-3xl">Heading 2 Example</div>
+                </div>
+                <div class="type-example">
+                    <small>--font-size-2xl (1.5rem/24px) + --font-family-heading</small>
+                    <div class="heading-2xl">Heading 3 Example</div>
+                </div>
+                <div class="type-example">
+                    <small>--font-size-xl (1.25rem/20px) + --font-family-heading</small>
+                    <div class="heading-xl">Heading 4 Example</div>
+                </div>
+                <div class="type-example">
+                    <small>--font-size-lg (1.125rem/18px) + --font-family-base</small>
+                    <div class="body-lg">
+                        This is large body text, used for important paragraphs or emphasis.
+                    </div>
+                </div>
+                <div class="type-example">
+                    <small>--font-size-base (1rem/16px) + --font-family-base</small>
+                    <div class="body-base">
+                        This is the base body text, used for most content throughout the application. It provides good readability and is the default size for paragraphs and general content.
+                    </div>
+                </div>
+                <div class="type-example">
+                    <small>--font-size-sm (0.875rem/14px) + --font-family-base</small>
+                    <div class="body-sm">
+                        This is small body text, used for less important information, captions, helper text, and areas where space is limited but information still needs to be conveyed.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>Components</h2>
+            <div class="component-grid">
+                <div class="component-card">
+                    <h3>Buttons</h3>
+                    <div class="button-showcase">
+                        <button class="btn btn-primary">Primary Button</button>
+                        <button class="btn btn-secondary">Secondary Button</button>
+                        <button class="btn btn-accent">Accent Button</button>
+                    </div>
+                </div>
+
+                <div class="component-card">
+                    <h3>Form Elements</h3>
+                    <div class="form-showcase">
+                        <div class="form-group">
+                            <label for="demo-input">Input Field</label>
+                            <input type="text" id="demo-input" placeholder="Enter some text">
+                        </div>
+                        <div class="form-group">
+                            <label for="demo-password">Password Field</label>
+                            <input type="password" id="demo-password" placeholder="Enter password">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="component-card">
+                    <h3>Data Table</h3>
+                    <div class="table-showcase">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Course</th>
+                                    <th>Type</th>
+                                    <th>Day</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="schedule-item-course">
+                                    <td>Mathematics</td>
+                                    <td>Course</td>
+                                    <td>Monday</td>
+                                    <td>10:00 - 12:00</td>
+                                </tr>
+                                <tr class="schedule-item-lab">
+                                    <td>Computer Science</td>
+                                    <td>Laboratory</td>
+                                    <td>Tuesday</td>
+                                    <td>14:00 - 16:00</td>
+                                </tr>
+                                <tr class="schedule-item-seminar">
+                                    <td>Physics</td>
+                                    <td>Seminar</td>
+                                    <td>Wednesday</td>
+                                    <td>09:00 - 11:00</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="component-card">
+                    <h3>Cards</h3>
+                    <p>This entire component is an example of the card style used throughout the application.</p>
+                    <p>Cards provide a flexible container for related content and actions. They include options for headers, footers, content, and various background colors.</p>
+                    <p>Hover over any card to see the subtle elevation effect.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
