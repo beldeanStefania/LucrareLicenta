@@ -109,8 +109,7 @@ export default function StudentPage({ onLogout }) {
     <div className="student-page">
       <NavigationHeader 
         userRole="ROLE_STUDENT" 
-        userName={userData ? `${userData.nume || ''} ${userData.prenume || ''}`.trim() : 'Student'}         onLogout={onLogout} 
-      />
+        userName={userData ? `${userData.nume || ''} ${userData.prenume || ''}`.trim() : 'Student'}      />
 
       <div className="student-content">
         {/* Welcome section */}
