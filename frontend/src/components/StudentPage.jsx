@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { request } from "../helpers/axios-helper";
 import NavigationHeader from "./NavigationHeader";
-import UserInfo from "./UserInfo";
+import { UserInfo } from "../types/UserInfo";
 import { 
   FaGraduationCap, FaBook, FaCalendarAlt, FaChalkboardTeacher, 
   FaRegFileAlt, FaClock, FaMapMarkerAlt 
