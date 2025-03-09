@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { request } from "../helpers/axios-helper";
 import NavigationHeader from "./NavigationHeader";
+import UserInfo from "./UserInfo";
 import { 
   FaGraduationCap, FaBook, FaCalendarAlt, FaChalkboardTeacher, 
   FaRegFileAlt, FaClock, FaMapMarkerAlt 
@@ -8,7 +9,7 @@ import {
 import "./StudentPage.css";
 
 export default function StudentPage({ onLogout }) {
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState<UserInfo | null>(null);
   const [schedule, setSchedule] = useState([]);
   const [grades, setGrades] = useState([]);
   const [loading, setLoading] = useState({
@@ -108,8 +109,7 @@ export default function StudentPage({ onLogout }) {
     <div className="student-page">
       <NavigationHeader 
         userRole="ROLE_STUDENT" 
-        userName={userData ? `${userData.firstName} ${userData.lastName}` : 'Student'} 
-        onLogout={onLogout} 
+        userName={userData ? `${userData.nume || ''} ${userData.prenume || ''}`.trim() : 'Student'}         onLogout={onLogout} 
       />
 
       <div className="student-content">
