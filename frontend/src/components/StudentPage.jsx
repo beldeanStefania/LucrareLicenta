@@ -113,7 +113,7 @@ export default function StudentPage({ onLogout }) {
       <div className="student-content">
         {/* Welcome section */}
         <div className="dashboard-welcome">
-          <h1 className="welcome-title">Welcome, {userData ? userData.prenume : 'Student'}!</h1>
+          <h1 className="welcome-title">Welcome, {userData ? userData.username : 'Student'}!</h1>
           <p className="welcome-subtitle">
             Here's an overview of your academic status
           </p>
