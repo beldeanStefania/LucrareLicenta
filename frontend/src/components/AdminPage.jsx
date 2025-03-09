@@ -431,6 +431,9 @@ const renderStudentList = () => (
   );
 
   // ========== SUBJECTS / REPARTIZARE PROF ==========
+  const [useCustomSubject, setUseCustomSubject] = useState(false);
+  const [customSubject, setCustomSubject] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("");
 
   // Ex: /api/materie/getAll => toate materiile din DB
   const fetchAllSubjects = () => {
@@ -444,31 +447,65 @@ const renderStudentList = () => (
   const handleOpenSubjectForm = (prof) => {
     setSelectedProfForSubject(prof);
     setSubjectFormVisible(true);
+    setUseCustomSubject(false);
+    setCustomSubject("");
+    setSelectedSubject("");
+  };
+
+  const createNewSubject = (subjectName) => {
+    return request("POST", "/api/materie/add", { nume: subjectName })
+      .then(response => {
+        // Refresh subject list after adding
+        fetchAllSubjects();
+        return response.data;
+      });
   };
 
   const handleSubmitSubject = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
-    // data = { materie, tip }
-
-    // RepartizareProfDTO: { tip, materie, numeProfesor, prenumeProfesor }
-    const payload = {
-      tip: data.tip,
-      materie: data.materie,
-      numeProfesor: selectedProfForSubject.nume,
-      prenumeProfesor: selectedProfForSubject.prenume,
+    // data = { materie, tip } or { customMaterie, tip }
+    
+    const subjectName = useCustomSubject ? customSubject : data.materie;
+    
+    // If using custom subject, create it first
+    const assignSubject = () => {
+      // RepartizareProfDTO: { tip, materie, numeProfesor, prenumeProfesor }
+      const payload = {
+        tip: data.tip,
+        materie: subjectName,
+        numeProfesor: selectedProfForSubject.nume,
+        prenumeProfesor: selectedProfForSubject.prenume,
+      };
+  
+      request("POST", "/api/repartizareProf", payload)
+        .then(() => {
+          alert("Subject assigned successfully!");
+          setSubjectFormVisible(false);
+          setUseCustomSubject(false);
+          setCustomSubject("");
+        })
+        .catch((error) => {
+          console.error("Failed to assign subject:", error);
+          alert("Failed to assign subject. Please try again.");
+        });
     };
-
-    request("POST", "/api/repartizareProf", payload)
-      .then(() => {
-        alert("Subject assigned successfully!");
-        setSubjectFormVisible(false);
-      })
-      .catch((error) => {
-        console.error("Failed to assign subject:", error);
-        alert("Failed to assign subject. Please try again.");
-      });
+    
+    if (useCustomSubject && customSubject.trim()) {
+      // First create the new subject, then assign it
+      createNewSubject(customSubject.trim())
+        .then(() => {
+          assignSubject();
+        })
+        .catch(error => {
+          console.error("Failed to create new subject:", error);
+          alert("Failed to create new subject. Please try again.");
+        });
+    } else {
+      // Just assign the selected subject
+      assignSubject();
+    }
   };
 
   const renderSubjectForm = () => {
@@ -482,16 +519,61 @@ const renderStudentList = () => (
         </h2>
         <form onSubmit={handleSubmitSubject}>
           <div className="form-group">
-            <label>Materie:</label>
-            <select name="materie" className="input-field" required>
-              <option value="">Select a subject</option>
-              {allSubjects.map((sub) => (
-                <option key={sub.id} value={sub.nume}>
-                  {sub.nume}
-                </option>
-              ))}
-            </select>
+            <div className="subject-selection-mode">
+              <label style={{ marginRight: 'var(--spacing-md)' }}>
+                <input 
+                  type="radio" 
+                  name="subjectMode" 
+                  checked={!useCustomSubject}
+                  onChange={() => setUseCustomSubject(false)}
+                  style={{ marginRight: 'var(--spacing-xs)' }} 
+                />
+                Select existing subject
+              </label>
+              <label>
+                <input 
+                  type="radio" 
+                  name="subjectMode" 
+                  checked={useCustomSubject}
+                  onChange={() => setUseCustomSubject(true)}
+                  style={{ marginRight: 'var(--spacing-xs)' }} 
+                />
+                Add new subject
+              </label>
+            </div>
           </div>
+
+          {!useCustomSubject ? (
+            <div className="form-group">
+              <label>Materie:</label>
+              <select 
+                name="materie" 
+                className="input-field" 
+                required={!useCustomSubject}
+                value={selectedSubject}
+                onChange={(e) => setSelectedSubject(e.target.value)}
+              >
+                <option value="">Select a subject</option>
+                {allSubjects.map((sub) => (
+                  <option key={sub.id} value={sub.nume}>
+                    {sub.nume}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <div className="form-group">
+              <label>New Subject Name:</label>
+              <input
+                name="customMaterie"
+                className="input-field"
+                required={useCustomSubject}
+                value={customSubject}
+                onChange={(e) => setCustomSubject(e.target.value)}
+                placeholder="Enter a new subject name"
+              />
+            </div>
+          )}
 
           <div className="form-group">
             <label>Tip:</label>
@@ -504,7 +586,11 @@ const renderStudentList = () => (
           </div>
 
           <div className="form-buttons">
-            <button type="submit" className="btn save-btn">
+            <button 
+              type="submit" 
+              className="btn save-btn"
+              disabled={useCustomSubject && !customSubject.trim() || !useCustomSubject && !selectedSubject}
+            >
               Add
             </button>
             <button

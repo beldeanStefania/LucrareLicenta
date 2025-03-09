@@ -168,7 +168,33 @@ Accessibility enhancements include:
 - ARIA attributes where appropriate
 - Focus state management
 
-## 5. Future Enhancement Opportunities
+## 5. Interactive Form Enhancement
+
+### 5.1 Dynamic Subject Creation
+
+A key usability enhancement was implemented in the professor subject assignment workflow:
+
+- **Problem Identified**: Administrators had to pre-create all subjects before they could be assigned to professors, requiring context switching between multiple forms.
+- **Solution Implemented**: Added a dynamic subject creation option directly within the subject assignment interface.
+
+Key implementation features:
+- Dual-mode interface with radio selection for user preference:
+  - Select existing subject from database
+  - Create and assign new subject in one operation
+- Conditional form rendering based on selection mode
+- Backend integration to handle the creation and assignment in a single transaction
+- Validation to ensure data integrity in both modes
+- Visual distinction between options for clear user navigation
+
+This enhancement demonstrates application of several key UX principles:
+1. **Reducing cognitive load** by eliminating unnecessary context switching
+2. **Task efficiency** by reducing the steps needed to accomplish a common task
+3. **Progressive disclosure** by revealing relevant options only when needed
+4. **Error prevention** through contextual validation and clear action paths
+
+For the bachelor thesis, this implementation provides an excellent case study in improving administrative workflows through targeted UX improvements.
+
+## 6. Future Enhancement Opportunities
 
 Potential areas for future development:
 - Implementation of dark mode
@@ -176,8 +202,9 @@ Potential areas for future development:
 - Component library extraction
 - Theme customization options
 - Animation system refinement
+- Similar dynamic creation patterns for other entities (students, professors, etc.)
 
-## 6. Conclusion
+## 7. Conclusion
 
 The implemented UI enhancements provide a significant improvement to the University Management System's usability, aesthetics, and professionalism. The systematic approach to design creates a scalable foundation for future development while addressing immediate user experience needs.
 
