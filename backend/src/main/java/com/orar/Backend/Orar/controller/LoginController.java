@@ -127,6 +127,8 @@ public class LoginController {
         } else {
             response.put("cod", "Not available");
             response.put("grupa", "Not available");
+            response.put("nume", user.getStudent().getNume());
+            response.put("prenume", user.getStudent().getPrenume());
         }
 
         // Loguri pentru debugging
