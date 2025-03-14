@@ -232,225 +232,226 @@ export default function ProfessorPage({ onLogout }) {
         onLogout={onLogout}
       />
 
-      {/* 1) Acordă note studenților */}
-      <section>
-        <h2>Acordă note studenților</h2>
-        <div>
-          <label>Materie:</label>
-          <select
-            onChange={(e) => setSelectedGradeMaterie(e.target.value)}
-            value={selectedGradeMaterie}
-          >
-            <option value="">Selectează materie</option>
-            {materiiUnice.map((materie, index) => (
-              <option key={index} value={materie.denumire}>
-                {materie.denumire}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label>Grupa studenților:</label>
-          <input
-            type="text"
-            placeholder="Introdu grupa"
-            onChange={(e) => setSelectedGradeGroup(e.target.value)}
-          />
-        </div>
-        <div className="students-list">
-  {students && students.length > 0 ? (
-    students.map((student) => (
-      <div key={student.cod} className="student-entry">
-        <span className="student-name">{student.nume} {student.prenume}</span>
-        <input
-          type="number"
-          placeholder="Introdu nota"
-          value={gradeStudentNotes[student.cod] || ""}
-          onChange={(e) =>
-            setGradeStudentNotes({
-              ...gradeStudentNotes,
-              [student.cod]: e.target.value,
-            })
-          }
-        />
-      </div>
-    ))
-  ) : (
-    <p>Nu au fost găsiți studenți pentru grupa specificată.</p>
-  )}
-</div>
-
-
-{errorMessage && <p className="error-message">{errorMessage}</p>}
-<button onClick={handleAddGrades}>Adaugă Note</button>
-
-      </section>
-
-      {/* 2) Rezervare sală (Orar) */}
-      <section>
-        <h2>Rezervare sală</h2>
-        <div>
-          <label>Materie:</label>
-          <select
-            onChange={(e) => setSelectedMaterieForSchedule(e.target.value)}
-            value={selectedMaterieForSchedule}
-          >
-            <option value="">Selectează materie</option>
-            {materiiUnice.map((materie, index) => (
-    <option key={index} value={materie.denumire}>
-      {materie.denumire}
-    </option>
-  ))}
-</select>
-        </div>
-        <div>
-          <label>Tip:</label>
-          <select
-            onChange={(e) => setSelectedTip(e.target.value)}
-            value={selectedTip}
-          >
-            <option value="">Selectează tipul</option>
-            <option value="Curs">Curs</option>
-            <option value="Laborator">Laborator</option>
-            <option value="Seminar">Seminar</option>
-          </select>
-        </div>
-        {(selectedTip === "Laborator" || selectedTip === "Seminar") && (
+      <div className="professor-content">
+        {/* 1) Acordă note studenților */}
+        <section>
+          <h2>Acordă note studenților</h2>
           <div>
-            <label>Frecvența:</label>
+            <label>Materie:</label>
             <select
-              onChange={(e) => setSelectedFrecventa(e.target.value)}
-              value={selectedFrecventa}
+              onChange={(e) => setSelectedGradeMaterie(e.target.value)}
+              value={selectedGradeMaterie}
             >
-              <option value="">Selectează frecvența</option>
-              <option value="1 sapt">1 săptămână</option>
-              <option value="2 sapt">2 săptămâni</option>
-              <option value="saptamanal">Săptămânal</option>
+              <option value="">Selectează materie</option>
+              {materiiUnice.map((materie, index) => (
+                <option key={index} value={materie.denumire}>
+                  {materie.denumire}
+                </option>
+              ))}
             </select>
           </div>
-        )}
-        {selectedTip === "Laborator" && (
           <div>
-            <label>Semigrupa:</label>
+            <label>Grupa studenților:</label>
             <input
               type="text"
-              placeholder="ex: 1 sau 2"
+              placeholder="Introdu grupa"
+              onChange={(e) => setSelectedGradeGroup(e.target.value)}
+            />
+          </div>
+          <div className="students-list">
+            {students && students.length > 0 ? (
+              students.map((student) => (
+                <div key={student.cod} className="student-entry">
+                  <span className="student-name">{student.nume} {student.prenume}</span>
+                  <input
+                    type="number"
+                    placeholder="Introdu nota"
+                    value={gradeStudentNotes[student.cod] || ""}
+                    onChange={(e) =>
+                      setGradeStudentNotes({
+                        ...gradeStudentNotes,
+                        [student.cod]: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              ))
+            ) : (
+              <p>Nu au fost găsiți studenți pentru grupa specificată.</p>
+            )}
+          </div>
+
+
+          {errorMessage && <p className="error-message">{errorMessage}</p>}
+          <button onClick={handleAddGrades}>Adaugă Note</button>
+        </section>
+
+        {/* 2) Rezervare sală (Orar) */}
+        <section>
+          <h2>Rezervare sală</h2>
+          <div>
+            <label>Materie:</label>
+            <select
+              onChange={(e) => setSelectedMaterieForSchedule(e.target.value)}
+              value={selectedMaterieForSchedule}
+            >
+              <option value="">Selectează materie</option>
+              {materiiUnice.map((materie, index) => (
+                <option key={index} value={materie.denumire}>
+                  {materie.denumire}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label>Tip:</label>
+            <select
+              onChange={(e) => setSelectedTip(e.target.value)}
+              value={selectedTip}
+            >
+              <option value="">Selectează tipul</option>
+              <option value="Curs">Curs</option>
+              <option value="Laborator">Laborator</option>
+              <option value="Seminar">Seminar</option>
+            </select>
+          </div>
+          {(selectedTip === "Laborator" || selectedTip === "Seminar") && (
+            <div>
+              <label>Frecvența:</label>
+              <select
+                onChange={(e) => setSelectedFrecventa(e.target.value)}
+                value={selectedFrecventa}
+              >
+                <option value="">Selectează frecvența</option>
+                <option value="1 sapt">1 săptămână</option>
+                <option value="2 sapt">2 săptămâni</option>
+                <option value="saptamanal">Săptămânal</option>
+              </select>
+            </div>
+          )}
+          {selectedTip === "Laborator" && (
+            <div>
+              <label>Semigrupa:</label>
+              <input
+                type="text"
+                placeholder="ex: 1 sau 2"
+                onChange={(e) =>
+                  setScheduleData({ ...scheduleData, semigrupa: e.target.value })
+                }
+              />
+            </div>
+          )}
+          <div>
+            <label>Clădire:</label>
+            <select
+              onChange={(e) => handleCladireChange(e.target.value)}
+              value={selectedCladire}
+            >
+              <option value="">Selectează clădirea</option>
+              {cladiri.map((cladire) => (
+                <option key={cladire.id} value={cladire.id}>
+                  {cladire.nume}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label>Sală:</label>
+            <select
+              onChange={(e) => setSelectedRoom(e.target.value)}
+              value={selectedRoom}
+            >
+              <option value="">Selectează sala</option>
+              {rooms.map((room) => (
+                <option key={room.id} value={room.id}>
+                  {room.nume}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label>Grupa:</label>
+            <input
+              type="text"
+              placeholder="Introduceți grupa"
               onChange={(e) =>
-                setScheduleData({ ...scheduleData, semigrupa: e.target.value })
+                setScheduleData({ ...scheduleData, grupa: e.target.value })
               }
             />
           </div>
-        )}
-        <div>
-          <label>Clădire:</label>
-          <select
-            onChange={(e) => handleCladireChange(e.target.value)}
-            value={selectedCladire}
-          >
-            <option value="">Selectează clădirea</option>
-            {cladiri.map((cladire) => (
-              <option key={cladire.id} value={cladire.id}>
-                {cladire.nume}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label>Sală:</label>
-          <select
-            onChange={(e) => setSelectedRoom(e.target.value)}
-            value={selectedRoom}
-          >
-            <option value="">Selectează sala</option>
-            {rooms.map((room) => (
-              <option key={room.id} value={room.id}>
-                {room.nume}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label>Grupa:</label>
-          <input
-            type="text"
-            placeholder="Introduceți grupa"
-            onChange={(e) =>
-              setScheduleData({ ...scheduleData, grupa: e.target.value })
-            }
-          />
-        </div>
-        <div>
-          <label>Ora început:</label>
-          <input
-            type="time"
-            onChange={(e) =>
-              setScheduleData({ ...scheduleData, oraInceput: e.target.value })
-            }
-          />
-        </div>
-        <div>
-          <label>Ora sfârșit:</label>
-          <input
-            type="time"
-            onChange={(e) =>
-              setScheduleData({ ...scheduleData, oraSfarsit: e.target.value })
-            }
-          />
-        </div>
-        <div>
-          <label>Ziua:</label>
-          <select
-            onChange={(e) =>
-              setScheduleData({ ...scheduleData, zi: e.target.value })
-            }
-            value={scheduleData.zi}
-          >
-            <option value="">Selectează ziua</option>
-            <option value="Luni">Luni</option>
-            <option value="Marti">Marți</option>
-            <option value="Miercuri">Miercuri</option>
-            <option value="Joi">Joi</option>
-            <option value="Vineri">Vineri</option>
-          </select>
-        </div>
-        {errorMessage && <p className="error-message">{errorMessage}</p>}
-        <button onClick={handleReserveRoom}>Rezervă Sală</button>
-      </section>
+          <div>
+            <label>Ora început:</label>
+            <input
+              type="time"
+              onChange={(e) =>
+                setScheduleData({ ...scheduleData, oraInceput: e.target.value })
+              }
+            />
+          </div>
+          <div>
+            <label>Ora sfârșit:</label>
+            <input
+              type="time"
+              onChange={(e) =>
+                setScheduleData({ ...scheduleData, oraSfarsit: e.target.value })
+              }
+            />
+          </div>
+          <div>
+            <label>Ziua:</label>
+            <select
+              onChange={(e) =>
+                setScheduleData({ ...scheduleData, zi: e.target.value })
+              }
+              value={scheduleData.zi}
+            >
+              <option value="">Selectează ziua</option>
+              <option value="Luni">Luni</option>
+              <option value="Marti">Marți</option>
+              <option value="Miercuri">Miercuri</option>
+              <option value="Joi">Joi</option>
+              <option value="Vineri">Vineri</option>
+            </select>
+          </div>
+          {errorMessage && <p className="error-message">{errorMessage}</p>}
+          <button onClick={handleReserveRoom}>Rezervă Sală</button>
+        </section>
 
-      {/* 3) Afișare orar profesor */}
-      <section>
-        <h2>Orarul meu</h2>
-        {profSchedule.length > 0 ? (
-          <table className="schedule-table">
-            <thead>
-              <tr>
-                <th>Ziua</th>
-                <th>Orele</th>
-                <th>Frecvența</th>
-                <th>Sala</th>
-                <th>Tipul</th>
-                <th>Formația</th>
-                <th>Disciplina</th>
-              </tr>
-            </thead>
-            <tbody>
-              {profSchedule.map((item, index) => (
-                <tr key={index}>
-                  <td>{item.zi}</td>
-                  <td>{`${item.oraInceput}:00 - ${item.oraSfarsit}:00`}</td>
-                  <td>{item.frecventa === "saptamanal" ? "" : item.frecventa}</td>
-                  <td>{item.sala}</td>
-                  <td>{item.tipul}</td>
-                  <td>{item.formatia}</td>
-                  <td>{item.disciplina}</td>
+        {/* 3) Afișare orar profesor */}
+        <section>
+          <h2>Orarul meu</h2>
+          {profSchedule.length > 0 ? (
+            <table className="schedule-table">
+              <thead>
+                <tr>
+                  <th>Ziua</th>
+                  <th>Orele</th>
+                  <th>Frecvența</th>
+                  <th>Sala</th>
+                  <th>Tipul</th>
+                  <th>Formația</th>
+                  <th>Disciplina</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p>Nicio oră planificată pentru acest profesor.</p>
-        )}
-      </section>
+              </thead>
+              <tbody>
+                {profSchedule.map((item, index) => (
+                  <tr key={index}>
+                    <td>{item.zi}</td>
+                    <td>{`${item.oraInceput}:00 - ${item.oraSfarsit}:00`}</td>
+                    <td>{item.frecventa === "saptamanal" ? "" : item.frecventa}</td>
+                    <td>{item.sala}</td>
+                    <td>{item.tipul}</td>
+                    <td>{item.formatia}</td>
+                    <td>{item.disciplina}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p>Nicio oră planificată pentru acest profesor.</p>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

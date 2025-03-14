@@ -1,39 +1,14 @@
 /* Stiluri generale pentru pagina profesorului */
 .professor-page {
-    padding: 20px;
-    font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
+    min-height: 100vh;
+    background-color: var(--bg-secondary);
   }
   
-  /* Header-ul paginii */
-  .professor-page header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding: 10px;
-    border-bottom: 2px solid #ddd;
-  }
-  
-  .professor-page header h1 {
-    margin: 0;
-    color: #333;
-  }
-  
-  .logout-btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    background-color: #dc3545;
-    color: white;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-  }
-  
-  .logout-btn:hover {
-    background-color: #c82333;
-    transform: scale(1.05);
+  /* Conținutul paginii - pentru a păstra consistența cu celelalte pagini */
+  .professor-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-lg);
   }
   
   /* Stiluri pentru secțiuni */
@@ -174,4 +149,3 @@
   .professor-page .schedule-form input {
     width: 100%;
   }
-  
