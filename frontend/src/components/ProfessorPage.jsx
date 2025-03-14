@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { request } from "../helpers/axios-helper";
+import NavigationHeader from "./NavigationHeader";
 import "./ProfessorPage.css";
 
 export default function ProfessorPage({ onLogout }) {
