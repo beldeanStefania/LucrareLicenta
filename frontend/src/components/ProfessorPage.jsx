@@ -226,12 +226,11 @@ export default function ProfessorPage({ onLogout }) {
   // =================== RENDER ===================
   return (
     <div className="professor-page">
-      <header>
-        <h1>Bun venit!</h1>
-        <button className="logout-btn" onClick={onLogout}>
-          Logout
-        </button>
-      </header>
+      <NavigationHeader 
+        userRole="ROLE_PROFESOR" 
+        userName={professorInfo?.username}
+        onLogout={onLogout}
+      />
 
       {/* 1) Acordă note studenților */}
       <section>

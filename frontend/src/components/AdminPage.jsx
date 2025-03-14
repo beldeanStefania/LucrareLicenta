@@ -612,12 +612,11 @@ const renderStudentList = () => (
   // ---------------------------------------------------
   return (
     <div className="admin-page">
-      <div className="header">
-        <h1>Admin Dashboard</h1>
-        <button className="btn logout-btn" onClick={onLogout}>
-          Logout
-        </button>
-      </div>
+      <NavigationHeader 
+        userRole="ROLE_ADMIN" 
+        userName="Admin"
+        onLogout={onLogout}
+      />
 
       <hr />
       <h1>Students Management</h1>
