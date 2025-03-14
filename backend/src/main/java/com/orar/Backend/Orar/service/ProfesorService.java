@@ -46,7 +46,7 @@ public class ProfesorService {
 
         // Cream un User asociat cu acest Profesor
         User user = new User();
-        user.setUsername(profesorDTO.getNume());
+        user.setUsername(profesorDTO.getUsername());
         user.setPassword(passwordEncoder.encode(profesorDTO.getPassword()));
         user.setRole(profesorRole); // Asociază rolul PROFESOR cu utilizatorul
         userRepository.save(user); // Salvează user-ul în baza de date
