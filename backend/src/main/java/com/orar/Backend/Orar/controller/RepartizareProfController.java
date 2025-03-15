@@ -1,6 +1,9 @@
 package com.orar.Backend.Orar.controller;
 
 import com.orar.Backend.Orar.dto.RepartizareProfDTO;
+import com.orar.Backend.Orar.exception.MaterieDoesNotExistException;
+import com.orar.Backend.Orar.exception.ProfesorDoesNotExistException;
+import com.orar.Backend.Orar.exception.ProfesorNotFoundException;
 import com.orar.Backend.Orar.exception.RepartizareProfAlreadyExistsException;
 import com.orar.Backend.Orar.model.RepartizareProf;
 import com.orar.Backend.Orar.service.RepartizareProfService;
@@ -58,7 +61,7 @@ public class RepartizareProfController {
     public ResponseEntity<RepartizareProf> addRepartizareProf(@Valid @RequestBody RepartizareProfDTO repartizareProfDTO) {
         try {
             return ok(repartizareProfService.add(repartizareProfDTO));
-        } catch (RepartizareProfAlreadyExistsException e) {
+        } catch (ProfesorNotFoundException | RepartizareProfAlreadyExistsException | MaterieDoesNotExistException e) {
             return badRequest().body(null);
         }
     }

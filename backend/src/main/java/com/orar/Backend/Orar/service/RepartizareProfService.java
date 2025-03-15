@@ -2,6 +2,7 @@ package com.orar.Backend.Orar.service;
 
 import com.orar.Backend.Orar.dto.MaterieDTO;
 import com.orar.Backend.Orar.dto.RepartizareProfDTO;
+import com.orar.Backend.Orar.exception.MaterieDoesNotExistException;
 import com.orar.Backend.Orar.exception.ProfesorNotFoundException;
 import com.orar.Backend.Orar.exception.RepartizareProfAlreadyExistsException;
 import com.orar.Backend.Orar.model.Materie;
@@ -34,24 +35,26 @@ public class RepartizareProfService {
         return repartizareProfRepository.findAll();
     }
 
-    public RepartizareProf add(RepartizareProfDTO repartizareProfDTO) throws RepartizareProfAlreadyExistsException {
+    public RepartizareProf add(RepartizareProfDTO repartizareProfDTO) throws RepartizareProfAlreadyExistsException, MaterieDoesNotExistException, ProfesorNotFoundException {
         var newRepartizareProf = buildRepartizareProf(repartizareProfDTO);
         return repartizareProfRepository.save(newRepartizareProf);
 
     }
 
-    private RepartizareProf buildRepartizareProf(RepartizareProfDTO repartizareProfDTO) throws RepartizareProfAlreadyExistsException {
+    private RepartizareProf buildRepartizareProf(RepartizareProfDTO repartizareProfDTO) throws RepartizareProfAlreadyExistsException, MaterieDoesNotExistException, ProfesorNotFoundException {
         checkRepartizareProfExists(repartizareProfDTO);
         return createRepartizareProf(repartizareProfDTO);
     }
 
-    private RepartizareProf createRepartizareProf(RepartizareProfDTO repartizareProfDTO) {
-        RepartizareProf repartizareProf = new RepartizareProf();
-        Materie materie = materieRepository.findByNume(repartizareProfDTO.getMaterie()).get();
-        repartizareProf.setMaterie(materie);
-        Profesor profesor = profesorRepository.findByNumeAndPrenume(repartizareProfDTO.getNumeProfesor(), repartizareProfDTO.getPrenumeProfesor()).get();
+    private RepartizareProf createRepartizareProf(RepartizareProfDTO repartizareProfDTO) throws MaterieDoesNotExistException, ProfesorNotFoundException {
+        var repartizareProf = new RepartizareProf();
+        var materie = materieRepository.findByNume(repartizareProfDTO.getMaterie());
+        if(!materie.isPresent()) throw new MaterieDoesNotExistException("Materia nu exista");
+        repartizareProf.setMaterie(materie.get());
+        var profesor = profesorRepository.findByNumeAndPrenume(repartizareProfDTO.getNumeProfesor(), repartizareProfDTO.getPrenumeProfesor());
+        if(!profesor.isPresent()) throw new ProfesorNotFoundException("Profesorul nu exista");
+        repartizareProf.setProfesor(profesor.get());
         repartizareProf.setTip(repartizareProfDTO.getTip());
-        repartizareProf.setProfesor(profesor);
         return repartizareProf;
     }
 
