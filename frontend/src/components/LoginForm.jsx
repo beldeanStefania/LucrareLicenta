@@ -25,15 +25,7 @@ export default function LoginForm({ onLogin }) {
         const decodedToken = decodeToken(token);
         const role = decodedToken?.role;
   
-        if (role === "ROLE_ADMIN") {
-          navigate("/admin");
-        } else if (role === "ROLE_STUDENT") {
-          navigate("/student");
-        } else if (role === "ROLE_PROFESOR") {
-          navigate("/profesor");
-        } else {
-          setError("Unknown role. Please contact the administrator.");
-        }
+        navigate("/dashboard");
   
         onLogin();
       })

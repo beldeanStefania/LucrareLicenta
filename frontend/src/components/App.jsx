@@ -26,7 +26,10 @@ export default function App() {
   }, []);
   
   if (!authChecked) {
-    return <div>Loading...</div>;
+    return <div className="loading-container">
+      <div className="loading-spinner"></div>
+      <div className="loading-text">Loading...</div>
+    </div>;
   }
 
   const handleLogin = () => {
@@ -45,6 +48,22 @@ export default function App() {
     setAuthHeader(null);
     setIsLoggedIn(false);
     setUserRole(null);
+  };
+
+  // Function to redirect user based on role after login
+  const redirectBasedOnRole = () => {
+    if (!isLoggedIn) return <Navigate to="/login" />;
+    
+    switch(userRole) {
+      case "ROLE_ADMIN":
+        return <Navigate to="/admin" />;
+      case "ROLE_STUDENT":
+        return <Navigate to="/student" />;
+      case "ROLE_PROFESOR":
+        return <Navigate to="/profesor" />;
+      default:
+        return <Navigate to="/login" />;
+    }
   };
 
   return (
@@ -82,6 +101,12 @@ export default function App() {
             )
           }
         />
+        
+        {/* Dashboard route for redirecting after login */}
+        <Route path="/dashboard" element={redirectBasedOnRole()} />
+        
+        {/* Catch-all route to handle 404s - redirect to welcome page */}
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
   );
