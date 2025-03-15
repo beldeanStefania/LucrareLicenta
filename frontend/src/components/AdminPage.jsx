@@ -454,7 +454,7 @@ const renderStudentList = () => (
   };
 
   const createNewSubject = (subjectName) => {
-    return request("POST", "/api/materie/add", { nume: subjectName })
+    return request("POST", "/api/materie/add", { numeMaterie: subjectName })
       .then(response => {
         // Refresh subject list after adding
         fetchAllSubjects();
