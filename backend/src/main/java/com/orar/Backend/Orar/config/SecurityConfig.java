@@ -50,7 +50,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/sala/**").hasAnyRole("ADMIN", "PROFESOR")
                         .requestMatchers("/api/cladire/**").hasAnyRole("ADMIN", "PROFESOR")
                         .requestMatchers("/api/materie/**").hasAnyRole("ADMIN", "PROFESOR")
-                        .requestMatchers("/api/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling((exceptions) -> exceptions
