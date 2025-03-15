@@ -1,7 +1,14 @@
 /* Stiluri pentru întreaga pagină Admin */
 .admin-page {
-    padding: 20px;
-    font-family: Arial, sans-serif;
+    min-height: 100vh;
+    background-color: var(--bg-secondary);
+}
+
+/* Content container */
+.admin-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-lg);
 }
 
 /* Titlu principal */

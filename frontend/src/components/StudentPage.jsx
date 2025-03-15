@@ -108,7 +108,8 @@ export default function StudentPage({ onLogout }) {
     <div className="student-page">
       <NavigationHeader 
         userRole="ROLE_STUDENT" 
-        userName={userData.username}/>
+        userName={userData.username}
+        onLogout={onLogout}/>
 
       <div className="student-content">
         {/* Welcome section */}

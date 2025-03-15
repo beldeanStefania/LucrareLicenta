@@ -618,22 +618,24 @@ const renderStudentList = () => (
         onLogout={onLogout}
       />
 
-      <hr />
-      <h1>Students Management</h1>
-      {viewMode === "list" && renderStudentList()}
-      {(viewMode === "add" || viewMode === "update") && renderStudentForm()}
+      <div className="admin-content">
+        <hr />
+        <h1>Students Management</h1>
+        {viewMode === "list" && renderStudentList()}
+        {(viewMode === "add" || viewMode === "update") && renderStudentForm()}
 
-      <hr />
-      <h1>Professors Management</h1>
-      {viewModeProf === "list" && renderProfessorList()}
-      {(viewModeProf === "add" || viewModeProf === "update") &&
-        renderProfessorForm()}
+        <hr />
+        <h1>Professors Management</h1>
+        {viewModeProf === "list" && renderProfessorList()}
+        {(viewModeProf === "add" || viewModeProf === "update") &&
+          renderProfessorForm()}
 
-      {/*
-        Formularul pentru a asocia o materie la un profesor (RepartizareProf).
-        E ascuns până când user-ul dă "Add Subject" la un profesor.
-      */}
-      {renderSubjectForm()}
+        {/*
+          Formularul pentru a asocia o materie la un profesor (RepartizareProf).
+          E ascuns până când user-ul dă "Add Subject" la un profesor.
+        */}
+        {renderSubjectForm()}
+      </div>
     </div>
   );
 }
