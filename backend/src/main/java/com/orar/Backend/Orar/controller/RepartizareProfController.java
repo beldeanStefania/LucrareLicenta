@@ -73,7 +73,7 @@ public class RepartizareProfController {
     public ResponseEntity<RepartizareProf> updateRepartizareProf(@PathVariable Integer id, @Valid @RequestBody RepartizareProfDTO repartizareProfDTO) {
         try {
             return ok(repartizareProfService.updateRepartizareProf(id, repartizareProfDTO));
-        } catch (RepartizareProfAlreadyExistsException e) {
+        } catch (RepartizareProfAlreadyExistsException | MaterieDoesNotExistException | ProfesorNotFoundException e) {
             return badRequest().body(null);
         }
     }

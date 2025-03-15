@@ -73,7 +73,7 @@ public class RepartizareProfService {
         repartizareProfRepository.delete(repartizareProf);
     }
 
-    public RepartizareProf updateRepartizareProf(Integer id, RepartizareProfDTO repartizareProfDTO) throws RepartizareProfAlreadyExistsException {
+    public RepartizareProf updateRepartizareProf(Integer id, RepartizareProfDTO repartizareProfDTO) throws RepartizareProfAlreadyExistsException, MaterieDoesNotExistException, ProfesorNotFoundException {
         var repartizareProf = repartizareProfRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("RepartizareProf not found"));
         var updatedRepartizareProf = buildRepartizareProf(repartizareProfDTO);
