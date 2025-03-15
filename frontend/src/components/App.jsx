@@ -14,15 +14,43 @@ export default function App() {
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    const token = getAuthToken();
-    if (token) {
-      setAuthHeader(token);
-      const decodedToken = decodeToken(token);
-      console.log("Decoded token:", decodedToken);
-      setUserRole(decodedToken?.role || null);
-      setIsLoggedIn(true);
-    }
-    setAuthChecked(true);
+    const checkAuthStatus = () => {
+      const token = getAuthToken();
+      if (token) {
+        setAuthHeader(token);
+        try {
+          const decodedToken = decodeToken(token);
+          console.log("Decoded token:", decodedToken);
+          setUserRole(decodedToken?.role || null);
+          setIsLoggedIn(true);
+        } catch (error) {
+          console.error("Invalid token:", error);
+          // Clear invalid token
+          localStorage.removeItem("auth_token");
+          setAuthHeader(null);
+          setIsLoggedIn(false);
+          setUserRole(null);
+        }
+      } else {
+        setIsLoggedIn(false);
+        setUserRole(null);
+      }
+      setAuthChecked(true);
+    };
+
+    checkAuthStatus();
+
+    // Set up storage event listener to sync auth state across tabs
+    const handleStorageChange = (e) => {
+      if (e.key === "auth_token") {
+        checkAuthStatus();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
   
   if (!authChecked) {
@@ -56,13 +84,22 @@ export default function App() {
     
     switch(userRole) {
       case "ROLE_ADMIN":
-        return <Navigate to="/admin" />;
+        return <Navigate to="/admin" replace />;
       case "ROLE_STUDENT":
-        return <Navigate to="/student" />;
+        return <Navigate to="/student" replace />;
       case "ROLE_PROFESOR":
-        return <Navigate to="/profesor" />;
+        return <Navigate to="/profesor" replace />;
       default:
-        return <Navigate to="/login" />;
+        return <Navigate to="/login" replace />;
+    }
+  };
+
+  // Function to redirect based on login status
+  const redirectToLoginOrDashboard = () => {
+    if (isLoggedIn) {
+      return redirectBasedOnRole();
+    } else {
+      return <LoginForm onLogin={handleLogin} />;
     }
   };
 
@@ -70,7 +107,7 @@ export default function App() {
     <Router>
       <Routes>
         <Route path="/" element={<WelcomePage />} />
-        <Route path="/login" element={<LoginForm onLogin={handleLogin} />} />
+        <Route path="/login" element={redirectToLoginOrDashboard()} />
         <Route
           path="/admin"
           element={
@@ -105,8 +142,8 @@ export default function App() {
         {/* Dashboard route for redirecting after login */}
         <Route path="/dashboard" element={redirectBasedOnRole()} />
         
-        {/* Catch-all route to handle 404s - redirect to welcome page */}
-        <Route path="*" element={<Navigate to="/" />} />
+        {/* Catch-all route to handle 404s - redirect to dashboard for logged in users */}
+        <Route path="*" element={isLoggedIn ? <Navigate to="/dashboard" /> : <Navigate to="/" />} />
       </Routes>
     </Router>
   );
