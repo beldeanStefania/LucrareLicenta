@@ -454,13 +454,18 @@ const renderStudentList = () => (
   };
 
   const createNewSubject = (subjectName) => {
-    return request("POST", "/api/materie/add", { nume: subjectName })
+    // Alege valori implicite pentru semestru și cod dacă nu sunt introduse de utilizator
+    return request("POST", "/api/materie/add", { 
+      nume: subjectName,
+      semestru: 1,      // De exemplu, semestrul 1
+      cod: subjectName.toUpperCase().replace(/\s+/g, "") // Sau altă logică pentru cod
+    })
       .then(response => {
-        // Refresh subject list after adding
-        fetchAllSubjects();
+        fetchAllSubjects(); // actualizează lista de materii
         return response.data;
       });
   };
+  
 
   const handleSubmitSubject = (e) => {
     e.preventDefault();
