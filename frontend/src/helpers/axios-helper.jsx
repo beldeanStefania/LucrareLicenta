@@ -27,7 +27,7 @@ export const setAuthHeader = (token) => {
 };
 
 
-axios.defaults.baseURL = "http://176.34.129.151/:8080";
+axios.defaults.baseURL = "http://176.34.129.151:8080";
 axios.defaults.headers.post["Content-Type"] = "application/json";
 
 export const request = (method, url, data) => {
