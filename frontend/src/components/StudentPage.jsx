@@ -222,13 +222,13 @@ export default function StudentPage({ onLogout }) {
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Day</th>
-                    <th>Time</th>
-                    <th>Course</th>
-                    <th>Type</th>
-                    <th>Room</th>
-                    <th>Professor</th>
-                    <th>Frequency</th>
+                    <th>Ziua</th>
+                    <th>Orele</th>
+                    <th>Frecvența</th>
+                    <th>Sala</th>
+                    <th>Tipul</th>
+                    <th>Formația</th>
+                    <th>Disciplina</th>
                   </tr>
                 </thead>
                 <tbody>
