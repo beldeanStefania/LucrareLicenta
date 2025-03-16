@@ -17,7 +17,7 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private static final String KEY_FILE_PATH = "jwtSecretKey.key";
+    private static final String KEY_FILE_PATH = "/app/jwtSecretKey.key";
     private static SecretKey SECRET_KEY;
 
     private final UserDetailsServiceImpl userDetailsService;
