@@ -1,5 +1,6 @@
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
+// Import for jwt-decode v3
+import jwt_decode from "jwt-decode";
 
 export const getAuthToken = () => {
   const token = window.localStorage.getItem("auth_token");
@@ -13,9 +14,17 @@ export const getAuthToken = () => {
 
 export const decodeToken = (token) => {
   if (!token) return null;
+  
+  // Check if token has a valid format (at least has two dots for three parts)
+  if (!token.includes('.') || token.split('.').length !== 3) {
+    console.error("Invalid token format - must have header, payload, and signature parts");
+    return null;
+  }
+
   try {
     console.log("Token to decode:", token); // Debug log to see the token
-    const decoded = jwtDecode(token);
+    // Use jwt_decode directly (v3 syntax)
+    const decoded = jwt_decode(token);
     console.log("Decoded token:", decoded); // Debug log to see the decoded token
     return decoded;
   } catch (e) {
