@@ -217,7 +217,7 @@ jobs:
           script: |
             cd /home/ubuntu/LucrareLicenta/backend || { echo "Failed to change directory"; exit 1; }
             echo "Running Flyway clean..."
-            mvn flyway:repair
+            mvn flyway:clean
             echo "Running Flyway migrate..."
             mvn flyway:migrate || { echo "Failed to run flyway:migrate"; exit 1; }
 
