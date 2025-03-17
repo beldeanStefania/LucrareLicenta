@@ -2,15 +2,25 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 
 export const getAuthToken = () => {
-  return window.localStorage.getItem("auth_token");
+  const token = window.localStorage.getItem("auth_token");
+  if (token && token.trim() === "") {
+    // Remove empty tokens
+    window.localStorage.removeItem("auth_token");
+    return null;
+  }
+  return token;
 };
 
 export const decodeToken = (token) => {
   if (!token) return null;
   try {
-    return jwtDecode(token); 
+    console.log("Token to decode:", token); // Debug log to see the token
+    const decoded = jwtDecode(token);
+    console.log("Decoded token:", decoded); // Debug log to see the decoded token
+    return decoded;
   } catch (e) {
     console.error("Failed to decode token", e);
+    console.error("Token that failed to decode:", token);
     return null;
   }
 };
@@ -40,4 +50,3 @@ export const request = (method, url, data) => {
     data,
   });
 };
-

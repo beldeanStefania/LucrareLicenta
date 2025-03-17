@@ -16,21 +16,24 @@ export default function App() {
   useEffect(() => {
     const checkAuthStatus = () => {
       const token = getAuthToken();
+      console.log("Auth status check - Token exists:", !!token);
       if (token) {
         setAuthHeader(token);
         try {
           const decodedToken = decodeToken(token);
-          console.log("Decoded token:", decodedToken);
+          console.log("Decoded token in App:", decodedToken);
           setUserRole(decodedToken?.role || null);
           setIsLoggedIn(true);
         } catch (error) {
           console.error("Invalid token:", error);
+          // Clear invalid token
           localStorage.removeItem("auth_token");
           setAuthHeader(null);
           setIsLoggedIn(false);
           setUserRole(null);
         }
       } else {
+        // No token found in localStorage
         setIsLoggedIn(false);
         setUserRole(null);
       }

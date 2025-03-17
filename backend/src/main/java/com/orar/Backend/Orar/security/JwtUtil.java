@@ -17,7 +17,13 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private static final String KEY_FILE_PATH = "/app/jwtSecretKey.key";
+    // Multiple possible paths for finding the key file
+    private static final String[] KEY_FILE_PATHS = {
+        "/app/jwtSecretKey.key",                  // Docker container path
+        "jwtSecretKey.key",                       // Project root path
+        "../jwtSecretKey.key",                    // One level up
+        System.getProperty("user.dir") + "/jwtSecretKey.key" // Absolute path using user.dir
+    };
     private static SecretKey SECRET_KEY;
 
     private final UserDetailsServiceImpl userDetailsService;
@@ -28,18 +34,46 @@ public class JwtUtil {
     }
 
     private SecretKey loadOrGenerateKey() {
-        try {
-            File keyFile = new File(KEY_FILE_PATH);
-            if (keyFile.exists()) {
-                byte[] keyBytes = Files.readAllBytes(keyFile.toPath());
-                return Keys.hmacShaKeyFor(keyBytes);
-            } else {
-                SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
-                Files.write(keyFile.toPath(), key.getEncoded());
-                return key;
+        // Try to find the key file in any of the potential locations
+        for (String path : KEY_FILE_PATHS) {
+            try {
+                File keyFile = new File(path);
+                if (keyFile.exists()) {
+                    System.out.println("Loading JWT key from: " + keyFile.getAbsolutePath());
+                    byte[] keyBytes = Files.readAllBytes(keyFile.toPath());
+                    return Keys.hmacShaKeyFor(keyBytes);
+                }
+            } catch (IOException e) {
+                System.out.println("Could not load key from: " + path);
+                // Continue to the next path
             }
-        } catch (IOException e) {
-            throw new RuntimeException("Could not load or generate secret key", e);
+        }
+        
+        // If we couldn't find a key file, generate a new one
+        try {
+            System.out.println("Generating new JWT key");
+            SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+            
+            // Try to save the key to one of the paths
+            for (String path : KEY_FILE_PATHS) {
+                try {
+                    File keyFile = new File(path);
+                    File parentDir = keyFile.getParentFile();
+                    if (parentDir != null && !parentDir.exists()) {
+                        parentDir.mkdirs();
+                    }
+                    Files.write(keyFile.toPath(), key.getEncoded());
+                    System.out.println("Saved JWT key to: " + keyFile.getAbsolutePath());
+                    break; // Successfully saved the key
+                } catch (IOException e) {
+                    System.out.println("Could not save key to: " + path);
+                    // Try the next path
+                }
+            }
+            
+            return key;
+        } catch (Exception e) {
+            throw new RuntimeException("Could not generate JWT secret key", e);
         }
     }
 

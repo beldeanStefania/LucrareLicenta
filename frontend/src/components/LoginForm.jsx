@@ -19,15 +19,29 @@ export default function LoginForm({ onLogin }) {
     request("POST", "/api/auth/login", { username, password })
       .then((response) => {
         const token = response.data.token;
+        console.log("Login response token:", token); // Debug log
+        
+        if (!token) {
+          throw new Error("No token received from server");
+        }
+        
         setAuthHeader(token);
         localStorage.setItem("auth_token", token);
   
-        const decodedToken = decodeToken(token);
-        const role = decodedToken?.role;
-  
-        navigate("/dashboard");
-  
-        onLogin();
+        try {
+          const decodedToken = decodeToken(token);
+          console.log("Login decoded token:", decodedToken); // Debug log
+          const role = decodedToken?.role;
+          
+          navigate("/dashboard");
+          onLogin();
+        } catch (tokenError) {
+          console.error("Token decode error:", tokenError);
+          setError("Authentication error. Please try again.");
+          localStorage.removeItem("auth_token");
+          setAuthHeader(null);
+          throw tokenError;
+        }
       })
       .catch((error) => {
         console.error("Failed to login:", error);
