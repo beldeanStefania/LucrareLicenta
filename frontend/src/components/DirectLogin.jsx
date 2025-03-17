@@ -16,25 +16,35 @@ export default function DirectLogin() {
     setError("");
     
     try {
-      // Direct API call without using the token decoder
+      // Use vanilla JavaScript fetch instead of axios
       console.log("Attempting login with credentials:", { username });
-      const response = await axios.post(
-        "http://176.34.129.151:8080/api/auth/login", 
-        { username, password },
-        { 
-          headers: { 
-            "Content-Type": "application/json",
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            "Pragma": "no-cache",
-            "Expires": "0"
-          },
-          withCredentials: true
-        }
-      );
-      console.log("Login response:", response.data);
       
-      const token = response.data.token;
-      const role = response.data.role;
+      // Clear any previous auth state
+      localStorage.removeItem("auth_token");
+      sessionStorage.clear();
+      
+      // Using fetch instead of axios to avoid any configuration issues
+      const response = await fetch("http://176.34.129.151:8080/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          "Pragma": "no-cache",
+          "Expires": "0"
+        },
+        body: JSON.stringify({ username, password }),
+        credentials: "include"
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Login failed with status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("Login response data:", data);
+      
+      const token = data.token;
+      const role = data.role;
       
       console.log("Login successful with role:", role);
       

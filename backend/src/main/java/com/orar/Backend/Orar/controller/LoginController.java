@@ -24,6 +24,7 @@ import java.util.Map;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
+@CrossOrigin(origins = "http://176.34.129.151:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/auth")
 public class LoginController {

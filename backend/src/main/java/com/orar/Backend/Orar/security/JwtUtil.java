@@ -88,13 +88,19 @@ public class JwtUtil {
             role = "ROLE_" + role;
         }
 
-        return Jwts.builder()
+        System.out.println("Generating token for user: " + username + " with role: " + role);
+        
+        String token = Jwts.builder()
                 .setSubject(username)
-                .claim("role", role) 
+                .claim("role", role)
+                .setId(java.util.UUID.randomUUID().toString())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) 
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours 
                 .signWith(SignatureAlgorithm.HS512, SECRET_KEY)
                 .compact();
+                
+        System.out.println("Generated token: " + token);
+        return token;
     }
 
     public boolean validateToken(String token) {
