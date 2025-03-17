@@ -31,10 +31,10 @@ public class User {
     private Rol role;
 
     @OneToOne(mappedBy = "user")
-    @JsonBackReference // Evităm recursivitatea prin indicarea relației copil
+    @JsonBackReference 
     private Student student;
 
     @OneToOne(mappedBy = "user")
-    @JsonBackReference // Evităm recursivitatea prin indicarea relației copil
+    @JsonBackReference
     private Profesor profesor;
 }

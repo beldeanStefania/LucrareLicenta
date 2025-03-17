@@ -43,57 +43,50 @@ public class JwtUtil {
         }
     }
 
-    // Generarea token-ului JWT
     public String generateToken(String username) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         String role = userDetails.getAuthorities().stream()
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Role not found"))
-                .getAuthority(); // Obține rolul utilizatorului
+                .getAuthority(); 
 
-        // Adaugă prefixul "ROLE_" dacă lipsește
         if (!role.startsWith("ROLE_")) {
             role = "ROLE_" + role;
         }
 
         return Jwts.builder()
                 .setSubject(username)
-                .claim("role", role) // Include rolul în token
+                .claim("role", role) 
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // Valabil 10 ore
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) 
                 .signWith(SignatureAlgorithm.HS512, SECRET_KEY)
                 .compact();
     }
 
-
-    // Validarea token-ului
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
-                    .setSigningKey(SECRET_KEY) // Utilizează cheia generată dinamic
+                    .setSigningKey(SECRET_KEY) 
                     .build()
                     .parseClaimsJws(token);
             return true;
         } catch (Exception e) {
-            return false; // Token-ul nu este valid
+            return false; 
         }
     }
 
-    // Extrage username-ul din token
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();
     }
 
-    // Extrage toate informațiile (claims) din token
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(SECRET_KEY) // Utilizează cheia generată dinamic
+                .setSigningKey(SECRET_KEY)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
 
-    // Verifică dacă token-ul a expirat
     public boolean isTokenExpired(String token) {
         return extractAllClaims(token).getExpiration().before(new Date());
     }

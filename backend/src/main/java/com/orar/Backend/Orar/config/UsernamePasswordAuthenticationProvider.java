@@ -34,17 +34,17 @@ public class UsernamePasswordAuthenticationProvider implements AuthenticationPro
         Optional<User> optionalUser = userRepository.findByUsername(username);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
-            System.out.println("Utilizator găsit: " + user.getUsername()); // Log pentru utilizator găsit
+            System.out.println("Utilizator găsit: " + user.getUsername()); 
 
             if (passwordEncoder.matches(password, user.getPassword())) {
-                System.out.println("Parola este corectă"); // Log pentru parolă corectă
+                System.out.println("Parola este corectă");
                 return new UsernamePasswordAuthenticationToken(username, password, Collections.emptyList());
             } else {
-                System.out.println("Parola este incorectă"); // Log pentru parolă incorectă
+                System.out.println("Parola este incorectă");
                 throw new BadCredentialsException("Invalid password");
             }
         } else {
-            System.out.println("Utilizatorul nu există"); // Log pentru utilizator inexistent
+            System.out.println("Utilizatorul nu există");
             throw new BadCredentialsException("No user registered with username: " + username);
         }
     }

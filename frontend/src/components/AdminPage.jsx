@@ -8,14 +8,14 @@ export default function AdminPage({ onLogout }) {
   // STUDENT LOGIC
   // ---------------------------
   const [students, setStudents] = useState([]);
-  const [viewMode, setViewMode] = useState("list"); // "list", "add", "update"
+  const [viewMode, setViewMode] = useState("list"); 
   const [studentToEdit, setStudentToEdit] = useState(null);
 
   // ---------------------------
   // PROFESSOR LOGIC
   // ---------------------------
   const [professors, setProfessors] = useState([]);
-  const [viewModeProf, setViewModeProf] = useState("list"); // "list", "add", "update"
+  const [viewModeProf, setViewModeProf] = useState("list"); 
   const [professorToEdit, setProfessorToEdit] = useState(null);
 
   // ---------------------------
@@ -23,15 +23,12 @@ export default function AdminPage({ onLogout }) {
   // ---------------------------
   const [subjectFormVisible, setSubjectFormVisible] = useState(false);
   const [selectedProfForSubject, setSelectedProfForSubject] = useState(null);
-  const [allSubjects, setAllSubjects] = useState([]); // Materii din DB
+  const [allSubjects, setAllSubjects] = useState([]); 
 
-  // ---------------------------
-  // On mount, fetch both lists
-  // ---------------------------
   useEffect(() => {
     fetchStudents();
     fetchProfessors();
-    fetchAllSubjects(); // Dacă ai un endpoint pentru a obține lista tuturor materiilor
+    fetchAllSubjects(); 
   }, []);
 
   // ========== STUDENTS ==========
@@ -279,7 +276,6 @@ const renderStudentList = () => (
         `Are you sure you want to delete professor ${prof.nume} ${prof.prenume}?`
       )
     ) {
-      // Endpoint: DELETE /api/profesor/delete/{nume}/{prenume}
       request("DELETE", `/api/profesor/delete/${prof.nume}/${prof.prenume}`)
         .then(() => {
           alert("Professor deleted successfully!");
@@ -293,8 +289,6 @@ const renderStudentList = () => (
   };
 
   const handleSaveProfessor = (profData) => {
-    // la add => POST /api/profesor/add
-    // la update => PUT /api/profesor/update/{id}
     if (viewModeProf === "add") {
       request("POST", "/api/profesor/add", profData)
         .then(() => {
@@ -370,13 +364,11 @@ const renderStudentList = () => (
           e.preventDefault();
           const formData = new FormData(e.target);
           const data = Object.fromEntries(formData.entries());
-          // data = { nume, prenume, username, password }
-          // la update, password poate fi gol => atunci nu se schimbă
           handleSaveProfessor(data);
         }}
       >
         <div className="form-group">
-          <label>First Name (nume):</label>
+          <label>First Name (Prenume):</label>
           <input
             name="nume"
             defaultValue={professorToEdit?.nume || ""}
@@ -385,7 +377,7 @@ const renderStudentList = () => (
           />
         </div>
         <div className="form-group">
-          <label>Last Name (prenume):</label>
+          <label>Last Name (Nume):</label>
           <input
             name="prenume"
             defaultValue={professorToEdit?.prenume || ""}
@@ -410,7 +402,7 @@ const renderStudentList = () => (
             placeholder={
               viewModeProf === "update" ? "Leave empty if unchanged" : ""
             }
-            required={viewModeProf === "add"} // la add e obligatoriu
+            required={viewModeProf === "add"} 
             className="input-field"
           />
         </div>
@@ -431,12 +423,10 @@ const renderStudentList = () => (
     </div>
   );
 
-  // ========== SUBJECTS / REPARTIZARE PROF ==========
   const [useCustomSubject, setUseCustomSubject] = useState(false);
   const [customSubject, setCustomSubject] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
 
-  // Ex: /api/materie/getAll => toate materiile din DB
   const fetchAllSubjects = () => {
     request("GET", "/api/materie/getAll")
       .then((response) => {
@@ -454,14 +444,13 @@ const renderStudentList = () => (
   };
 
   const createNewSubject = (subjectName) => {
-    // Alege valori implicite pentru semestru și cod dacă nu sunt introduse de utilizator
     return request("POST", "/api/materie/add", { 
       nume: subjectName,
-      semestru: 1,      // De exemplu, semestrul 1
-      cod: subjectName.toUpperCase().replace(/\s+/g, "") // Sau altă logică pentru cod
+      semestru: 1,    
+      cod: subjectName.toUpperCase().replace(/\s+/g, "") 
     })
       .then(response => {
-        fetchAllSubjects(); // actualizează lista de materii
+        fetchAllSubjects(); 
         return response.data;
       });
   };
@@ -471,13 +460,10 @@ const renderStudentList = () => (
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
-    // data = { materie, tip } or { customMaterie, tip }
     
     const subjectName = useCustomSubject ? customSubject : data.materie;
     
-    // If using custom subject, create it first
     const assignSubject = () => {
-      // RepartizareProfDTO: { tip, materie, numeProfesor, prenumeProfesor }
       const payload = {
         tip: data.tip,
         materie: subjectName,
@@ -499,7 +485,6 @@ const renderStudentList = () => (
     };
     
     if (useCustomSubject && customSubject.trim()) {
-      // First create the new subject, then assign it
       createNewSubject(customSubject.trim())
         .then(() => {
           assignSubject();
@@ -509,7 +494,6 @@ const renderStudentList = () => (
           alert("Failed to create new subject. Please try again.");
         });
     } else {
-      // Just assign the selected subject
       assignSubject();
     }
   };
@@ -612,9 +596,6 @@ const renderStudentList = () => (
     );
   };
 
-  // ---------------------------------------------------
-  // RENDER GENERAL
-  // ---------------------------------------------------
   return (
     <div className="admin-page">
       <NavigationHeader 
@@ -635,10 +616,7 @@ const renderStudentList = () => (
         {(viewModeProf === "add" || viewModeProf === "update") &&
           renderProfessorForm()}
 
-        {/*
-          Formularul pentru a asocia o materie la un profesor (RepartizareProf).
-          E ascuns până când user-ul dă "Add Subject" la un profesor.
-        */}
+        {}
         {renderSubjectForm()}
       </div>
     </div>

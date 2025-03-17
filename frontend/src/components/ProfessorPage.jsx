@@ -4,27 +4,21 @@ import NavigationHeader from "./NavigationHeader";
 import "./ProfessorPage.css";
 
 export default function ProfessorPage({ onLogout }) {
-  // =================== State-uri generale ===================
   const [professorInfo, setProfessorInfo] = useState(null);
 
-  // Materii/Repartizări asociate profesorului (de la /api/repartizareProf/materiiProfesor/{id})
   const [repartizari, setRepartizari] = useState([]);
 
-  // =================== State-uri pentru clădiri/săli ===================
   const [cladiri, setCladiri] = useState([]);
   const [selectedCladire, setSelectedCladire] = useState("");
   const [rooms, setRooms] = useState([]);
   const [selectedRoom, setSelectedRoom] = useState("");
 
-  // =================== State-uri pentru acordarea notelor ===================
-  const [materiiUnice, setMateriiUnice] = useState([]); // Lista (cod, denumire) pentru notare
+  const [materiiUnice, setMateriiUnice] = useState([]); 
   const [selectedGradeMaterie, setSelectedGradeMaterie] = useState("");
   const [selectedGradeGroup, setSelectedGradeGroup] = useState("");
   const [gradeStudentNotes, setGradeStudentNotes] = useState({});
   const [students, setStudents] = useState([]);
 
-  // =================== State-uri pentru rezervare sală (orar) ===================
-  // Se folosește o materie diferită față de cea de notare
   const [selectedMaterieForSchedule, setSelectedMaterieForSchedule] = useState("");
   const [selectedTip, setSelectedTip] = useState("");
   const [selectedFrecventa, setSelectedFrecventa] = useState("");
@@ -37,11 +31,8 @@ export default function ProfessorPage({ onLogout }) {
     semigrupa: "",
   });
 
-  // =================== State pentru orarul profesorului ===================
-  const [profSchedule, setProfSchedule] = useState([]);
-  
+  const [profSchedule, setProfSchedule] = useState([]);  
 
-  // =================== useEffect-uri ===================
   useEffect(() => {
     fetchProfessorInfo();
     fetchCladiri();
@@ -54,14 +45,11 @@ export default function ProfessorPage({ onLogout }) {
     }
   }, [professorInfo]);
 
-  // Când se schimbă grupa pentru notare, se aduc studenții aferenți
   useEffect(() => {
     if (selectedGradeGroup) {
       fetchStudentsByGroup(selectedGradeGroup);
     }
   }, [selectedGradeGroup]);
-
-  // =================== API Calls ===================
 
   const fetchProfessorInfo = () => {
     request("GET", "/api/auth/userInfo")
@@ -71,18 +59,16 @@ export default function ProfessorPage({ onLogout }) {
       .catch((error) => console.error("Failed to fetch professor info:", error));
   };
 
-  // Adună repartizările (materii + tip) pentru profesor
   const fetchMateriiProfesor = (profesorId) => {
     request("GET", `/api/repartizareProf/materiiProfesor/${profesorId}`)
       .then((response) => {
         if (response.data && response.data.length > 0) {
           setRepartizari(response.data);
   
-          // Eliminăm duplicatele folosind un Set
           const materiiUnice = Array.from(
             new Set(response.data.map((item) => item.materie))
           ).map((materie) => ({
-            denumire: materie, // Ex: "Matematică Logică"
+            denumire: materie, 
           }));
   
           setMateriiUnice(materiiUnice);
@@ -98,7 +84,6 @@ export default function ProfessorPage({ onLogout }) {
         setMateriiUnice([]);
       });
   };
-  
 
   const fetchCladiri = () => {
     request("GET", "/api/cladire/getAll")
@@ -128,7 +113,6 @@ export default function ProfessorPage({ onLogout }) {
       });
   };
 
-  // Nou: fetch orarul profesorului (folosind profesorId, prin relația RepartizareProf -> Profesor)
   const fetchProfessorSchedule = (profesorId) => {
     request("GET", `/api/orare/getAllProfesor/${profesorId}`)
       .then((response) => {
@@ -140,9 +124,6 @@ export default function ProfessorPage({ onLogout }) {
       });
   };
 
-  // =================== Handlers ===================
-
-  // A. Acordare note studenților
   const handleAddGrades = () => {
     const studentEntries = Object.entries(gradeStudentNotes);
     
@@ -185,16 +166,13 @@ export default function ProfessorPage({ onLogout }) {
     });
   };
   
-
-
-  // B. Rezervare sală (orar)
   const handleReserveRoom = () => {
     if (!selectedMaterieForSchedule || !selectedTip || !selectedCladire || !selectedRoom || !scheduleData.zi || !scheduleData.oraInceput || !scheduleData.oraSfarsit) {
       setErrorMessage("Toate câmpurile trebuie completate pentru a rezerva sala!");
       return;
     }
   
-    setErrorMessage(""); // Resetăm mesajul de eroare
+    setErrorMessage(""); 
   
     const payload = {
       grupa: scheduleData.grupa,
@@ -216,14 +194,11 @@ export default function ProfessorPage({ onLogout }) {
       .catch((error) => console.error("Failed to reserve room:", error));
   };
   
-
-  // C. Când selectăm o clădire, aducem sălile
   const handleCladireChange = (cladireId) => {
     setSelectedCladire(cladireId);
     fetchRoomsByCladire(cladireId);
   };
 
-  // =================== RENDER ===================
   return (
     <div className="professor-page">
       <NavigationHeader 
@@ -233,7 +208,7 @@ export default function ProfessorPage({ onLogout }) {
       />
 
       <div className="professor-content">
-        {/* 1) Acordă note studenților */}
+        {}
         <section>
           <h2>Acordă note studenților</h2>
           <div>
@@ -286,7 +261,7 @@ export default function ProfessorPage({ onLogout }) {
           <button onClick={handleAddGrades}>Adaugă Note</button>
         </section>
 
-        {/* 2) Rezervare sală (Orar) */}
+        {}
         <section>
           <h2>Rezervare sală</h2>
           <div>
@@ -417,7 +392,7 @@ export default function ProfessorPage({ onLogout }) {
           <button onClick={handleReserveRoom}>Rezervă Sală</button>
         </section>
 
-        {/* 3) Afișare orar profesor */}
+        {}
         <section>
           <h2>Orarul meu</h2>
           {profSchedule.length > 0 ? (

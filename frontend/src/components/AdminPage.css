@@ -1,23 +1,19 @@
-/* Stiluri pentru întreaga pagină Admin */
 .admin-page {
     min-height: 100vh;
     background-color: var(--bg-secondary);
 }
 
-/* Content container */
 .admin-content {
     max-width: 1200px;
     margin: 0 auto;
     padding: var(--spacing-lg);
 }
 
-/* Titlu principal */
 h1 {
     text-align: center;
     margin-bottom: 20px;
 }
 
-/* Stiluri pentru tabel */
 .students-table {
     width: 100%;
     border-collapse: collapse;
@@ -35,7 +31,6 @@ h1 {
     background-color: #f2f2f2;
 }
 
-/* Butoane generale */
 .btn {
     padding: 8px 16px;
     border: none;
@@ -46,7 +41,6 @@ h1 {
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-/* Buton pentru adăugare */
 .add-btn {
     background-color: #28a745;
     color: #fff;
@@ -57,7 +51,6 @@ h1 {
     transform: scale(1.05);
 }
 
-/* Buton pentru editare */
 .edit-btn {
     background-color: #007bff;
     color: #fff;
@@ -68,7 +61,6 @@ h1 {
     transform: scale(1.05);
 }
 
-/* Buton pentru ștergere */
 .delete-btn {
     background-color: #dc3545;
     color: #fff;
@@ -79,7 +71,6 @@ h1 {
     transform: scale(1.05);
 }
 
-/* Butoane din form */
 .save-btn {
     background-color: #28a745;
     color: #fff;
@@ -112,7 +103,6 @@ h1 {
     transform: scale(1.05);
 }
 
-/* Specific pentru butoanele din tabel */
 .students-table td .btn {
     padding: 6px 12px;
     font-size: 12px;
@@ -120,7 +110,6 @@ h1 {
     display: inline-block;
 }
 
-/* Stiluri pentru formular */
 .form-container {
     max-width: 500px;
     margin: 20px auto;
@@ -159,7 +148,6 @@ h1 {
     box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
 }
 
-/* Subject Selection Styles */
 .subject-selection-mode {
     display: flex;
     margin-bottom: var(--spacing-md);
@@ -185,7 +173,6 @@ h1 {
     margin-right: var(--spacing-xs);
 }
 
-/* Butoane grupate în formular */
 .form-buttons {
     display: flex;
     justify-content: space-between;
@@ -193,17 +180,15 @@ h1 {
     margin-top: 20px;
 }
 
-/* Container scrollabil pentru listele de studenți și profesori */
 .list-container {
-    max-height: 400px; /* Înălțimea maximă a listei */
-    overflow-y: auto; /* Scroll vertical */
-    border: 1px solid #ccc; /* Bordură discretă */
-    border-radius: 5px; /* Colțuri rotunjite */
-    padding: 10px; /* Spațiere interioară */
-    background-color: #fff; /* Fundal alb */
+    max-height: 400px; 
+    overflow-y: auto; 
+    border: 1px solid #ccc; 
+    border-radius: 5px; 
+    padding: 10px; 
+    background-color: #fff; 
 }
 
-/* Stiluri pentru tabelul din lista scrollabilă */
 .students-table {
     width: 100%;
     border-collapse: collapse;
@@ -216,7 +201,6 @@ h1 {
     text-align: center;
 }
 
-/* Fixare antet (header) tabel la scroll */
 .students-table thead {
     position: sticky;
     top: 0;
@@ -224,12 +208,10 @@ h1 {
     z-index: 10;
 }
 
-/* Ajustarea dimensiunii rândurilor pentru o vizualizare mai bună */
 .students-table tbody tr {
     height: 40px;
 }
 
-/* Ascunderea scrollbarului în Chrome, Edge și Safari */
 .list-container::-webkit-scrollbar {
     width: 8px;
 }

@@ -24,17 +24,11 @@ public class RepartizareProfController {
     @Autowired
     private RepartizareProfService repartizareProfService;
 
-    /**
-     * Endpoint pentru a obține toate repartizările profesorilor
-     */
     @GetMapping
     public List<RepartizareProf> getAll() {
         return repartizareProfService.getAll();
     }
 
-    /**
-     * Endpoint pentru a obține repartizările unui profesor specific
-     */
     @GetMapping("/materiiProfesor/{profesorId}")
     public ResponseEntity<List<RepartizareProfDTO>> getMateriiProfesor(@PathVariable Integer profesorId) {
         try {
@@ -53,10 +47,6 @@ public class RepartizareProfController {
         }
     }
 
-
-    /**
-     * Endpoint pentru a adăuga o repartizare
-     */
     @PostMapping
     public ResponseEntity<RepartizareProf> addRepartizareProf(@Valid @RequestBody RepartizareProfDTO repartizareProfDTO) {
         try {
@@ -66,9 +56,6 @@ public class RepartizareProfController {
         }
     }
 
-    /**
-     * Endpoint pentru a actualiza o repartizare
-     */
     @PutMapping("/{id}")
     public ResponseEntity<RepartizareProf> updateRepartizareProf(@PathVariable Integer id, @Valid @RequestBody RepartizareProfDTO repartizareProfDTO) {
         try {
@@ -78,9 +65,6 @@ public class RepartizareProfController {
         }
     }
 
-    /**
-     * Endpoint pentru a șterge o repartizare
-     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteRepartizareProf(@PathVariable Integer id) {
         try {

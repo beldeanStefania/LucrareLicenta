@@ -1,8 +1,6 @@
 package com.orar.Backend.Orar.controller;
 
 import com.orar.Backend.Orar.dto.CatalogStudentMaterieDTO;
-import com.orar.Backend.Orar.dto.StudentGradeDTO;
-import com.orar.Backend.Orar.exception.CatalogStudentMaterieAlreadyExistsException;
 import com.orar.Backend.Orar.exception.CatalogStudentMaterieNotFoundException;
 import com.orar.Backend.Orar.exception.MaterieNotFoundException;
 import com.orar.Backend.Orar.exception.StudentNotFoundException;
@@ -16,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.*;
-import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
 @RequestMapping("/api/catalogStudentMaterie")
@@ -46,8 +43,6 @@ public class CatalogStudentMaterieController {
         }
     }
 
-
-
     @PutMapping("/update/{studentCod}/{materieCod}")
     public ResponseEntity<CatalogStudentMaterie> updateCatalog(
             @PathVariable String studentCod,
@@ -60,7 +55,6 @@ public class CatalogStudentMaterieController {
             return ResponseEntity.status(NOT_FOUND).build();
         }
     }
-
 
     @DeleteMapping("/delete/{studentCod}/{materieCod}")
     public ResponseEntity<Void> deleteCatalog(

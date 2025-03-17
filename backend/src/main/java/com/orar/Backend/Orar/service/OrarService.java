@@ -56,7 +56,7 @@ public class OrarService {
                             .frecventa(orar.getFrecventa())
                             .build();
                 })
-                .sorted((a, b) -> compareDays(a.getZi(), b.getZi())) // Adaugă sortarea după zi
+                .sorted((a, b) -> compareDays(a.getZi(), b.getZi())) 
                 .collect(Collectors.toList());
     }
 
@@ -105,7 +105,6 @@ public class OrarService {
         newOrar.setOraInceput(orarDTO.getOraInceput());
         newOrar.setOraSfarsit(orarDTO.getOraSfarsit());
 
-        // Verifică sau creează repartizarea
         RepartizareProf repartizareProf = orarDTO.getRepartizareProfId() != null
                 ? repartizareProfRepository.findById(orarDTO.getRepartizareProfId())
                 .orElseThrow(() -> new NoSuchElementException("RepartizareProf not found"))
@@ -113,15 +112,12 @@ public class OrarService {
 
         newOrar.setRepartizareProf(repartizareProf);
 
-        // Asociază sala
         Sala sala = salaRepository.findById(orarDTO.getSalaId())
                 .orElseThrow(() -> new NoSuchElementException("Sala not found"));
         newOrar.setSala(sala);
 
-        // Setează frecvența
         newOrar.setFrecventa(orarDTO.getFrecventa() != null ? orarDTO.getFrecventa() : "N/A");
 
-        // Setează formația
         System.out.println("Grupa primită: " + orarDTO.getGrupa());
         System.out.println("Semigrupa primită: " + orarDTO.getSemigrupa());
         System.out.println("Tipul activității: " + orarDTO.getTip());
@@ -132,7 +128,6 @@ public class OrarService {
         return orarRepository.save(newOrar);
     }
 
-
     private RepartizareProf createRepartizareProfIfNotExists(OrarDTO orarDTO) {
         Profesor profesor = profesorRepository.findById(orarDTO.getProfesorId())
                 .orElseThrow(() -> new NoSuchElementException("Profesor not found"));
@@ -140,16 +135,14 @@ public class OrarService {
         Materie materie = materieRepository.findByNume(orarDTO.getMaterie())
                 .orElseThrow(() -> new NoSuchElementException("Materie not found"));
 
-        // Verifică dacă repartizarea există deja
+
         Optional<RepartizareProf> existingRepartizare = repartizareProfRepository.findByProfesorAndMaterieAndTip(
                 profesor, materie, orarDTO.getTip());
 
-        // Dacă există, returnează repartizarea găsită
         if (existingRepartizare.isPresent()) {
             return existingRepartizare.get();
         }
 
-        // Dacă nu există, creează o nouă repartizare
         RepartizareProf newRepartizare = new RepartizareProf();
         newRepartizare.setProfesor(profesor);
         newRepartizare.setMaterie(materie);
@@ -168,7 +161,7 @@ public class OrarService {
         } else {
             throw new IllegalArgumentException("Tip necunoscut: " + tip);
         }
-        System.out.println("Determinată formație: " + formatia); // Debugging
+        System.out.println("Determinată formație: " + formatia); 
         return formatia;
     }
 
@@ -179,10 +172,6 @@ public class OrarService {
      * @throws OrarAlreadyExistsException
      */
     private void checkOrarExists(OrarDTO orarDTO) throws OrarAlreadyExistsException {
-//        if (orarRepository.findByGrupaAndZi(orarDTO.getGrupa(), orarDTO.getZi()).isPresent()) {
-//            throw new OrarAlreadyExistsException("Orar already exists");
-//        }
-
         List<Orar> overlappingOrar = orarRepository.findOverlappingOrar(orarDTO.getSalaId(), orarDTO.getZi(),
                 orarDTO.getOraInceput(), orarDTO.getOraSfarsit());
 

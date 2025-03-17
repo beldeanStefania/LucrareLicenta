@@ -35,63 +35,63 @@ WHERE NOT EXISTS (
 -- Insert rooms (sala)
 -- Insert rooms (sala)
 INSERT INTO sala (nume, capacitate, cladire_id)
-SELECT '2\\I', 30, (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
+SELECT '2\\I', 30, (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
 WHERE NOT EXISTS (
-    SELECT 1 FROM sala WHERE nume = '2\\I' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
+    SELECT 1 FROM sala WHERE nume = '2\\I' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
 );
 
 INSERT INTO sala (nume, capacitate, cladire_id)
-SELECT '5\\I', 25, (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
+SELECT '5\\I', 25, (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
 WHERE NOT EXISTS (
-    SELECT 1 FROM sala WHERE nume = '5\\I' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
+    SELECT 1 FROM sala WHERE nume = '5\\I' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
 );
 
 INSERT INTO sala (nume, capacitate, cladire_id)
-SELECT '6\\II', 40, (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
+SELECT '6\\II', 40, (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
 WHERE NOT EXISTS (
-    SELECT 1 FROM sala WHERE nume = '6\\II' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
+    SELECT 1 FROM sala WHERE nume = '6\\II' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
 );
 
 INSERT INTO sala (nume, capacitate, cladire_id)
-SELECT '7\\I', 40, (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
+SELECT '7\\I', 40, (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
 WHERE NOT EXISTS (
-    SELECT 1 FROM sala WHERE nume = '7\\I' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
+    SELECT 1 FROM sala WHERE nume = '7\\I' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
 );
 
 INSERT INTO sala (nume, capacitate, cladire_id)
-SELECT '9\\I', 40, (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
+SELECT '9\\I', 40, (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
 WHERE NOT EXISTS (
-    SELECT 1 FROM sala WHERE nume = '9\\I' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
+    SELECT 1 FROM sala WHERE nume = '9\\I' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
 );
 
 INSERT INTO sala (nume, capacitate, cladire_id)
-SELECT 'A303', 33, (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
+SELECT 'A303', 33, (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
 WHERE NOT EXISTS (
-    SELECT 1 FROM sala WHERE nume = 'A303' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
+    SELECT 1 FROM sala WHERE nume = 'A303' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
 );
 
 INSERT INTO sala (nume, capacitate, cladire_id)
-SELECT 'A308', 33, (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
+SELECT 'A308', 33, (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
 WHERE NOT EXISTS (
-    SELECT 1 FROM sala WHERE nume = 'A308' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
+    SELECT 1 FROM sala WHERE nume = 'A308' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
 );
 
 INSERT INTO sala (nume, capacitate, cladire_id)
-SELECT 'A311', 33, (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
+SELECT 'A311', 33, (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
 WHERE NOT EXISTS (
-    SELECT 1 FROM sala WHERE nume = 'A311' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
+    SELECT 1 FROM sala WHERE nume = 'A311' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
 );
 
 INSERT INTO sala (nume, capacitate, cladire_id)
-SELECT 'A312', 33, (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
+SELECT 'A312', 33, (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
 WHERE NOT EXISTS (
-    SELECT 1 FROM sala WHERE nume = 'A312' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
+    SELECT 1 FROM sala WHERE nume = 'A312' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
 );
 
 INSERT INTO sala (nume, capacitate, cladire_id)
-SELECT 'A313', 33, (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
+SELECT 'A313', 33, (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
 WHERE NOT EXISTS (
-    SELECT 1 FROM sala WHERE nume = 'A313' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
+    SELECT 1 FROM sala WHERE nume = 'A313' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
 );
 
 INSERT INTO sala (nume, capacitate, cladire_id)

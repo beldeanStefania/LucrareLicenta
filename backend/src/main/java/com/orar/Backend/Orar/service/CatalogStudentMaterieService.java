@@ -44,7 +44,6 @@ public class CatalogStudentMaterieService {
                     return catalogDTO;
                 })
                 .toList();
-        //return catalogStudentMaterieRepository.findAll();
     }
 
     public List<CatalogStudentMaterieDTO> getNoteByStudent(String studentCod) {
@@ -99,10 +98,6 @@ public class CatalogStudentMaterieService {
             return catalogStudentMaterieRepository.save(catalog);
         }
     }
-
-
-
-
 
     public CatalogStudentMaterie update(String studentCod, String materieCod, CatalogStudentMaterieDTO catalogStudentMaterieDTO) throws CatalogStudentMaterieNotFoundException, StudentNotFoundException, MaterieNotFoundException {
         CatalogStudentMaterie catalog = catalogStudentMaterieRepository.findByStudentCodAndMaterieCod(studentCod, materieCod)

@@ -16,7 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class StudentService {
@@ -58,25 +57,22 @@ public class StudentService {
             throw new StudentAlreadyExistsException("Codul studentului trebuie să fie unic! Un student cu acest cod există deja.");
         }
 
-        // Recuperăm rolul STUDENT din baza de date
         Rol studentRole = rolRepository.findByName("STUDENT")
                 .orElseThrow(() -> new RuntimeException("Rolul STUDENT nu există în baza de date"));
 
-        // Cream un User asociat cu acest Student
         User user = new User();
         user.setUsername(studentDTO.getUsername());
         user.setPassword(passwordEncoder.encode(studentDTO.getPassword()));
-        user.setRole(studentRole); // Asociază rolul STUDENT cu utilizatorul
-        userRepository.save(user); // Salvează user-ul în baza de date
+        user.setRole(studentRole);
+        userRepository.save(user);
 
-        // Cream Studentul
         Student student = new Student();
         student.setNume(studentDTO.getNume());
         student.setPrenume(studentDTO.getPrenume());
         student.setAn(studentDTO.getAn());
         student.setGrupa(studentDTO.getGrupa());
         student.setCod(studentDTO.getCod());
-        student.setUser(user); // Asociază User-ul cu Studentul
+        student.setUser(user);
 
         return student;
     }

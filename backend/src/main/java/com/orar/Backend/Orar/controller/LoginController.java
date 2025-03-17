@@ -1,7 +1,6 @@
 package com.orar.Backend.Orar.controller;
 
 import com.orar.Backend.Orar.dto.LoginDTO;
-import com.orar.Backend.Orar.model.Rol;
 import com.orar.Backend.Orar.security.JwtUtil;
 import com.orar.Backend.Orar.model.User;
 import com.orar.Backend.Orar.repository.UserRepository;
@@ -19,7 +18,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,7 +38,7 @@ public class LoginController {
     private UserRepository userRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder; // Adaugă această linie
+    private PasswordEncoder passwordEncoder; 
 
     @PostMapping("/login")
     public Map<String, String> login(@RequestBody LoginDTO loginDTO) {
@@ -51,7 +49,6 @@ public class LoginController {
         System.out.println("Password: " + loginDTO.getPassword());
 
         try {
-            // Autentifică utilizatorul
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginDTO.getUsername(),
@@ -59,16 +56,10 @@ public class LoginController {
                     )
             );
 
-            // Setează autentificarea în contextul de securitate
             SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            // Generează token-ul JWT pentru utilizatorul autentificat
             String token = jwtUtil.generateToken(loginDTO.getUsername());
-
-            // Obține rolul utilizatorului din UserRepository
             User user = userRepository.findByUsername(loginDTO.getUsername()).orElseThrow();
 
-            // Adaugă token-ul și rolul în răspuns
             response.put("token", token);
             response.put("role", user.getRole().getName());
             return response;
@@ -80,7 +71,6 @@ public class LoginController {
 
     @PostMapping("/api/auth/logout")
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
-        // Invalidează sesiunea curentă
         request.getSession().invalidate();
         return ResponseEntity.ok("Logged out successfully.");
     }
@@ -94,7 +84,7 @@ public class LoginController {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        if (passwordEncoder.matches(oldPassword, user.getPassword())) { // Folosește passwordEncoder aici
+        if (passwordEncoder.matches(oldPassword, user.getPassword())) { 
             user.setPassword(passwordEncoder.encode(newPassword));
             userRepository.save(user);
             return ResponseEntity.ok("Password updated successfully");
@@ -131,7 +121,6 @@ public class LoginController {
             response.put("prenume", user.getStudent().getPrenume());
         }
 
-        // Loguri pentru debugging
         System.out.println("UserInfo response built:");
         System.out.println(response);
 

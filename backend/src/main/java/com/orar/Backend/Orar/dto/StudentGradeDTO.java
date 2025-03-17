@@ -10,6 +10,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class StudentGradeDTO {
-    private String disciplina; // Numele materiei
-    private Double nota;       // Nota primită
+    private String disciplina; 
+    private Double nota;       
 }

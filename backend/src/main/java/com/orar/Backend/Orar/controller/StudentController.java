@@ -6,7 +6,6 @@ import com.orar.Backend.Orar.exception.StudentNotFoundException;
 import com.orar.Backend.Orar.model.Student;
 import com.orar.Backend.Orar.service.StudentService;
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,17 +21,6 @@ import static org.springframework.http.ResponseEntity.*;
 public class StudentController {
     private final StudentService studentService;
 
-
-//    @Operation(summary = "Obtine toti studentii")
-//    @GetMapping("/getAll")
-//    public ResponseEntity<List<Student>> getAllStudents() {
-//        try {
-//            return ok(studentService.getAll());
-//        } catch (StudentNotFoundException e) {
-//            return notFound().build();
-//        }
-//    }
-
     @GetMapping("/getAllStudents")
     public ResponseEntity<List<Student>> getAllStudents() {
         try{
@@ -43,7 +31,6 @@ public class StudentController {
         }
 
     }
-
 
     @GetMapping("/getByAnAndGrupa/{an}/{grupa}")
     public ResponseEntity<Student> getStudentByAnAndGrupa(@PathVariable Integer an, @PathVariable String grupa) {

@@ -6,9 +6,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalTime;
-import java.util.List;
-
 @Getter
 @Setter
 public class OrarDTO {
@@ -19,8 +16,8 @@ public class OrarDTO {
     private String zi;
     private Integer repartizareProfId;
     private Integer salaId;
-    private String tip; // Curs, Seminar, Laborator
-    private String materie; // Numele materiei
-    private Integer profesorId; // ID-ul profesorului
-    private String frecventa; // Saptamanal, Par, Impar
+    private String tip; 
+    private String materie; 
+    private Integer profesorId; 
+    private String frecventa; 
 }

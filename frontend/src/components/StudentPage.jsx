@@ -26,8 +26,6 @@ export default function StudentPage({ onLogout }) {
       .then((response) => {
         setUserData(response.data);
         setLoading(prev => ({ ...prev, user: false }));
-        
-        // After we have user info, fetch grades and schedule
         fetchGrades(response.data.cod);
         fetchSchedule(response.data.grupa);
       })
@@ -75,7 +73,6 @@ export default function StudentPage({ onLogout }) {
       });
   };
   
-  // Calculate statistics for dashboard
   const getPassingGradesCount = () => {
     return grades.filter(grade => grade.nota >= 5).length;
   };
@@ -94,7 +91,6 @@ export default function StudentPage({ onLogout }) {
     return schedule.filter(item => item.zi === todayName).length;
   };
 
-  // Loading state
   if (loading.user) {
     return (
       <div className="loading-container">
@@ -112,7 +108,7 @@ export default function StudentPage({ onLogout }) {
         onLogout={onLogout}/>
 
       <div className="student-content">
-        {/* Welcome section */}
+        {}
         <div className="dashboard-welcome">
           <h1 className="welcome-title">Welcome, {userData ? userData.username : 'Student'}!</h1>
           <p className="welcome-subtitle">
@@ -120,7 +116,7 @@ export default function StudentPage({ onLogout }) {
           </p>
         </div>
 
-        {/* Stats dashboard */}
+        {}
         <div className="dashboard-grid">
           <div className="stat-card">
             <div className="stat-icon">
@@ -147,7 +143,7 @@ export default function StudentPage({ onLogout }) {
           </div>
         </div>
 
-        {/* Grades section */}
+        {}
         <div id="grades" className="section-container">
           <div className="section-header">
             <h2>
@@ -204,7 +200,7 @@ export default function StudentPage({ onLogout }) {
           </div>
         </div>
 
-        {/* Schedule section */}
+        {}
         <div id="schedule" className="section-container">
           <div className="section-header">
             <h2>
@@ -233,7 +229,6 @@ export default function StudentPage({ onLogout }) {
                 </thead>
                 <tbody>
                   {schedule.map((item, index) => {
-                    // Determine class for type-based highlighting
                     let itemClass = '';
                     if (item.tipul === 'Curs') itemClass = 'schedule-item-course';
                     else if (item.tipul === 'Laborator') itemClass = 'schedule-item-lab';

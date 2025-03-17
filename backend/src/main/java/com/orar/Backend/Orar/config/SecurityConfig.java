@@ -80,11 +80,11 @@ public class SecurityConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**") // Permite toate rutele
-                        .allowedOrigins("http://176.34.129.151:3000") // Permite cereri doar de la localhost:3000
-                        .allowedMethods("GET", "POST", "PUT", "DELETE") // Permite metodele necesare
-                        .allowedHeaders("*") // Permite toate headerele
-                        .exposedHeaders("Authorization"); // Expune header-ul de autorizare, dacă este nevoie
+                registry.addMapping("/**")
+                        .allowedOrigins("http://176.34.129.151:3000") 
+                        .allowedMethods("GET", "POST", "PUT", "DELETE") 
+                        .allowedHeaders("*") 
+                        .exposedHeaders("Authorization");
             }
         };
     }

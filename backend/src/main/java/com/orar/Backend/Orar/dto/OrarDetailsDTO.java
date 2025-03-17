@@ -18,8 +18,8 @@ public class OrarDetailsDTO {
     private int oraSfarsit;
     private String grupa;
     private String sala;
-    private String tipul; // Tipul din RepartizareProf
-    private String disciplina; // Numele materiei
-    private String cadruDidactic; // Numele profesorului
+    private String tipul; 
+    private String disciplina; 
+    private String cadruDidactic; 
     private String frecventa;
 }

@@ -8,7 +8,7 @@ export const getAuthToken = () => {
 export const decodeToken = (token) => {
   if (!token) return null;
   try {
-    return jwtDecode(token); // Decodes the JWT and returns the payload
+    return jwtDecode(token); 
   } catch (e) {
     console.error("Failed to decode token", e);
     return null;

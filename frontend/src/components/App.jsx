@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import AdminPage from "./AdminPage.jsx";
 import StudentPage from "./StudentPage.jsx";
-import ProfessorPage from "./ProfessorPage.jsx"; // Importăm pagina pentru profesori
+import ProfessorPage from "./ProfessorPage.jsx";
 import LoginForm from "./LoginForm.jsx";
 import WelcomePage from "./WelcomePage.jsx";
 import { getAuthToken, setAuthHeader, decodeToken } from "../helpers/axios-helper.jsx";
@@ -25,7 +25,6 @@ export default function App() {
           setIsLoggedIn(true);
         } catch (error) {
           console.error("Invalid token:", error);
-          // Clear invalid token
           localStorage.removeItem("auth_token");
           setAuthHeader(null);
           setIsLoggedIn(false);
@@ -40,7 +39,6 @@ export default function App() {
 
     checkAuthStatus();
 
-    // Set up storage event listener to sync auth state across tabs
     const handleStorageChange = (e) => {
       if (e.key === "auth_token") {
         checkAuthStatus();
@@ -78,7 +76,6 @@ export default function App() {
     setUserRole(null);
   };
 
-  // Function to redirect user based on role after login
   const redirectBasedOnRole = () => {
     if (!isLoggedIn) return <Navigate to="/login" />;
     
@@ -94,7 +91,6 @@ export default function App() {
     }
   };
 
-  // Function to redirect based on login status
   const redirectToLoginOrDashboard = () => {
     if (isLoggedIn) {
       return redirectBasedOnRole();
@@ -139,10 +135,10 @@ export default function App() {
           }
         />
         
-        {/* Dashboard route for redirecting after login */}
+        {}
         <Route path="/dashboard" element={redirectBasedOnRole()} />
         
-        {/* Catch-all route to handle 404s - redirect to dashboard for logged in users */}
+        {}
         <Route path="*" element={isLoggedIn ? <Navigate to="/dashboard" /> : <Navigate to="/" />} />
       </Routes>
     </Router>

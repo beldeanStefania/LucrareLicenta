@@ -31,13 +31,6 @@ public class OrarController {
         return orarService.getAll();
     }
 
-//    @Operation(summary = "Obține orar după grupa", description = "Returnează orarul cu grupa specificata")
-//    @GetMapping("/getAll/{grupa}")
-//    public ResponseEntity<List<Orar>> getOrarByGrupa(@PathVariable String grupa) {
-//        List<Orar> orare = orarService.getOrarByGrupa(grupa);
-//        return ResponseEntity.ok(orare != null ? orare : new ArrayList<>()); // Returnăm o listă goală dacă este null
-//    }
-
     @Operation(summary = "Obține detaliile orarului după grupă")
     @GetMapping("/getAll/{grupa}")
     public ResponseEntity<List<OrarDetailsDTO>> getOrarDetailsByGrupa(@PathVariable String grupa) {

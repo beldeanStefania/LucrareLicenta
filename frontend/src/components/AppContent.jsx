@@ -5,8 +5,8 @@ import StudentPage from "./StudentPage";
 import WelcomeContent from "./WelcomeContent";
 
 export default function AppContent() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Stare pentru autentificare
-  const [username, setUsername] = useState(""); // Stare pentru username
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState(""); 
   const navigate = useNavigate();
 
   const handleLoginClick = () => {
@@ -15,17 +15,17 @@ export default function AppContent() {
 
     if (user === "admin1" && pass === "password") {
       setIsLoggedIn(true);
-      setUsername(user); // Stochează username-ul
-      navigate("/admin"); // Redirecționează către AdminPage
+      setUsername(user); 
+      navigate("/admin"); 
     } else {
       alert("Invalid credentials! Please try again.");
     }
   };
 
   const handleLogoutClick = () => {
-    setIsLoggedIn(false); // Resetează autentificarea
-    setUsername(""); // Șterge username-ul
-    navigate("/"); // Redirecționează către WelcomeContent
+    setIsLoggedIn(false); 
+    setUsername(""); 
+    navigate("/"); 
   };
 
   return (
