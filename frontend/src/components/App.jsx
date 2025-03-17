@@ -5,6 +5,7 @@ import StudentPage from "./StudentPage.jsx";
 import ProfessorPage from "./ProfessorPage.jsx";
 import LoginForm from "./LoginForm.jsx";
 import LoginFallback from "./LoginFallback.jsx";
+import DirectLogin from "./DirectLogin.jsx";
 import WelcomePage from "./WelcomePage.jsx";
 import ErrorBoundary from "./ErrorBoundary.jsx";
 import { getAuthToken, setAuthHeader, decodeToken } from "../helpers/axios-helper.jsx";
@@ -118,7 +119,8 @@ export default function App() {
       <Router>
         <Routes>
           <Route path="/" element={<WelcomePage />} />
-          <Route path="/login" element={redirectToLoginOrDashboard()} />
+          {/* Use the DirectLogin component instead of the token-dependent login flow */}
+          <Route path="/login" element={<DirectLogin />} />
           <Route
             path="/admin"
             element={
