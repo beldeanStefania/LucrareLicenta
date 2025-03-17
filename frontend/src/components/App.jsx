@@ -4,7 +4,9 @@ import AdminPage from "./AdminPage.jsx";
 import StudentPage from "./StudentPage.jsx";
 import ProfessorPage from "./ProfessorPage.jsx";
 import LoginForm from "./LoginForm.jsx";
+import LoginFallback from "./LoginFallback.jsx";
 import WelcomePage from "./WelcomePage.jsx";
+import ErrorBoundary from "./ErrorBoundary.jsx";
 import { getAuthToken, setAuthHeader, decodeToken } from "../helpers/axios-helper.jsx";
 import "./App.css";
 
@@ -94,56 +96,78 @@ export default function App() {
     }
   };
 
+  // Create a more resilient login handler
   const redirectToLoginOrDashboard = () => {
     if (isLoggedIn) {
-      return redirectBasedOnRole();
+      return (
+        <ErrorBoundary fallback={<LoginFallback onLogin={handleLogin} />}>
+          {redirectBasedOnRole()}
+        </ErrorBoundary>
+      );
     } else {
-      return <LoginForm onLogin={handleLogin} />;
+      return (
+        <ErrorBoundary fallback={<LoginFallback onLogin={handleLogin} />}>
+          <LoginForm onLogin={handleLogin} />
+        </ErrorBoundary>
+      );
     }
   };
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<WelcomePage />} />
-        <Route path="/login" element={redirectToLoginOrDashboard()} />
-        <Route
-          path="/admin"
-          element={
-            isLoggedIn && userRole === "ROLE_ADMIN" ? (
-              <AdminPage onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-        <Route
-          path="/student"
-          element={
-            isLoggedIn && userRole === "ROLE_STUDENT" ? (
-              <StudentPage onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-        <Route
-          path="/profesor"
-          element={
-            isLoggedIn && userRole === "ROLE_PROFESOR" ? (
-              <ProfessorPage onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-        
-        {}
-        <Route path="/dashboard" element={redirectBasedOnRole()} />
-        
-        {}
-        <Route path="*" element={isLoggedIn ? <Navigate to="/dashboard" /> : <Navigate to="/" />} />
-      </Routes>
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <Routes>
+          <Route path="/" element={<WelcomePage />} />
+          <Route path="/login" element={redirectToLoginOrDashboard()} />
+          <Route
+            path="/admin"
+            element={
+              <ErrorBoundary>
+                {isLoggedIn && userRole === "ROLE_ADMIN" ? (
+                  <AdminPage onLogout={handleLogout} />
+                ) : (
+                  <Navigate to="/login" />
+                )}
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/student"
+            element={
+              <ErrorBoundary>
+                {isLoggedIn && userRole === "ROLE_STUDENT" ? (
+                  <StudentPage onLogout={handleLogout} />
+                ) : (
+                  <Navigate to="/login" />
+                )}
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/profesor"
+            element={
+              <ErrorBoundary>
+                {isLoggedIn && userRole === "ROLE_PROFESOR" ? (
+                  <ProfessorPage onLogout={handleLogout} />
+                ) : (
+                  <Navigate to="/login" />
+                )}
+              </ErrorBoundary>
+            }
+          />
+          
+          <Route 
+            path="/dashboard" 
+            element={
+              <ErrorBoundary fallback={<LoginFallback onLogin={handleLogin} />}>
+                {redirectBasedOnRole()}
+              </ErrorBoundary>
+            } 
+          />
+          
+          <Route path="*" element={isLoggedIn ? <Navigate to="/dashboard" /> : <Navigate to="/" />} />
+        </Routes>
+      </Router>
+    </ErrorBoundary>
   );
 }
