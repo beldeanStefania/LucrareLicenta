@@ -215,7 +215,7 @@ jobs:
           username: ${{ vars.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY2 }}
           script: |
-            cd /home/ubuntu/LucrareLicenta || { echo "Failed to change directory"; exit 1; }
+            cd /home/ubuntu/LucrareLicenta/backend || { echo "Failed to change directory"; exit 1; }
             echo "Running Flyway clean..."
             mvn flyway:repair
             echo "Running Flyway migrate..."
