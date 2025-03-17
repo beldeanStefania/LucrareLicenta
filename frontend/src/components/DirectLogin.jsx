@@ -17,11 +17,21 @@ export default function DirectLogin() {
     
     try {
       // Direct API call without using the token decoder
+      console.log("Attempting login with credentials:", { username });
       const response = await axios.post(
         "http://176.34.129.151:8080/api/auth/login", 
         { username, password },
-        { headers: { "Content-Type": "application/json" } }
+        { 
+          headers: { 
+            "Content-Type": "application/json",
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0"
+          },
+          withCredentials: true
+        }
       );
+      console.log("Login response:", response.data);
       
       const token = response.data.token;
       const role = response.data.role;
@@ -47,9 +57,22 @@ export default function DirectLogin() {
           dashboardUrl = "/profesor";
         }
         
+        // Clear any previous state to ensure a clean login
+        sessionStorage.clear();
+        
+        // Force clear any cache for URLs we're about to navigate to
+        if ('caches' in window) {
+          caches.keys().then(names => {
+            names.forEach(name => {
+              caches.delete(name);
+            });
+          });
+        }
+        
         // Redirect to the dashboard after a short delay
         setTimeout(() => {
-          window.location.href = dashboardUrl;
+          // Use hard page navigation to avoid any routing or state issues
+          window.location.replace(dashboardUrl);
         }, 1000);
       } else {
         throw new Error("No token received from server");
