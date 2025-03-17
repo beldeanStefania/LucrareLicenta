@@ -91,7 +91,7 @@ jobs:
           docker tag lucrarelicenta-frontend:latest ${{ vars.DOCKERHUB_USERNAME }}/lucrarelicenta-frontend:latest
           docker push ${{ vars.DOCKERHUB_USERNAME }}/lucrarelicenta-frontend:latest
 
-  deploy:
+deploy:
   runs-on: ubuntu-latest
   needs: build
   steps:
