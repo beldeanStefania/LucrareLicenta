@@ -50,7 +50,8 @@ public class CatalogStudentMaterieService {
                 .map(catalog -> {
                     CatalogStudentMaterieDTO catalogDTO = new CatalogStudentMaterieDTO();
                     catalogDTO.setNota(catalog.getNota());
-                    catalogDTO.setSemestru(catalog.getSemestru());
+                    catalogDTO.setSemestru(catalog.getMaterie().getSemestru());
+
                     catalogDTO.setStudentCod(catalog.getStudent().getCod());
                     catalogDTO.setCodMaterie(catalog.getMaterie().getCod());
                     catalogDTO.setNumeMaterie(catalog.getMaterie().getNume());
