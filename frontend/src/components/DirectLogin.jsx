@@ -24,7 +24,7 @@ export default function DirectLogin() {
       sessionStorage.clear();
       
       // Using fetch instead of axios to avoid any configuration issues
-      const response = await fetch("http://176.34.129.151:8080/api/auth/login", {
+      const response = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
