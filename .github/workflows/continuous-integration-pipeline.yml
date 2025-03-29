@@ -91,144 +91,144 @@ jobs:
           docker tag lucrarelicenta-frontend:latest ${{ vars.DOCKERHUB_USERNAME }}/lucrarelicenta-frontend:latest
           docker push ${{ vars.DOCKERHUB_USERNAME }}/lucrarelicenta-frontend:latest
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v3
 
-      - name: Ensure Docker and Docker Compose are installed on remote server
-        uses: appleboy/ssh-action@v0.1.8
-        with:
-          host: ${{ vars.EC2_HOST }}
-          username: ${{ vars.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY2 }}
-          script: |
-            # Check if Docker is installed
-            if ! command -v docker &> /dev/null; then
-              echo "Docker is not installed. Installing Docker..."
-              sudo apt-get update -y
-              sudo apt-get install -y docker.io
-            else
-              echo "Docker is already installed."
-            fi
+  #     - name: Ensure Docker and Docker Compose are installed on remote server
+  #       uses: appleboy/ssh-action@v0.1.8
+  #       with:
+  #         host: ${{ vars.EC2_HOST }}
+  #         username: ${{ vars.EC2_USERNAME }}
+  #         key: ${{ secrets.EC2_PRIVATE_KEY2 }}
+  #         script: |
+  #           # Check if Docker is installed
+  #           if ! command -v docker &> /dev/null; then
+  #             echo "Docker is not installed. Installing Docker..."
+  #             sudo apt-get update -y
+  #             sudo apt-get install -y docker.io
+  #           else
+  #             echo "Docker is already installed."
+  #           fi
 
-            # Check if Docker Compose is installed (standalone binary)
-            if ! command -v docker-compose &> /dev/null; then
-              echo "Docker Compose is not installed. Installing Docker Compose..."
-              sudo curl -L "https://github.com/docker/compose/releases/download/v2.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-              sudo mv /usr/local/bin/docker-compose /usr/bin/docker-compose
-              sudo chmod +x /usr/bin/docker-compose
-            else
-              echo "Docker Compose is already installed."
-            fi
+  #           # Check if Docker Compose is installed (standalone binary)
+  #           if ! command -v docker-compose &> /dev/null; then
+  #             echo "Docker Compose is not installed. Installing Docker Compose..."
+  #             sudo curl -L "https://github.com/docker/compose/releases/download/v2.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+  #             sudo mv /usr/local/bin/docker-compose /usr/bin/docker-compose
+  #             sudo chmod +x /usr/bin/docker-compose
+  #           else
+  #             echo "Docker Compose is already installed."
+  #           fi
 
-      - name: Update repository on remote server
-        uses: appleboy/ssh-action@v0.1.8
-        with:
-          host: ${{ vars.EC2_HOST }}
-          username: ${{ vars.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY2 }}
-          script: |
-            REPO_URL="${{ vars.GH_REPOSITORY_URL }}"
-            HOME_DIR="/home/ubuntu"
-            REPO_DIR="$HOME_DIR/LucrareLicenta"
-            if [ ! -d "$REPO_DIR" ]; then
-              echo "Directory $REPO_DIR does not exist. Cloning repository..."
-              cd "$HOME_DIR" || { echo "Failed to change directory to $HOME_DIR"; exit 1; }
-              git clone "$REPO_URL" || { echo "Failed to clone repository"; exit 1; }
-            else
-              echo "Directory $REPO_DIR exists."
-            fi
-            cd "$REPO_DIR" || { echo "Failed to change directory to $REPO_DIR"; exit 1; }
-            if [ ! -d .git ]; then
-              echo "Directory $REPO_DIR is not a git repository."
-            fi
-            echo "Pulling latest changes..."
-            git pull origin main --rebase || { echo "Failed to pull latest changes"; exit 1; }
+  #     - name: Update repository on remote server
+  #       uses: appleboy/ssh-action@v0.1.8
+  #       with:
+  #         host: ${{ vars.EC2_HOST }}
+  #         username: ${{ vars.EC2_USERNAME }}
+  #         key: ${{ secrets.EC2_PRIVATE_KEY2 }}
+  #         script: |
+  #           REPO_URL="${{ vars.GH_REPOSITORY_URL }}"
+  #           HOME_DIR="/home/ubuntu"
+  #           REPO_DIR="$HOME_DIR/LucrareLicenta"
+  #           if [ ! -d "$REPO_DIR" ]; then
+  #             echo "Directory $REPO_DIR does not exist. Cloning repository..."
+  #             cd "$HOME_DIR" || { echo "Failed to change directory to $HOME_DIR"; exit 1; }
+  #             git clone "$REPO_URL" || { echo "Failed to clone repository"; exit 1; }
+  #           else
+  #             echo "Directory $REPO_DIR exists."
+  #           fi
+  #           cd "$REPO_DIR" || { echo "Failed to change directory to $REPO_DIR"; exit 1; }
+  #           if [ ! -d .git ]; then
+  #             echo "Directory $REPO_DIR is not a git repository."
+  #           fi
+  #           echo "Pulling latest changes..."
+  #           git pull origin main --rebase || { echo "Failed to pull latest changes"; exit 1; }
 
-      - name: Create .env file for docker-compose
-        uses: appleboy/ssh-action@v0.1.8
-        with:
-          host: ${{ vars.EC2_HOST }}
-          username: ${{ vars.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY2 }}
-          script: |
-            cd /home/ubuntu/LucrareLicenta || { echo "Failed to change directory"; exit 1; }
-            echo "SQL_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" > .env
-            echo "API_BASE_URL=http://${{ vars.EC2_HOST }}:8080" >> .env
-            echo "REACT_APP_API_BASE_URL=http://${{ vars.EC2_HOST }}:8080" >> .env
-            echo "FRONTEND_ORIGIN=http://${{ vars.EC2_HOST }}:3000" >> .env
-            echo ".env file created with SQL_PASSWORD, API_BASE_URL, REACT_APP_API_BASE_URL and FRONTEND_ORIGIN"
+  #     - name: Create .env file for docker-compose
+  #       uses: appleboy/ssh-action@v0.1.8
+  #       with:
+  #         host: ${{ vars.EC2_HOST }}
+  #         username: ${{ vars.EC2_USERNAME }}
+  #         key: ${{ secrets.EC2_PRIVATE_KEY2 }}
+  #         script: |
+  #           cd /home/ubuntu/LucrareLicenta || { echo "Failed to change directory"; exit 1; }
+  #           echo "SQL_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" > .env
+  #           echo "API_BASE_URL=http://${{ vars.EC2_HOST }}:8080" >> .env
+  #           echo "REACT_APP_API_BASE_URL=http://${{ vars.EC2_HOST }}:8080" >> .env
+  #           echo "FRONTEND_ORIGIN=http://${{ vars.EC2_HOST }}:3000" >> .env
+  #           echo ".env file created with SQL_PASSWORD, API_BASE_URL, REACT_APP_API_BASE_URL and FRONTEND_ORIGIN"
 
-      - name: Prune old Docker images
-        uses: appleboy/ssh-action@v0.1.8
-        with:
-          host: ${{ vars.EC2_HOST }}
-          username: ${{ vars.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY2 }}
-          script: |
-            echo "Pruning old Docker images..."
-            sudo docker image prune -a -f || { echo "Failed to prune Docker images"; exit 1; }
+  #     - name: Prune old Docker images
+  #       uses: appleboy/ssh-action@v0.1.8
+  #       with:
+  #         host: ${{ vars.EC2_HOST }}
+  #         username: ${{ vars.EC2_USERNAME }}
+  #         key: ${{ secrets.EC2_PRIVATE_KEY2 }}
+  #         script: |
+  #           echo "Pruning old Docker images..."
+  #           sudo docker image prune -a -f || { echo "Failed to prune Docker images"; exit 1; }
 
-      - name: Pull new Docker images
-        uses: appleboy/ssh-action@v0.1.8
-        with:
-          host: ${{ vars.EC2_HOST }}
-          username: ${{ vars.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY2 }}
-          script: |
-            cd /home/ubuntu/LucrareLicenta || { echo "Failed to change directory"; exit 1; }
-            echo "Pulling new Docker images..."
-            sudo docker-compose pull || { echo "Failed to pull new Docker images"; exit 1; }
+  #     - name: Pull new Docker images
+  #       uses: appleboy/ssh-action@v0.1.8
+  #       with:
+  #         host: ${{ vars.EC2_HOST }}
+  #         username: ${{ vars.EC2_USERNAME }}
+  #         key: ${{ secrets.EC2_PRIVATE_KEY2 }}
+  #         script: |
+  #           cd /home/ubuntu/LucrareLicenta || { echo "Failed to change directory"; exit 1; }
+  #           echo "Pulling new Docker images..."
+  #           sudo docker-compose pull || { echo "Failed to pull new Docker images"; exit 1; }
 
-      - name: Bring down current Docker containers
-        uses: appleboy/ssh-action@v0.1.8
-        with:
-          host: ${{ vars.EC2_HOST }}
-          username: ${{ vars.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY2 }}
-          script: |
-            cd /home/ubuntu/LucrareLicenta || { echo "Failed to change directory"; exit 1; }
-            export SQL_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}"
-            echo "Taking down current Docker containers..."
-            sudo docker-compose down || { echo "Failed to bring down Docker containers"; exit 1; }
+  #     - name: Bring down current Docker containers
+  #       uses: appleboy/ssh-action@v0.1.8
+  #       with:
+  #         host: ${{ vars.EC2_HOST }}
+  #         username: ${{ vars.EC2_USERNAME }}
+  #         key: ${{ secrets.EC2_PRIVATE_KEY2 }}
+  #         script: |
+  #           cd /home/ubuntu/LucrareLicenta || { echo "Failed to change directory"; exit 1; }
+  #           export SQL_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}"
+  #           echo "Taking down current Docker containers..."
+  #           sudo docker-compose down || { echo "Failed to bring down Docker containers"; exit 1; }
 
-      - name: Start MySQL container
-        uses: appleboy/ssh-action@v0.1.8
-        with:
-          host: ${{ vars.EC2_HOST }}
-          username: ${{ vars.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY2 }}
-          script: |
-            cd /home/ubuntu/LucrareLicenta || { echo "Failed to change directory"; exit 1; }
-            echo "Starting MySQL container..."
-            sudo docker-compose up -d mysql || { echo "Failed to start MySQL container"; exit 1; }
-            echo "Waiting for MySQL to be ready..."
-            sleep 20
+  #     - name: Start MySQL container
+  #       uses: appleboy/ssh-action@v0.1.8
+  #       with:
+  #         host: ${{ vars.EC2_HOST }}
+  #         username: ${{ vars.EC2_USERNAME }}
+  #         key: ${{ secrets.EC2_PRIVATE_KEY2 }}
+  #         script: |
+  #           cd /home/ubuntu/LucrareLicenta || { echo "Failed to change directory"; exit 1; }
+  #           echo "Starting MySQL container..."
+  #           sudo docker-compose up -d mysql || { echo "Failed to start MySQL container"; exit 1; }
+  #           echo "Waiting for MySQL to be ready..."
+  #           sleep 20
 
-      - name: Run Flyway migrations
-        uses: appleboy/ssh-action@v0.1.8
-        with:
-          host: ${{ vars.EC2_HOST }}
-          username: ${{ vars.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY2 }}
-          script: |
-            cd /home/ubuntu/LucrareLicenta/backend || { echo "Failed to change directory"; exit 1; }
-            echo "Running Flyway clean..."
-            mvn flyway:repair
-            echo "Running Flyway migrate..."
-            mvn flyway:migrate || { echo "Failed to run flyway:migrate"; exit 1; }
+  #     - name: Run Flyway migrations
+  #       uses: appleboy/ssh-action@v0.1.8
+  #       with:
+  #         host: ${{ vars.EC2_HOST }}
+  #         username: ${{ vars.EC2_USERNAME }}
+  #         key: ${{ secrets.EC2_PRIVATE_KEY2 }}
+  #         script: |
+  #           cd /home/ubuntu/LucrareLicenta/backend || { echo "Failed to change directory"; exit 1; }
+  #           echo "Running Flyway clean..."
+  #           mvn flyway:repair
+  #           echo "Running Flyway migrate..."
+  #           mvn flyway:migrate || { echo "Failed to run flyway:migrate"; exit 1; }
 
-      - name: Start Docker containers
-        uses: appleboy/ssh-action@v0.1.8
-        with:
-          host: ${{ vars.EC2_HOST }}
-          username: ${{ vars.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY2 }}
-          script: |
-            cd /home/ubuntu/LucrareLicenta || { echo "Failed to change directory"; exit 1; }
-            export SQL_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}"
-            echo "Starting Docker containers..."
-            sudo docker-compose up -d || { echo "Failed to start Docker containers"; exit 1; }
+  #     - name: Start Docker containers
+  #       uses: appleboy/ssh-action@v0.1.8
+  #       with:
+  #         host: ${{ vars.EC2_HOST }}
+  #         username: ${{ vars.EC2_USERNAME }}
+  #         key: ${{ secrets.EC2_PRIVATE_KEY2 }}
+  #         script: |
+  #           cd /home/ubuntu/LucrareLicenta || { echo "Failed to change directory"; exit 1; }
+  #           export SQL_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}"
+  #           echo "Starting Docker containers..."
+  #           sudo docker-compose up -d || { echo "Failed to start Docker containers"; exit 1; }
