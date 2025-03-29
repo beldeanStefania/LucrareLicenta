@@ -79,9 +79,17 @@ export default function StudentPage({ onLogout }) {
   
   const getAverageGrade = () => {
     if (grades.length === 0) return 0;
-    const sum = grades.reduce((total, grade) => total + grade.nota, 0);
-    return (sum / grades.length).toFixed(2);
+    
+    const totalCredite = grades.reduce((total, grade) => total + (grade.credite || 0), 0);
+    if (totalCredite === 0) return 0;
+    
+    const sumaPonderata = grades.reduce((total, grade) => {
+      return total + (grade.nota * (grade.credite || 0));
+    }, 0);
+    
+    return (sumaPonderata / totalCredite).toFixed(2);
   };
+  
   
   const getUpcomingClassesCount = () => {
     const today = new Date();

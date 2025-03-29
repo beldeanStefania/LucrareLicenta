@@ -11,4 +11,5 @@ public class CatalogStudentMaterieDTO {
     private String studentCod;
     private String codMaterie;
     private String numeMaterie;
+    private Integer credite;
 }
