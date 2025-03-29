@@ -34,7 +34,8 @@ CREATE TABLE IF NOT EXISTS materie (
                                        id INT AUTO_INCREMENT PRIMARY KEY,
                                        nume VARCHAR(255),
                                        semestru INT,
-                                       cod VARCHAR(255)
+                                       cod VARCHAR(255),
+                                       credite INT
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS student (

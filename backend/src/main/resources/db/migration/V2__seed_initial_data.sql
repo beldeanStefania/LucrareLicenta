@@ -120,74 +120,74 @@ WHERE NOT EXISTS (
 
 
 -- Insert subjects (materii)
-INSERT INTO materie (nume, semestru, cod)
-SELECT 'OOP', 1, 'OOP101'
+INSERT INTO materie (nume, semestru, cod, credite)
+SELECT 'OOP', 1, 'OOP101', 6
 WHERE NOT EXISTS (
     SELECT 1 FROM materie WHERE nume = 'OOP'
 );
 
-INSERT INTO materie (nume, semestru, cod)
-SELECT 'LFTC', 1, 'LFTC102'
+INSERT INTO materie (nume, semestru, cod, credite)
+SELECT 'LFTC', 1, 'LFTC102', 6
 WHERE NOT EXISTS (
     SELECT 1 FROM materie WHERE nume = 'LFTC'
 );
 
-INSERT INTO materie (nume, semestru, cod)
-SELECT 'Mecanica', 1, 'MEC103'
+INSERT INTO materie (nume, semestru, cod, credite)
+SELECT 'Mecanica', 1, 'MEC103', 6
 WHERE NOT EXISTS (
     SELECT 1 FROM materie WHERE nume = 'Mecanica'
 );
 
-INSERT INTO materie (nume, semestru, cod)
-SELECT 'Algebra1', 1, 'ALG101'
+INSERT INTO materie (nume, semestru, cod, credite)
+SELECT 'Algebra1', 1, 'ALG101', 6
 WHERE NOT EXISTS (
     SELECT 1 FROM materie WHERE nume = 'Algebra1'
 );
 
-INSERT INTO materie (nume, semestru, cod)
-SELECT 'Algebra2', 2, 'ALG102'
+INSERT INTO materie (nume, semestru, cod, credite)
+SELECT 'Algebra2', 2, 'ALG102', 6
 WHERE NOT EXISTS (
     SELECT 1 FROM materie WHERE nume = 'Algebra2'
 );
 
-INSERT INTO materie (nume, semestru, cod)
-SELECT 'Logica matematica', 1, 'LOG104'
+INSERT INTO materie (nume, semestru, cod, credite)
+SELECT 'Logica matematica', 1, 'LOG104', 6
 WHERE NOT EXISTS (
     SELECT 1 FROM materie WHERE nume = 'Logica matematica'
 );
 
-INSERT INTO materie (nume, semestru, cod)
-SELECT 'Geometrie1', 1, 'GEO101'
+INSERT INTO materie (nume, semestru, cod, credite)
+SELECT 'Geometrie1', 1, 'GEO101', 6
 WHERE NOT EXISTS (
     SELECT 1 FROM materie WHERE nume = 'Geometrie1'
 );
 
-INSERT INTO materie (nume, semestru, cod)
-SELECT 'Geometrie2', 2, 'GEO102'
+INSERT INTO materie (nume, semestru, cod, credite)
+SELECT 'Geometrie2', 2, 'GEO102', 6
 WHERE NOT EXISTS (
     SELECT 1 FROM materie WHERE nume = 'Geometrie2'
 );
 
-INSERT INTO materie (nume, semestru, cod)
-SELECT 'Analiza numerica', 2, 'AN105'
+INSERT INTO materie (nume, semestru, cod, credite)
+SELECT 'Analiza numerica', 2, 'AN105', 6
 WHERE NOT EXISTS (
     SELECT 1 FROM materie WHERE nume = 'Analiza numerica'
 );
 
-INSERT INTO materie (nume, semestru, cod)
-SELECT 'Analiza complexa', 3, 'AC106'
+INSERT INTO materie (nume, semestru, cod, credite)
+SELECT 'Analiza complexa', 3, 'AC106', 6
 WHERE NOT EXISTS (
     SELECT 1 FROM materie WHERE nume = 'Analiza complexa'
 );
 
-INSERT INTO materie (nume, semestru, cod)
-SELECT 'Analiza reala1', 3, 'AR107'
+INSERT INTO materie (nume, semestru, cod, credite)
+SELECT 'Analiza reala1', 3, 'AR107', 6
 WHERE NOT EXISTS (
     SELECT 1 FROM materie WHERE nume = 'Analiza reala1'
 );
 
-INSERT INTO materie (nume, semestru, cod)
-SELECT 'Analiza reala2', 4, 'AR108'
+INSERT INTO materie (nume, semestru, cod, credite)
+SELECT 'Analiza reala2', 4, 'AR108', 6
 WHERE NOT EXISTS (
     SELECT 1 FROM materie WHERE nume = 'Analiza reala2'
 );
