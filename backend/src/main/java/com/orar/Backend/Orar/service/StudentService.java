@@ -1,7 +1,6 @@
 package com.orar.Backend.Orar.service;
 
 import com.orar.Backend.Orar.dto.StudentDTO;
-import com.orar.Backend.Orar.dto.StudentGradeDTO;
 import com.orar.Backend.Orar.exception.StudentAlreadyExistsException;
 import com.orar.Backend.Orar.exception.StudentNotFoundException;
 import com.orar.Backend.Orar.model.Rol;

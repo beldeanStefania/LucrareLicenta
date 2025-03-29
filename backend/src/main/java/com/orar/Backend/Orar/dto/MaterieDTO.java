@@ -9,4 +9,5 @@ public class MaterieDTO {
     private String nume;
     private Integer semestru;
     private String cod;
+    private Integer credite;
 }

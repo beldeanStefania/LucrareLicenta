@@ -22,6 +22,7 @@ public class Materie {
     private String nume;
     private Integer semestru;
     private String cod;
+    private Integer credite;
 
     @OneToMany(mappedBy = "materie", cascade = ALL)
     @JsonManagedReference

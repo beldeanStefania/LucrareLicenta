@@ -36,10 +36,10 @@ public class MaterieController {
     }
 
     @Operation(summary = "Modifica materie")
-    @PutMapping("/update/{id}")
-    public ResponseEntity<Materie> updateMaterie(@PathVariable int id, @RequestBody MaterieDTO materieDTO) {
+    @PutMapping("/update")
+    public ResponseEntity<Materie> updateMaterie(@RequestBody MaterieDTO materieDTO) {
         try {
-            return ok(materieService.update(id, materieDTO));
+            return ok(materieService.update(materieDTO));
         } catch (Exception e) {
             return badRequest().build();
         }

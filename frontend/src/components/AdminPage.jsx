@@ -1,45 +1,46 @@
+// AdminPage.jsx
 import React, { useEffect, useState } from "react";
 import { request } from "../helpers/axios-helper";
-import NavigationHeader from "./NavigationHeader"; 
+import NavigationHeader from "./NavigationHeader";
 import "./AdminPage.css";
 
 export default function AdminPage({ onLogout }) {
   // ---------------------------
-  // STUDENT LOGIC
+  // STATE
   // ---------------------------
   const [students, setStudents] = useState([]);
-  const [viewMode, setViewMode] = useState("list"); 
+  const [viewMode, setViewMode] = useState("list");
   const [studentToEdit, setStudentToEdit] = useState(null);
 
-  // ---------------------------
-  // PROFESSOR LOGIC
-  // ---------------------------
   const [professors, setProfessors] = useState([]);
-  const [viewModeProf, setViewModeProf] = useState("list"); 
+  const [viewModeProf, setViewModeProf] = useState("list");
   const [professorToEdit, setProfessorToEdit] = useState(null);
 
-  // ---------------------------
-  // SUBJECT/REPARTIZARE LOGIC
-  // ---------------------------
+  const [subjects, setSubjects] = useState([]);
+  const [subjectMode, setSubjectMode] = useState("list");
+  const [subjectToEdit] = useState(null);
+
   const [subjectFormVisible, setSubjectFormVisible] = useState(false);
   const [selectedProfForSubject, setSelectedProfForSubject] = useState(null);
-  const [allSubjects, setAllSubjects] = useState([]); 
+  const [allSubjects, setAllSubjects] = useState([]);
+  const [useCustomSubject, setUseCustomSubject] = useState(false);
+  const [customSubject, setCustomSubject] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("");
 
   useEffect(() => {
     fetchStudents();
     fetchProfessors();
-    fetchAllSubjects(); 
+    fetchSubjects();
+    fetchAllSubjects();
   }, []);
 
-  // ========== STUDENTS ==========
+  // ---------------------------
+  // STUDENTS
+  // ---------------------------
   const fetchStudents = () => {
     request("GET", "/api/student/getAllStudents")
-      .then((response) => {
-        setStudents(response.data);
-      })
-      .catch((error) => {
-        console.error("Failed to fetch students", error);
-      });
+      .then((res) => setStudents(res.data))
+      .catch((err) => console.error("Failed to fetch students", err));
   };
 
   const handleAddStudent = () => {
@@ -59,8 +60,8 @@ export default function AdminPage({ onLogout }) {
           alert("Student deleted successfully!");
           fetchStudents();
         })
-        .catch((error) => {
-          console.error("Failed to delete student:", error);
+        .catch((err) => {
+          console.error("Failed to delete student:", err);
           alert("Failed to delete student. Please try again.");
         });
     }
@@ -68,95 +69,64 @@ export default function AdminPage({ onLogout }) {
 
   const handleSaveStudent = (student) => {
     const endpoint =
-        viewMode === "add"
-            ? "/api/student/add"
-            : `/api/student/update/${student.cod}`;
+      viewMode === "add"
+        ? "/api/student/add"
+        : `/api/student/update/${student.cod}`;
     const method = viewMode === "add" ? "POST" : "PUT";
 
     if (viewMode === "update") {
-        delete student.password;
-        delete student.username;
-        delete student.cod;
+      delete student.password;
+      delete student.username;
+      delete student.cod;
     }
 
     request(method, endpoint, student)
-        .then(() => {
-            alert(viewMode === "add" ? "Student added successfully!" : "Student updated successfully!");
-            setViewMode("list");
-            fetchStudents();
-        })
-        .catch((error) => {
-            console.error("Error:", error);
+      .then(() => {
+        alert(
+          viewMode === "add"
+            ? "Student added successfully!"
+            : "Student updated successfully!"
+        );
+        setViewMode("list");
+        fetchStudents();
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("Failed to save student.");
+      });
+  };
 
-            if (error.response) {
-                console.log("Răspuns Backend:", error.response);
-                
-                let errorMessage = "Eroare necunoscută.";
-                
-                if (error.response.data) {
-                    if (typeof error.response.data === "string") {
-                        errorMessage = error.response.data;
-                    } else if (error.response.data.error) {
-                        errorMessage = error.response.data.error;
-                    } else if (error.response.data.message) {
-                        errorMessage = error.response.data.message;
-                    }
-                } else if (error.response.status === 400) {
-                    errorMessage = "Date invalide! Verifică dacă ai completat corect toate câmpurile.";
-                } else if (error.response.status === 409) {
-                    errorMessage = "Codul studentului trebuie să fie unic! Un student cu acest cod există deja.";
-                }
-
-                alert(`Eroare: ${errorMessage}`);
-            } else {
-                alert("Eroare: Nu s-a putut contacta serverul.");
-            }
-        });
-};
-
-
-  
-  
-const renderStudentList = () => (
-  <div className="list-container">
-    <h2>Students List</h2>
-    <button className="btn add-btn" onClick={handleAddStudent}>
-      Add Student
-    </button>
-    {students.length > 0 ? (
-      <div className="scroll-container">
-        <table className="students-table">
-          <thead>
-            <tr>
-              <th>First Name</th>
-              <th>Last Name</th>
-              <th>Year</th>
-              <th>Code</th>
-              <th>Actions</th>
+  const renderStudentList = () => (
+    <div className="list-container">
+      <h2>Students List</h2>
+      <button className="btn add-btn" onClick={handleAddStudent}>Add Student</button>
+      <table className="students-table">
+        <thead>
+          <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Year</th>
+            <th>Code</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {students.map((student) => (
+            <tr key={student.cod}>
+              <td>{student.nume}</td>
+              <td>{student.prenume}</td>
+              <td>{student.an}</td>
+              <td>{student.cod || "N/A"}</td>
+              <td>
+                <button className="btn edit-btn" onClick={() => handleEditStudent(student)}>Edit</button>
+                <button className="btn delete-btn" onClick={() => handleDeleteStudent(student.cod)}>Delete</button>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {students.map((student) => (
-              <tr key={student.cod}>
-                <td>{student.nume}</td>
-                <td>{student.prenume}</td>
-                <td>{student.an}</td>
-                <td>{student.cod || "N/A"}</td>
-                <td>
-                  <button className="btn edit-btn" onClick={() => handleEditStudent(student)}>Edit</button>
-                  <button className="btn delete-btn" onClick={() => handleDeleteStudent(student.cod)}>Delete</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    ) : (
-      <p>No students available</p>
-    )}
-  </div>
-);
-
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 
   const renderStudentForm = () => (
     <div className="form-container">
@@ -169,97 +139,26 @@ const renderStudentList = () => (
           handleSaveStudent(student);
         }}
       >
-        <div className="form-group">
-          <label>First Name:</label>
-          <input
-            name="nume"
-            defaultValue={studentToEdit?.nume || ""}
-            required
-            className="input-field"
-          />
-        </div>
-        <div className="form-group">
-          <label>Last Name:</label>
-          <input
-            name="prenume"
-            defaultValue={studentToEdit?.prenume || ""}
-            required
-            className="input-field"
-          />
-        </div>
+        <input name="nume" placeholder="First Name" defaultValue={studentToEdit?.nume || ""} required />
+        <input name="prenume" placeholder="Last Name" defaultValue={studentToEdit?.prenume || ""} required />
         {viewMode === "add" && (
           <>
-            <div className="form-group">
-              <label>Code:</label>
-              <input
-                name="cod"
-                defaultValue=""
-                required
-                className="input-field"
-              />
-            </div>
-            <div className="form-group">
-              <label>Username:</label>
-              <input name="username" required className="input-field" />
-            </div>
-            <div className="form-group">
-              <label>Password:</label>
-              <input
-                type="password"
-                name="password"
-                required
-                className="input-field"
-              />
-            </div>
+            <input name="cod" placeholder="Code" required />
+            <input name="username" placeholder="Username" required />
+            <input name="password" type="password" placeholder="Password" required />
           </>
         )}
-        <div className="form-group">
-          <label>Year:</label>
-          <input
-            type="number"
-            name="an"
-            defaultValue={studentToEdit?.an || ""}
-            required
-            className="input-field"
-          />
-        </div>
-        <div className="form-group">
-          <label>Group:</label>
-          <input
-            name="grupa"
-            defaultValue={studentToEdit?.grupa || ""}
-            required
-            className="input-field"
-          />
-        </div>
-        <div className="form-buttons">
-          <button type="submit" className="btn save-btn">
-            {viewMode === "add" ? "Add Student" : "Save"}
-          </button>
-          <button
-            type="button"
-            className="btn cancel-btn"
-            onClick={() => setViewMode("list")}
-          >
-            Cancel
-          </button>
-        </div>
+        <input name="an" type="number" placeholder="Year" defaultValue={studentToEdit?.an || ""} required />
+        <input name="grupa" placeholder="Group" defaultValue={studentToEdit?.grupa || ""} required />
+        <button type="submit" className="btn save-btn">{viewMode === "add" ? "Add" : "Save"}</button>
+        <button type="button" className="btn cancel-btn" onClick={() => setViewMode("list")}>Cancel</button>
       </form>
     </div>
   );
 
-  // ========== PROFESSORS ==========
-
-  const fetchProfessors = () => {
-    request("GET", "/api/profesor/getAll")
-      .then((response) => {
-        setProfessors(response.data);
-      })
-      .catch((error) => {
-        console.error("Failed to fetch professors", error);
-      });
-  };
-
+  // ---------------------------
+  // PROFESSORS
+  // ---------------------------
   const handleAddProfessor = () => {
     setViewModeProf("add");
     setProfessorToEdit(null);
@@ -271,90 +170,61 @@ const renderStudentList = () => (
   };
 
   const handleDeleteProfessor = (prof) => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete professor ${prof.nume} ${prof.prenume}?`
-      )
-    ) {
+    if (window.confirm(`Delete professor ${prof.nume} ${prof.prenume}?`)) {
       request("DELETE", `/api/profesor/delete/${prof.nume}/${prof.prenume}`)
         .then(() => {
-          alert("Professor deleted successfully!");
+          alert("Deleted successfully!");
           fetchProfessors();
         })
-        .catch((error) => {
-          console.error("Failed to delete professor:", error);
-          alert("Failed to delete professor. Please try again.");
-        });
+        .catch((err) => alert("Failed to delete professor."));
     }
   };
 
   const handleSaveProfessor = (profData) => {
-    if (viewModeProf === "add") {
-      request("POST", "/api/profesor/add", profData)
-        .then(() => {
-          alert("Professor added successfully!");
-          setViewModeProf("list");
-          fetchProfessors();
-        })
-        .catch((error) => {
-          console.error("Failed to add professor:", error);
-          alert("Failed to add professor. Please try again.");
-        });
-    } else {
-      const endpoint = `/api/profesor/update/${professorToEdit.id}`;
-      request("PUT", endpoint, profData)
-        .then(() => {
-          alert("Professor updated successfully!");
-          setViewModeProf("list");
-          fetchProfessors();
-        })
-        .catch((error) => {
-          console.error("Failed to update professor:", error);
-          alert("Failed to update professor. Please try again.");
-        });
-    }
+    const endpoint =
+      viewModeProf === "add"
+        ? "/api/profesor/add"
+        : `/api/profesor/update/${professorToEdit.id}`;
+    const method = viewModeProf === "add" ? "POST" : "PUT";
+
+    request(method, endpoint, profData)
+      .then(() => {
+        alert("Saved!");
+        setViewModeProf("list");
+        fetchProfessors();
+      })
+      .catch((err) => alert("Failed to save professor."));
   };
 
   const renderProfessorList = () => (
     <div className="list-container">
       <h2>Professors List</h2>
-      <button className="btn add-btn" onClick={handleAddProfessor}>
-        Add Professor
-      </button>
-      {professors.length > 0 ? (
-        <div className="scroll-container">
-          <table className="students-table">
-            <thead>
-              <tr>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Username</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {professors.map((prof) => (
-                <tr key={prof.id}>
-                  <td>{prof.nume}</td>
-                  <td>{prof.prenume}</td>
-                  <td>{prof.user?.username || "N/A"}</td>
-                  <td>
-                    <button className="btn edit-btn" onClick={() => handleEditProfessor(prof)}>Edit</button>
-                    <button className="btn delete-btn" onClick={() => handleDeleteProfessor(prof)}>Delete</button>
-                    <button className="btn add-btn" onClick={() => handleOpenSubjectForm(prof)}>Add Subject</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <p>No professors available</p>
-      )}
+      <button className="btn add-btn" onClick={handleAddProfessor}>Add Professor</button>
+      <table className="students-table">
+        <thead>
+          <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Username</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {professors.map((prof) => (
+            <tr key={prof.id}>
+              <td>{prof.nume}</td>
+              <td>{prof.prenume}</td>
+              <td>{prof.user?.username || "N/A"}</td>
+              <td>
+                <button className="btn edit-btn" onClick={() => handleEditProfessor(prof)}>Edit</button>
+                <button className="btn delete-btn" onClick={() => handleDeleteProfessor(prof)}>Delete</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
-  
- 
 
   const renderProfessorForm = () => (
     <div className="form-container">
@@ -367,243 +237,86 @@ const renderStudentList = () => (
           handleSaveProfessor(data);
         }}
       >
-        <div className="form-group">
-          <label>First Name (Prenume):</label>
-          <input
-            name="nume"
-            defaultValue={professorToEdit?.nume || ""}
-            required
-            className="input-field"
-          />
-        </div>
-        <div className="form-group">
-          <label>Last Name (Nume):</label>
-          <input
-            name="prenume"
-            defaultValue={professorToEdit?.prenume || ""}
-            required
-            className="input-field"
-          />
-        </div>
-        <div className="form-group">
-          <label>Username:</label>
-          <input
-            name="username"
-            defaultValue={professorToEdit?.user?.username || ""}
-            required={viewModeProf === "add"}
-            className="input-field"
-          />
-        </div>
-        <div className="form-group">
-          <label>Password:</label>
-          <input
-            name="password"
-            type="password"
-            placeholder={
-              viewModeProf === "update" ? "Leave empty if unchanged" : ""
-            }
-            required={viewModeProf === "add"} 
-            className="input-field"
-          />
-        </div>
-
-        <div className="form-buttons">
-          <button type="submit" className="btn save-btn">
-            {viewModeProf === "add" ? "Add Professor" : "Save"}
-          </button>
-          <button
-            type="button"
-            className="btn cancel-btn"
-            onClick={() => setViewModeProf("list")}
-          >
-            Cancel
-          </button>
-        </div>
+        <input name="nume" placeholder="First Name" defaultValue={professorToEdit?.nume || ""} required />
+        <input name="prenume" placeholder="Last Name" defaultValue={professorToEdit?.prenume || ""} required />
+        <input name="username" placeholder="Username" defaultValue={professorToEdit?.user?.username || ""} required={viewModeProf === "add"} />
+        <input name="password" type="password" placeholder="Password" required={viewModeProf === "add"} />
+        <button type="submit" className="btn save-btn">{viewModeProf === "add" ? "Add" : "Save"}</button>
+        <button type="button" className="btn cancel-btn" onClick={() => setViewModeProf("list")}>Cancel</button>
       </form>
     </div>
   );
 
-  const [useCustomSubject, setUseCustomSubject] = useState(false);
-  const [customSubject, setCustomSubject] = useState("");
-  const [selectedSubject, setSelectedSubject] = useState("");
+  // ---------------------------
+  // SUBJECTS (Materii)
+  // ---------------------------
+  const handleAddSubject = () => {
+    setSubjectMode("add");
+  };
 
-  const fetchAllSubjects = () => {
-    request("GET", "/api/materie/getAll")
-      .then((response) => {
-        setAllSubjects(response.data);
+  const handleSaveSubject = (subject) => {
+    request("POST", "/api/materie/add", subject)
+      .then(() => {
+        alert("Subject added successfully!");
+        fetchSubjects();
+        setSubjectMode("list");
       })
-      .catch((error) => console.error("Failed to fetch subjects:", error));
+      .catch(() => alert("Failed to add subject."));
   };
 
-  const handleOpenSubjectForm = (prof) => {
-    setSelectedProfForSubject(prof);
-    setSubjectFormVisible(true);
-    setUseCustomSubject(false);
-    setCustomSubject("");
-    setSelectedSubject("");
-  };
+  const renderSubjectList = () => (
+    <div className="list-container">
+      <h2>Subjects List</h2>
+      <button className="btn add-btn" onClick={handleAddSubject}>Add Subject</button>
+      <table className="students-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Semester</th>
+            <th>Code</th>
+            <th>Credits</th>
+          </tr>
+        </thead>
+        <tbody>
+          {subjects.map((subject) => (
+            <tr key={subject.id}>
+              <td>{subject.nume}</td>
+              <td>{subject.semestru}</td>
+              <td>{subject.cod}</td>
+              <td>{subject.credite}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 
-  const createNewSubject = (subjectName) => {
-    return request("POST", "/api/materie/add", { 
-      nume: subjectName,
-      semestru: 1,    
-      cod: subjectName.toUpperCase().replace(/\s+/g, "") 
-    })
-      .then(response => {
-        fetchAllSubjects(); 
-        return response.data;
-      });
-  };
-  
-
-  const handleSubmitSubject = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const data = Object.fromEntries(formData.entries());
-    
-    const subjectName = useCustomSubject ? customSubject : data.materie;
-    
-    const assignSubject = () => {
-      const payload = {
-        tip: data.tip,
-        materie: subjectName,
-        numeProfesor: selectedProfForSubject.nume,
-        prenumeProfesor: selectedProfForSubject.prenume,
-      };
-  
-      request("POST", "/api/repartizareProf", payload)
-        .then(() => {
-          alert("Subject assigned successfully!");
-          setSubjectFormVisible(false);
-          setUseCustomSubject(false);
-          setCustomSubject("");
-        })
-        .catch((error) => {
-          console.error("Failed to assign subject:", error);
-          alert("Failed to assign subject. Please try again.");
-        });
-    };
-    
-    if (useCustomSubject && customSubject.trim()) {
-      createNewSubject(customSubject.trim())
-        .then(() => {
-          assignSubject();
-        })
-        .catch(error => {
-          console.error("Failed to create new subject:", error);
-          alert("Failed to create new subject. Please try again.");
-        });
-    } else {
-      assignSubject();
-    }
-  };
-
-  const renderSubjectForm = () => {
-    if (!subjectFormVisible || !selectedProfForSubject) return null;
-
-    return (
-      <div className="form-container">
-        <h2>
-          Add Subject for {selectedProfForSubject.nume}{" "}
-          {selectedProfForSubject.prenume}
-        </h2>
-        <form onSubmit={handleSubmitSubject}>
-          <div className="form-group">
-            <div className="subject-selection-mode">
-              <label style={{ marginRight: 'var(--spacing-md)' }}>
-                <input 
-                  type="radio" 
-                  name="subjectMode" 
-                  checked={!useCustomSubject}
-                  onChange={() => setUseCustomSubject(false)}
-                  style={{ marginRight: 'var(--spacing-xs)' }} 
-                />
-                Select existing subject
-              </label>
-              <label>
-                <input 
-                  type="radio" 
-                  name="subjectMode" 
-                  checked={useCustomSubject}
-                  onChange={() => setUseCustomSubject(true)}
-                  style={{ marginRight: 'var(--spacing-xs)' }} 
-                />
-                Add new subject
-              </label>
-            </div>
-          </div>
-
-          {!useCustomSubject ? (
-            <div className="form-group">
-              <label>Materie:</label>
-              <select 
-                name="materie" 
-                className="input-field" 
-                required={!useCustomSubject}
-                value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
-              >
-                <option value="">Select a subject</option>
-                {allSubjects.map((sub) => (
-                  <option key={sub.id} value={sub.nume}>
-                    {sub.nume}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ) : (
-            <div className="form-group">
-              <label>New Subject Name:</label>
-              <input
-                name="customMaterie"
-                className="input-field"
-                required={useCustomSubject}
-                value={customSubject}
-                onChange={(e) => setCustomSubject(e.target.value)}
-                placeholder="Enter a new subject name"
-              />
-            </div>
-          )}
-
-          <div className="form-group">
-            <label>Tip:</label>
-            <select name="tip" className="input-field" required>
-              <option value="">Select type</option>
-              <option value="Curs">Curs</option>
-              <option value="Laborator">Laborator</option>
-              <option value="Seminar">Seminar</option>
-            </select>
-          </div>
-
-          <div className="form-buttons">
-            <button 
-              type="submit" 
-              className="btn save-btn"
-              disabled={useCustomSubject && !customSubject.trim() || !useCustomSubject && !selectedSubject}
-            >
-              Add
-            </button>
-            <button
-              type="button"
-              className="btn cancel-btn"
-              onClick={() => setSubjectFormVisible(false)}
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
-    );
-  };
+  const renderSubjectAddForm = () => (
+    <div className="form-container">
+      <h2>Add Subject</h2>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const formData = new FormData(e.target);
+          const data = Object.fromEntries(formData.entries());
+          data.credite = parseInt(data.credite);
+          data.semestru = parseInt(data.semestru);
+          handleSaveSubject(data);
+        }}
+      >
+        <input name="nume" placeholder="Name" required className="input-field" />
+        <input name="cod" placeholder="Code" required className="input-field" />
+        <input name="semestru" placeholder="Semester" type="number" required className="input-field" />
+        <input name="credite" placeholder="Credits" type="number" required className="input-field" />
+        <button type="submit" className="btn save-btn">Add</button>
+        <button type="button" className="btn cancel-btn" onClick={() => setSubjectMode("list")}>Cancel</button>
+      </form>
+    </div>
+  );
 
   return (
     <div className="admin-page">
-      <NavigationHeader 
-        userRole="ROLE_ADMIN" 
-        userName="Admin"
-        onLogout={onLogout}
-      />
-
+      <NavigationHeader userRole="ROLE_ADMIN" userName="Admin" onLogout={onLogout} />
       <div className="admin-content">
         <hr />
         <h1>Students Management</h1>
@@ -613,11 +326,12 @@ const renderStudentList = () => (
         <hr />
         <h1>Professors Management</h1>
         {viewModeProf === "list" && renderProfessorList()}
-        {(viewModeProf === "add" || viewModeProf === "update") &&
-          renderProfessorForm()}
+        {(viewModeProf === "add" || viewModeProf === "update") && renderProfessorForm()}
 
-        {}
-        {renderSubjectForm()}
+        <hr />
+        <h1>Subjects Management</h1>
+        {subjectMode === "list" && renderSubjectList()}
+        {subjectMode === "add" && renderSubjectAddForm()}
       </div>
     </div>
   );
