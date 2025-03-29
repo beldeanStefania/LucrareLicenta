@@ -23,7 +23,13 @@ export default function AdminPage({ onLogout }) {
   // ---------------------------
   const [subjectFormVisible, setSubjectFormVisible] = useState(false);
   const [selectedProfForSubject, setSelectedProfForSubject] = useState(null);
-  const [allSubjects, setAllSubjects] = useState([]); 
+  const [allSubjects, setAllSubjects] = useState([]);
+  
+  // ---------------------------
+  // DIRECT SUBJECT MANAGEMENT
+  // ---------------------------
+  const [viewModeSubject, setViewModeSubject] = useState("list");
+  const [subjectToEdit, setSubjectToEdit] = useState(null);
 
   useEffect(() => {
     fetchStudents();
@@ -498,7 +504,7 @@ const renderStudentList = () => (
     }
   };
 
-  const renderSubjectForm = () => {
+  const renderAssignSubjectForm = () => {
     if (!subjectFormVisible || !selectedProfForSubject) return null;
 
     return (
@@ -596,6 +602,158 @@ const renderStudentList = () => (
     );
   };
 
+  // ========== SUBJECTS ==========
+  const handleAddSubject = () => {
+    setViewModeSubject("add");
+    setSubjectToEdit(null);
+  };
+
+  const handleEditSubject = (subject) => {
+    setViewModeSubject("update");
+    setSubjectToEdit(subject);
+  };
+
+  const handleDeleteSubject = (id) => {
+    if (window.confirm("Are you sure you want to delete this subject?")) {
+      request("DELETE", `/api/materie/delete/${id}`)
+        .then(() => {
+          alert("Subject deleted successfully!");
+          fetchAllSubjects();
+        })
+        .catch((error) => {
+          console.error("Failed to delete subject:", error);
+          alert("Failed to delete subject. Please try again.");
+        });
+    }
+  };
+
+  const handleSaveSubject = (subject) => {
+    const method = viewModeSubject === "add" ? "POST" : "PUT";
+    const endpoint = viewModeSubject === "add" ? "/api/materie/add" : "/api/materie/update";
+
+    request(method, endpoint, subject)
+      .then(() => {
+        alert(viewModeSubject === "add" ? "Subject added successfully!" : "Subject updated successfully!");
+        setViewModeSubject("list");
+        fetchAllSubjects();
+      })
+      .catch((error) => {
+        console.error("Failed to save subject:", error);
+        alert("Failed to save subject. Please try again.");
+      });
+  };
+
+  const renderSubjectList = () => (
+    <div className="list-container">
+      <h2>Subjects List</h2>
+      <button className="btn add-btn" onClick={handleAddSubject}>
+        Add Subject
+      </button>
+      {allSubjects.length > 0 ? (
+        <div className="scroll-container">
+          <table className="students-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Code</th>
+                <th>Semester</th>
+                <th>Credits</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allSubjects.map((subject) => (
+                <tr key={subject.id}>
+                  <td>{subject.nume}</td>
+                  <td>{subject.cod}</td>
+                  <td>{subject.semestru}</td>
+                  <td>{subject.credite}</td>
+                  <td>
+                    <button className="btn edit-btn" onClick={() => handleEditSubject(subject)}>Edit</button>
+                    <button className="btn delete-btn" onClick={() => handleDeleteSubject(subject.id)}>Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p>No subjects available</p>
+      )}
+    </div>
+  );
+
+  const renderSubjectForm = () => (
+    <div className="form-container">
+      <h2>{viewModeSubject === "add" ? "Add Subject" : "Edit Subject"}</h2>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const formData = new FormData(e.target);
+          const subject = Object.fromEntries(formData.entries());
+          // Convert string values to numbers where needed
+          subject.semestru = parseInt(subject.semestru, 10);
+          subject.credite = parseInt(subject.credite, 10);
+          handleSaveSubject(subject);
+        }}
+      >
+        <div className="form-group">
+          <label>Name:</label>
+          <input
+            name="nume"
+            defaultValue={subjectToEdit?.nume || ""}
+            required
+            className="input-field"
+          />
+        </div>
+        <div className="form-group">
+          <label>Code:</label>
+          <input
+            name="cod"
+            defaultValue={subjectToEdit?.cod || ""}
+            required
+            className="input-field"
+          />
+        </div>
+        <div className="form-group">
+          <label>Semester:</label>
+          <input
+            type="number"
+            name="semestru"
+            defaultValue={subjectToEdit?.semestru || "1"}
+            required
+            min="1"
+            max="2"
+            className="input-field"
+          />
+        </div>
+        <div className="form-group">
+          <label>Credits:</label>
+          <input
+            type="number"
+            name="credite"
+            defaultValue={subjectToEdit?.credite || ""}
+            required
+            min="1"
+            className="input-field"
+          />
+        </div>
+        <div className="form-buttons">
+          <button type="submit" className="btn save-btn">
+            {viewModeSubject === "add" ? "Add Subject" : "Save"}
+          </button>
+          <button
+            type="button"
+            className="btn cancel-btn"
+            onClick={() => setViewModeSubject("list")}
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+
   return (
     <div className="admin-page">
       <NavigationHeader 
@@ -615,9 +773,13 @@ const renderStudentList = () => (
         {viewModeProf === "list" && renderProfessorList()}
         {(viewModeProf === "add" || viewModeProf === "update") &&
           renderProfessorForm()}
+          
+        <hr />
+        <h1>Subjects Management</h1>
+        {viewModeSubject === "list" && renderSubjectList()}
+        {(viewModeSubject === "add" || viewModeSubject === "update") && renderSubjectForm()}
 
-        {}
-        {renderSubjectForm()}
+        {renderAssignSubjectForm()}
       </div>
     </div>
   );
