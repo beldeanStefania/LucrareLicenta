@@ -21,6 +21,7 @@ public class Materie {
 
     private String nume;
     private Integer semestru;
+    private Integer an;
     private String cod;
     private Integer credite;
 

@@ -19,7 +19,7 @@ public class CatalogStudentMaterie {
 
     private Double nota;
     private Integer semestru;
-
+    private  MaterieStatus status;
     @ManyToOne(fetch = LAZY)
     @JsonBackReference
     @JoinColumn(name = "student_id", nullable = false)

@@ -8,6 +8,8 @@ import LoginFallback from "./LoginFallback.jsx";
 import DirectLogin from "./DirectLogin.jsx";
 import WelcomePage from "./WelcomePage.jsx";
 import ErrorBoundary from "./ErrorBoundary.jsx";
+import ContractSelectionPage from "./ContractPage.jsx";
+
 import { getAuthToken, setAuthHeader, decodeToken } from "../helpers/axios-helper.jsx";
 import "./App.css";
 
@@ -166,6 +168,20 @@ export default function App() {
               </ErrorBoundary>
             } 
           />
+
+<Route
+  path="/contract/select"
+  element={
+    <ErrorBoundary>
+      {isLoggedIn && userRole === "ROLE_STUDENT" ? (
+        <ContractSelectionPage />
+      ) : (
+        <Navigate to="/login" />
+      )}
+    </ErrorBoundary>
+  }
+/>
+
           
           <Route path="*" element={isLoggedIn ? <Navigate to="/dashboard" /> : <Navigate to="/" />} />
         </Routes>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { request } from "../helpers/axios-helper";
+import { useNavigate } from "react-router-dom";
 import NavigationHeader from "./NavigationHeader";
 import { 
   FaGraduationCap, FaBook, FaCalendarAlt, FaChalkboardTeacher, 
@@ -11,6 +12,7 @@ export default function StudentPage({ onLogout }) {
   const [userData, setUserData] = useState(null);
   const [schedule, setSchedule] = useState([]);
   const [grades, setGrades] = useState([]);
+  const [availableCourses, setAvailableCourses] = useState([]);
   const [loading, setLoading] = useState({
     user: true,
     schedule: true,
@@ -98,6 +100,30 @@ export default function StudentPage({ onLogout }) {
     
     return schedule.filter(item => item.zi === todayName).length;
   };
+
+  const navigate = useNavigate();
+
+  const goToContractSelection = () => {
+    const semestru = window.prompt("Introdu semestrul pentru care vrei să generezi contractul:");
+    if (!semestru || isNaN(semestru)) {
+      alert("Te rog să introduci un număr valid pentru semestru.");
+      return;
+    }
+  
+    navigate(`/contract/select?cod=${userData.cod}&an=${userData.an}&semestru=${semestru}`);
+  };
+  
+  const fetchAvailableCourses = (cod, an, semestru) => {
+    request("GET", `/api/studentContract/available/${cod}/${an}/${semestru}`)
+      .then((response) => {
+        setAvailableCourses(response.data);
+      })
+      .catch((error) => {
+        console.error("Eroare la obținerea materiilor:", error);
+        alert("Nu s-au putut încărca materiile disponibile.");
+      });
+  };
+  
 
   if (loading.user) {
     return (
@@ -287,6 +313,37 @@ export default function StudentPage({ onLogout }) {
             )}
           </div>
         </div>
+
+        {/* Buton generare contract */}
+<div style={{ textAlign: 'center', marginTop: '40px', marginBottom: '20px' }}>
+  <button
+    onClick={goToContractSelection}
+    style={{
+      padding: '12px 24px',
+      backgroundColor: 'var(--secondary-color)',
+      color: '#fff',
+      border: 'none',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      fontWeight: 'bold',
+      fontSize: '16px',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+      transition: 'all 0.3s ease'
+    }}
+    onMouseOver={(e) => {
+      e.currentTarget.style.transform = "translateY(-2px)";
+      e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.2)";
+    }}
+    onMouseOut={(e) => {
+      e.currentTarget.style.transform = "translateY(0)";
+      e.currentTarget.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.15)";
+    }}
+  >
+    Generează Contractul de Studii
+  </button>
+</div>
+
+
       </div>
     </div>
   );
