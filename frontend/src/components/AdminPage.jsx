@@ -4,6 +4,10 @@ import NavigationHeader from "./NavigationHeader";
 import "./AdminPage.css";
 
 export default function AdminPage({ onLogout }) {
+
+  const [specializations, setSpecializations] = useState([]);
+  
+
   // ---------------------------
   // STUDENT LOGIC
   // ---------------------------
@@ -35,6 +39,7 @@ export default function AdminPage({ onLogout }) {
     fetchStudents();
     fetchProfessors();
     fetchAllSubjects(); 
+    fetchSpecializations();
   }, []);
 
   // ========== STUDENTS ==========
@@ -51,6 +56,12 @@ export default function AdminPage({ onLogout }) {
   const handleAddStudent = () => {
     setViewMode("add");
     setStudentToEdit(null);
+  };
+
+  const fetchSpecializations = () => {
+    request("GET", "/api/specializare/getAll")
+      .then(res => setSpecializations(res.data))
+      .catch(err => console.error("Failed to fetch specializari:", err));
   };
 
   const handleEditStudent = (student) => {
@@ -238,6 +249,23 @@ const renderStudentList = () => (
             className="input-field"
           />
         </div>
+        <div className="form-group">
+  <label>Specializare:</label>
+  <select
+    name="specializare"
+    defaultValue={studentToEdit?.specializare?.specializare || ""}
+    required
+    className="input-field"
+  >
+    <option value="" disabled>Selectează specializarea</option>
+    {specializations.map((s) => (
+      <option key={s.id} value={s.specializare}>
+        {s.specializare}
+      </option>
+    ))}
+  </select>
+</div>
+
         <div className="form-buttons">
           <button type="submit" className="btn save-btn">
             {viewMode === "add" ? "Add Student" : "Save"}

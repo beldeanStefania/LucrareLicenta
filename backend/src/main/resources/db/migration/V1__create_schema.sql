@@ -91,3 +91,26 @@ CREATE TABLE IF NOT EXISTS catalog_student_materie (
                                                        CONSTRAINT fk_catalog_student_materie_student FOREIGN KEY (student_id) REFERENCES student(id),
                                                        CONSTRAINT fk_catalog_student_materie_materie FOREIGN KEY (materie_id) REFERENCES materie(id)
 ) ENGINE=InnoDB;
+
+-- 1. Creăm mai întâi specializarea, căci curriculum_entry o va referenția
+CREATE TABLE IF NOT EXISTS specializare (
+                                            id INT AUTO_INCREMENT PRIMARY KEY,
+                                            nume VARCHAR(255) NOT NULL,
+                                            UNIQUE KEY uk_specializare (nume)
+) ENGINE=InnoDB;
+
+-- 2. Apoi curriculum_entry, cu coloanele FK și constrângerile aferente
+CREATE TABLE IF NOT EXISTS curriculum_entry (
+                                                id INT AUTO_INCREMENT PRIMARY KEY,
+                                                specializare_id INT NOT NULL,
+                                                materie_id    INT NOT NULL,
+                                                an            INT NOT NULL,
+                                                semestru      INT NOT NULL,
+                                                tip           VARCHAR(255),
+
+                                                CONSTRAINT fk_curriculum_entry_specializare
+                                                    FOREIGN KEY (specializare_id) REFERENCES specializare(id),
+
+                                                CONSTRAINT fk_curriculum_entry_materie
+                                                    FOREIGN KEY (materie_id)    REFERENCES materie(id)
+) ENGINE=InnoDB;

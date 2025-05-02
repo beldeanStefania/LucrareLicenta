@@ -13,4 +13,5 @@ public class StudentDTO {
     private Integer an;
     private String username;
     private String password;
+    private String specializare;
 }

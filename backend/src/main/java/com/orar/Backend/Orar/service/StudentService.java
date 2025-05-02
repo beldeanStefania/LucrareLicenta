@@ -4,10 +4,12 @@ import com.orar.Backend.Orar.dto.StudentDTO;
 import com.orar.Backend.Orar.exception.StudentAlreadyExistsException;
 import com.orar.Backend.Orar.exception.StudentNotFoundException;
 import com.orar.Backend.Orar.model.Rol;
+import com.orar.Backend.Orar.model.Specializare;
 import com.orar.Backend.Orar.model.Student;
 import com.orar.Backend.Orar.model.User;
 import com.orar.Backend.Orar.repository.CatalogStudentMaterieRepository;
 import com.orar.Backend.Orar.repository.RolRepository;
+import com.orar.Backend.Orar.repository.SpecializareRepository;
 import com.orar.Backend.Orar.repository.StudentRepository;
 import com.orar.Backend.Orar.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,9 @@ public class StudentService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private SpecializareRepository specializareRepository;
 
     @Autowired
     private CatalogStudentMaterieRepository catalogStudentMaterieRepository;
@@ -59,6 +64,8 @@ public class StudentService {
         Rol studentRole = rolRepository.findByName("STUDENT")
                 .orElseThrow(() -> new RuntimeException("Rolul STUDENT nu există în baza de date"));
 
+        Specializare specializare = specializareRepository.findBySpecializare(studentDTO.getSpecializare());
+
         User user = new User();
         user.setUsername(studentDTO.getUsername());
         user.setPassword(passwordEncoder.encode(studentDTO.getPassword()));
@@ -71,6 +78,7 @@ public class StudentService {
         student.setAn(studentDTO.getAn());
         student.setGrupa(studentDTO.getGrupa());
         student.setCod(studentDTO.getCod());
+        student.setSpecializare(specializare);
         student.setUser(user);
 
         return student;
@@ -113,6 +121,6 @@ public class StudentService {
     }
 
     public List<Student> getByGrupa(String grupa) throws StudentNotFoundException {
-        return studentRepository.findByGrupa(grupa).orElseThrow(() -> new StudentNotFoundException("Student not found"));
+        return studentRepository.findByGrupa(grupa);
     }
 }

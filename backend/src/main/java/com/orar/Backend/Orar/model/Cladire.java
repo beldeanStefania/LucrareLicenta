@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.util.List;
 
+import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Entity
@@ -21,7 +22,7 @@ public class Cladire {
     private String nume;
     private String adresa;
 
-    @OneToMany(mappedBy = "cladire", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "cladire", cascade = ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Sala> sala;
 }

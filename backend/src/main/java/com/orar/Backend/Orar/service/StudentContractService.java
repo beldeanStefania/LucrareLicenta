@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.orar.Backend.Orar.model.MaterieStatus.FINALIZATA;
+import static com.orar.Backend.Orar.enums.MaterieStatus.FINALIZATA;
 
 @Service
 public class StudentContractService {

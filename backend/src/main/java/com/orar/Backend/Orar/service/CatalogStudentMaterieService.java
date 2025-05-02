@@ -1,6 +1,7 @@
 package com.orar.Backend.Orar.service;
 
 import com.orar.Backend.Orar.dto.CatalogStudentMaterieDTO;
+import com.orar.Backend.Orar.enums.MaterieStatus;
 import com.orar.Backend.Orar.exception.CatalogStudentMaterieNotFoundException;
 import com.orar.Backend.Orar.exception.MaterieNotFoundException;
 import com.orar.Backend.Orar.exception.StudentNotFoundException;
@@ -92,6 +93,8 @@ public class CatalogStudentMaterieService {
         } else {
             CatalogStudentMaterie catalog = new CatalogStudentMaterie();
             catalog.setNota(catalogStudentMaterieDTO.getNota());
+            catalog.setSemestru(catalogStudentMaterieDTO.getSemestru());
+            catalog.setStatus(MaterieStatus.ACTIV);
             catalog.setStudent(student);
             catalog.setMaterie(materie);
             return catalogStudentMaterieRepository.save(catalog);

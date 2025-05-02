@@ -11,6 +11,7 @@ import jakarta.persistence.OneToOne;
 import lombok.Getter;
 import lombok.Setter;
 
+import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Entity
@@ -30,11 +31,11 @@ public class User {
     @JsonBackReference
     private Rol role;
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(mappedBy = "user", cascade = ALL, orphanRemoval = true)
     @JsonBackReference 
     private Student student;
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(mappedBy = "user", cascade = ALL, orphanRemoval = true)
     @JsonBackReference
     private Profesor profesor;
 }

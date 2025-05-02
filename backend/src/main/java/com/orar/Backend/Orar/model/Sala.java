@@ -28,7 +28,7 @@ public class Sala {
     @JsonBackReference
     private Cladire cladire;
 
-    @OneToMany(mappedBy = "sala", cascade = ALL)
+    @OneToMany(mappedBy = "sala", cascade = ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Orar> orar;
 }

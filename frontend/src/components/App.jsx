@@ -174,7 +174,7 @@ export default function App() {
   element={
     <ErrorBoundary>
       {isLoggedIn && userRole === "ROLE_STUDENT" ? (
-        <ContractSelectionPage />
+        <ContractSelectionPage onLogout={handleLogout}/>
       ) : (
         <Navigate to="/login" />
       )}

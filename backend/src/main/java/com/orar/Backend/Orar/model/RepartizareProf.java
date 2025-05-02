@@ -41,7 +41,7 @@ public class RepartizareProf {
     @JoinColumn(name = "materie_id", nullable = false)
     private Materie materie;
 
-    @OneToMany(mappedBy = "repartizareProf", cascade = ALL)
+    @OneToMany(mappedBy = "repartizareProf", cascade = ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Orar> orar = new ArrayList<>();
 }

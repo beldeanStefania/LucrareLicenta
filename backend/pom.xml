@@ -134,6 +134,7 @@
 					<url>jdbc:mysql://localhost:3306/orar</url>
 					<user>root</user>
 					<password>3676</password>
+					<cleanDisabled>false</cleanDisabled>
 				</configuration>
 			</plugin>
 		</plugins>

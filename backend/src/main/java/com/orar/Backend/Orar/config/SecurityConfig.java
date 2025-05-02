@@ -57,6 +57,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/cladire/**").hasAnyRole("ADMIN", "PROFESOR")
                         .requestMatchers("/api/materie/**").hasAnyRole("ADMIN", "PROFESOR")
                         .requestMatchers("/api/studentContract/**").hasRole("STUDENT")
+                        .requestMatchers("/api/curriculum/**").hasAnyRole("STUDENT")
+                        .requestMatchers("/api/specializare/**").hasAnyRole("ADMIN", "PROFESOR")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling((exceptions) -> exceptions

@@ -1,6 +1,7 @@
 package com.orar.Backend.Orar.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.orar.Backend.Orar.enums.MaterieStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,10 +17,12 @@ public class CatalogStudentMaterie {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     private Integer id;
-
     private Double nota;
     private Integer semestru;
-    private  MaterieStatus status;
+
+    @Enumerated(EnumType.STRING)
+    private MaterieStatus status;
+
     @ManyToOne(fetch = LAZY)
     @JsonBackReference
     @JoinColumn(name = "student_id", nullable = false)

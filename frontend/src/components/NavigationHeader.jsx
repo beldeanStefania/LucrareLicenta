@@ -1,24 +1,26 @@
+// NavigationHeader.jsx
 import React, { useState } from 'react';
 import { FaUserCircle, FaSignOutAlt, FaUniversity, FaBars, FaTimes } from 'react-icons/fa';
+import { NavLink, useNavigate } from 'react-router-dom';
 import './NavigationHeader.css';
 
 export default function NavigationHeader({ userRole, userName, onLogout }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
+  const navigate = useNavigate();
+
+  const toggleMenu = () => setMenuOpen(open => !open);
+
+  const handleNavigate = (to) => {
+    navigate(to);
+    setMenuOpen(false);
   };
 
   const getRoleName = (role) => {
     switch(role) {
-      case 'ROLE_ADMIN':
-        return 'Administrator';
-      case 'ROLE_STUDENT':
-        return 'Student';
-      case 'ROLE_PROFESOR':
-        return 'Professor';
-      default:
-        return 'User';
+      case 'ROLE_ADMIN':     return 'Administrator';
+      case 'ROLE_STUDENT':   return 'Student';
+      case 'ROLE_PROFESOR':  return 'Professor';
+      default:               return 'User';
     }
   };
 
@@ -31,49 +33,103 @@ export default function NavigationHeader({ userRole, userName, onLogout }) {
         </div>
 
         <button className="mobile-menu-toggle" onClick={toggleMenu}>
-          {menuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
+          {menuOpen ? <FaTimes size={24}/> : <FaBars size={24}/>}
         </button>
 
         <nav className={`main-nav ${menuOpen ? 'open' : ''}`}>
           <ul className="nav-links">
+            {/* Dashboard */}
             <li className="nav-item">
-              <a href="#dashboard" className="nav-link active">Dashboard</a>
+              <NavLink
+                to="/student"
+                className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
+                onClick={() => handleNavigate('/student')}
+              >
+                Dashboard
+              </NavLink>
             </li>
+
+            {userRole === 'ROLE_STUDENT' && (
+              <>
+                {/* Schedule */}
+                <li className="nav-item">
+                  <NavLink
+                    to={{ pathname: '/student', hash: '#schedule' }}
+                    className={({ isActive }) => window.location.hash === '#schedule' ? 'nav-link active' : 'nav-link'}
+                    onClick={() => handleNavigate({ pathname: '/student', hash: '#schedule' })}
+                  >
+                    Schedule
+                  </NavLink>
+                </li>
+                {/* Grades */}
+                <li className="nav-item">
+                  <NavLink
+                    to={{ pathname: '/student', hash: '#grades' }}
+                    className={({ isActive }) => window.location.hash === '#grades' ? 'nav-link active' : 'nav-link'}
+                    onClick={() => handleNavigate({ pathname: '/student', hash: '#grades' })}
+                  >
+                    Grades
+                  </NavLink>
+                </li>
+              </>
+            )}
+
             {userRole === 'ROLE_ADMIN' && (
               <>
                 <li className="nav-item">
-                  <a href="#students" className="nav-link">Students</a>
+                  <NavLink
+                    to="/admin/students"
+                    className="nav-link"
+                    onClick={() => handleNavigate('/admin/students')}
+                  >
+                    Students
+                  </NavLink>
                 </li>
                 <li className="nav-item">
-                  <a href="#professors" className="nav-link">Professors</a>
+                  <NavLink
+                    to="/admin/professors"
+                    className="nav-link"
+                    onClick={() => handleNavigate('/admin/professors')}
+                  >
+                    Professors
+                  </NavLink>
                 </li>
               </>
             )}
-            {userRole === 'ROLE_STUDENT' && (
-              <>
-                <li className="nav-item">
-                  <a href="#schedule" className="nav-link">Schedule</a>
-                </li>
-                <li className="nav-item">
-                  <a href="#grades" className="nav-link">Grades</a>
-                </li>
-              </>
-            )}
+
             {userRole === 'ROLE_PROFESOR' && (
               <>
                 <li className="nav-item">
-                  <a href="#schedule" className="nav-link">My Schedule</a>
+                  <NavLink
+                    to={{ pathname: '/student', hash: '#schedule' }}
+                    className="nav-link"
+                    onClick={() => handleNavigate({ pathname: '/student', hash: '#schedule' })}
+                  >
+                    My Schedule
+                  </NavLink>
                 </li>
                 <li className="nav-item">
-                  <a href="#grades" className="nav-link">Manage Grades</a>
+                  <NavLink
+                    to={{ pathname: '/student', hash: '#grades' }}
+                    className="nav-link"
+                    onClick={() => handleNavigate({ pathname: '/student', hash: '#grades' })}
+                  >
+                    Manage Grades
+                  </NavLink>
                 </li>
                 <li className="nav-item">
-                  <a href="#rooms" className="nav-link">Reserve Rooms</a>
+                  <NavLink
+                    to="/professor/rooms"
+                    className="nav-link"
+                    onClick={() => handleNavigate('/professor/rooms')}
+                  >
+                    Reserve Rooms
+                  </NavLink>
                 </li>
               </>
             )}
           </ul>
-          
+
           <div className="user-section">
             <div className="user-info">
               <FaUserCircle size={24} />

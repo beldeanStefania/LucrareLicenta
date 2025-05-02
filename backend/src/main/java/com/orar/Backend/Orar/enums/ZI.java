@@ -1,4 +1,4 @@
-package com.orar.Backend.Orar.model;
+package com.orar.Backend.Orar.enums;
 
 public enum ZI {
     LUNI,

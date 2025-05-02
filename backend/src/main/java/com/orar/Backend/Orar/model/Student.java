@@ -24,8 +24,7 @@ public class Student {
     private Integer an;
     private String grupa;
 
-
-    @OneToMany(mappedBy = "student", cascade = ALL)
+    @OneToMany(mappedBy = "student", cascade = ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<CatalogStudentMaterie> catalogStudentMaterie;
 
@@ -33,4 +32,9 @@ public class Student {
     @JoinColumn(name = "user_id", nullable = false)
     @JsonManagedReference
     private User user;
+
+    @ManyToOne
+    @JsonBackReference
+    @JoinColumn(name = "specializare_id")
+    private Specializare specializare;
 }

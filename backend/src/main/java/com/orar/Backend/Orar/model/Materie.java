@@ -22,14 +22,16 @@ public class Materie {
     private String nume;
     private Integer semestru;
     private Integer an;
+
+    @Column(unique = true)
     private String cod;
     private Integer credite;
 
-    @OneToMany(mappedBy = "materie", cascade = ALL)
+    @OneToMany(mappedBy = "materie", cascade = ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<CatalogStudentMaterie> catalogStudentMaterie;
 
-    @OneToMany(mappedBy = "materie", cascade = ALL)
+    @OneToMany(mappedBy = "materie", cascade = ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<RepartizareProf> repartizareProfs;
 }
