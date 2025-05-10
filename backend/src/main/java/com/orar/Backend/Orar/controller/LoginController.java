@@ -107,10 +107,12 @@ public class LoginController {
 
         Map<String, String> response = new HashMap<>();
         response.put("username", user.getUsername());
+        response.put("role", user.getRole().getName());
 
         if (user.getStudent() != null) {
             response.put("cod", user.getStudent().getCod());
             response.put("grupa", user.getStudent().getGrupa());
+            response.put("an", user.getStudent().getAn().toString());
         } else if (user.getProfesor() != null) {
             response.put("profesorId", user.getProfesor().getId().toString());
             response.put("nume", user.getProfesor().getNume());
@@ -118,8 +120,6 @@ public class LoginController {
         } else {
             response.put("cod", "Not available");
             response.put("grupa", "Not available");
-            response.put("nume", user.getStudent().getNume());
-            response.put("prenume", user.getStudent().getPrenume());
         }
 
         System.out.println("UserInfo response built:");

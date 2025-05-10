@@ -12,4 +12,6 @@ public interface MaterieRepository extends JpaRepository<Materie, Integer> {
     Optional<Materie> findByCod(String cod);
     Optional<Materie> findByNumeAndCod(String nume, String cod);
     List<Materie> findAllByCodIn(List<String> coduri);
+    List<Materie> findByNumeContainingIgnoreCaseOrCodContainingIgnoreCase(String nume, String cod);
+
 }

@@ -226,3 +226,26 @@
   margin-top: 30px;    
 }
 
+.suggestions-list {
+  position: absolute;
+  top: 100%;       /* imediat sub input */
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 10;
+}
+.suggestions-list li {
+  padding: 8px;
+  cursor: pointer;
+}
+.suggestions-list li:hover {
+  background: #f0f0f0;
+}
+
+

@@ -2,6 +2,7 @@ package com.orar.Backend.Orar.controller;
 
 import com.orar.Backend.Orar.dto.MaterieDTO;
 import com.orar.Backend.Orar.model.Materie;
+import com.orar.Backend.Orar.repository.MaterieRepository;
 import com.orar.Backend.Orar.service.MaterieService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,24 @@ public class MaterieController {
 
     @Autowired
     private MaterieService materieService;
+
+    @Autowired
+    private MaterieRepository materieRepository;
+
+    @GetMapping("/search")
+    public ResponseEntity<List<MaterieDTO>> search(
+            @RequestParam("q") String q
+    ) {
+        var list = materieRepository
+                .findByNumeContainingIgnoreCaseOrCodContainingIgnoreCase(q, q);
+
+        var dtos = list.stream()
+                .map(m -> new MaterieDTO(m.getNume(), m.getSemestru(), m.getCod(), m.getCredite()))
+                .toList();
+
+        return ResponseEntity.ok(dtos);
+    }
+
     @Operation(summary = "Obtine toate materiile")
     @GetMapping("/getAll")
     public List<Materie> getAll() {

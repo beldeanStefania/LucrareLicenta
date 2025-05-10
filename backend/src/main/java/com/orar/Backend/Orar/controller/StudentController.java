@@ -4,9 +4,11 @@ import com.orar.Backend.Orar.dto.StudentDTO;
 import com.orar.Backend.Orar.exception.StudentAlreadyExistsException;
 import com.orar.Backend.Orar.exception.StudentNotFoundException;
 import com.orar.Backend.Orar.model.Student;
+import com.orar.Backend.Orar.repository.StudentRepository;
 import com.orar.Backend.Orar.service.StudentService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +21,9 @@ import static org.springframework.http.ResponseEntity.*;
 @RequestMapping("/api/student")
 @RequiredArgsConstructor
 public class StudentController {
+    @Autowired
+    private final StudentRepository studentRepository;
+    @Autowired
     private final StudentService studentService;
 
     @GetMapping("/getAllStudents")

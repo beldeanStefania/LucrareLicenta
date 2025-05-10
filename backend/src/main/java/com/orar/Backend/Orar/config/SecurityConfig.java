@@ -55,7 +55,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/catalogStudentMaterie/**").permitAll()
                         .requestMatchers("/api/sala/**").hasAnyRole("ADMIN", "PROFESOR")
                         .requestMatchers("/api/cladire/**").hasAnyRole("ADMIN", "PROFESOR")
-                        .requestMatchers("/api/materie/**").hasAnyRole("ADMIN", "PROFESOR")
+                        .requestMatchers("/api/materie/**").hasAnyRole("ADMIN", "PROFESOR", "STUDENT")
                         .requestMatchers("/api/studentContract/**").hasRole("STUDENT")
                         .requestMatchers("/api/curriculum/**").hasAnyRole("STUDENT")
                         .requestMatchers("/api/specializare/**").hasAnyRole("ADMIN", "PROFESOR")

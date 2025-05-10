@@ -67,5 +67,4 @@ public class CatalogStudentMaterieController {
             return ResponseEntity.status(NOT_FOUND).build();
         }
     }
-
 }

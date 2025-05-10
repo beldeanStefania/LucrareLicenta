@@ -10,4 +10,5 @@ import java.util.List;
 @Repository
 public interface CurriculumEntryRepository extends JpaRepository<CurriculumEntry, Integer> {
     List<CurriculumEntry> findBySpecializareIdAndAnAndTip(Integer specializareId, Integer an, Tip tip);
+    List<CurriculumEntry> findBySpecializareIdAndAn(Integer specializareId, Integer an);
 }

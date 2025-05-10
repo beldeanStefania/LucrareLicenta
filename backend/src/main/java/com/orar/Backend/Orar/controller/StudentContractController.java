@@ -1,5 +1,7 @@
 package com.orar.Backend.Orar.controller;
 
+import com.orar.Backend.Orar.dto.ContractDTO;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import com.orar.Backend.Orar.dto.MaterieDTO;
 import com.orar.Backend.Orar.service.StudentContractService;
@@ -8,11 +10,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.orar.Backend.Orar.dto.ContractYearRequest;
+
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 @CrossOrigin(origins = "http://localhost:3000")
@@ -29,13 +34,13 @@ public class StudentContractController {
         this.contractService = contractService;
     }
 
-    @GetMapping("/availableCourses/{studentCod}/{semestru}")
-    public ResponseEntity<List<MaterieDTO>> getAvailableCourses(
+    @GetMapping("/availableCourses/{studentCod}/{anContract}/{semestru}")
+    public ResponseEntity<List<ContractDTO>> getAvailableCourses(
             @PathVariable String studentCod,
+            @PathVariable int anContract,
             @PathVariable int semestru) {
         try {
-            List<MaterieDTO> available = contractService.getAvailableCoursesForContract(studentCod, semestru);
-            return ResponseEntity.ok(available);
+            return ResponseEntity.ok(contractService.getAvailableCoursesForContract(studentCod, anContract, semestru));
         } catch (Exception e) {
             return ResponseEntity.status(INTERNAL_SERVER_ERROR).build();
         }
@@ -43,52 +48,73 @@ public class StudentContractController {
 
     @PostMapping("/generateContract")
     public void generateContract(
-            @RequestBody ContractRequest request,
-            HttpServletResponse response) {
+            @RequestBody ContractYearRequest req,
+            HttpServletResponse resp) throws IOException {
         try {
-            byte[] pdfBytes = contractService.generateContractFromSelection(request.getStudentCod(), request.getSemestru(), request.getCoduriMaterii());
-            response.setContentType("application/pdf");
-            response.setContentLength(pdfBytes.length);
-            response.setHeader("Content-Disposition", "attachment; filename=contract_" + request.getStudentCod() + ".pdf");
-            OutputStream os = response.getOutputStream();
-            os.write(pdfBytes);
-            os.flush();
+            // all of the persistence (contract + catalog entries) now happens in the service
+            byte[] pdf = contractService.generateContractFromSelection(
+                    req.getStudentCod(),
+                    req.getAnContract(),
+                    req.getCoduriMaterii()
+            );
+
+            resp.setContentType("application/pdf");
+            resp.setContentLength(pdf.length);
+            resp.setHeader(
+                    "Content-Disposition",
+                    "attachment; filename=\"contract_" + req.getStudentCod() + ".pdf\""
+            );
+            resp.getOutputStream().write(pdf);
+        } catch (IllegalArgumentException e) {
+            resp.sendError(SC_BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
-            response.setStatus(500);
+            e.printStackTrace();
+            resp.sendError(SC_INTERNAL_SERVER_ERROR);
         }
     }
 
-    @GetMapping("/preview")
+
+    @PostMapping("/preview")
     public void previewContract(
-            @RequestParam String studentCod,
-            @RequestParam int semestru,
-            @RequestParam(name = "coduriMaterii") List<String> coduriMaterii,
-            HttpServletResponse response) {
+            @RequestBody ContractYearRequest req,
+            HttpServletResponse resp) throws IOException {
         try {
-            byte[] pdfBytes = contractService.generateContractFromSelection(
-                    studentCod, semestru, coduriMaterii
+            byte[] pdf = contractService.generateContractFromSelection(
+                    req.getStudentCod(),
+                    req.getAnContract(),
+                    req.getCoduriMaterii()
             );
-
-            response.setContentType("application/pdf");
-            response.setContentLength(pdfBytes.length);
-            response.setHeader(
-                    "Content-Disposition",
-                    "inline; filename=\"preview_contract_" + studentCod + ".pdf\""
-            );
-
-            ServletOutputStream os = response.getOutputStream();
-            os.write(pdfBytes);
-            os.flush();
-            response.flushBuffer();
+            resp.setContentType("application/pdf");
+            resp.setContentLength(pdf.length);
+            resp.setHeader("Content-Disposition",
+                    "inline; filename=\"preview_contract_" + req.getStudentCod() + ".pdf\"");
+            resp.getOutputStream().write(pdf);
+            resp.flushBuffer();
         } catch (Exception e) {
-            e.printStackTrace();
-            try {
-                response.sendError(
-                        HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                        "Eroare la generarea PDF-ului."
-                );
-            } catch (IOException ignored) {}
+            resp.sendError(SC_INTERNAL_SERVER_ERROR,
+                    "Eroare la generarea PDF-ului.");
         }
+    }
+
+    @GetMapping("/contractCourses/{studentCod}/{anContract}")
+    public ResponseEntity<List<ContractDTO>> getContractCourses(
+            @PathVariable String studentCod,
+            @PathVariable int anContract) {
+        try {
+            var cursuri = contractService.getContractCourses(studentCod, anContract);
+            return ResponseEntity.ok(cursuri);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/exists/{studentCod}/{anContract}")
+    public ResponseEntity<Boolean> existsContract(
+            @PathVariable String studentCod,
+            @PathVariable int anContract
+    ) {
+        boolean exists = contractService.hasContract(studentCod, anContract);
+        return ResponseEntity.ok(exists);
     }
 
 
