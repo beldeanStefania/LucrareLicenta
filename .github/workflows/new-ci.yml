@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  # allow OIDC-based role assumption
+  # allow OIDC-based role assumptions
   id-token: write
   contents: read
 
