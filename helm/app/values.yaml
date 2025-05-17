@@ -1,0 +1,22 @@
+image:
+  backend:
+    repository: 863518419988.dkr.ecr.eu-west-1.amazonaws.com/app-backend
+    tag : latest
+
+  frontend:
+    repository: 863518419988.dkr.ecr.eu-west-1.amazonaws.com/app-frontend
+    tag : latest
+
+frontend:
+  replicaCount: 2
+
+backend:
+  replicaCount: 2
+
+mysql:
+  enabled: false
+  auth:
+    rootPassword: <MYSQL_ROOT_PASSWORD>
+    username: <MYSQL_USER>
+    password: <MYSQL_PASSWORD>
+    database: orar
