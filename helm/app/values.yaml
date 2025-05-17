@@ -1,0 +1,16 @@
+image:
+    backend:
+        repository: <AWS_ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/your-backend-repo
+        tag : latest
+
+    frontend:
+        repository: <AWS_ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/your-frontend-repo
+        tag : latest
+
+mysql:
+    enabled: false
+    auth:
+        rootPassword: <MYSQL_ROOT_PASSWORD>
+        username: <MYSQL_USER>
+        password: <MYSQL_PASSWORD>
+        database: <MYSQL_DATABASE>
