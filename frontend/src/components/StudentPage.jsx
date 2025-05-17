@@ -4,6 +4,7 @@ import { request } from "../helpers/axios-helper";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import NavigationHeader from "./NavigationHeader";
+import ChatWidget from './ChatWidget';
 import { 
   FaGraduationCap, FaBook, FaCalendarAlt, 
   FaRegFileAlt 
@@ -23,6 +24,7 @@ export default function StudentPage({ onLogout }) {
 
   const navigate = useNavigate();
   const location = useLocation();
+  
 
   // 1) Preluăm userInfo + detalii student
   useEffect(() => {
@@ -183,6 +185,7 @@ export default function StudentPage({ onLogout }) {
               </div>
             )}
           </div>
+          <ChatWidget />
         </div>
 
         {/* (Schedule Section rămâne neschimbat) */}

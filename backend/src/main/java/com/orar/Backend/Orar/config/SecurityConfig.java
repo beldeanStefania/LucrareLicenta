@@ -59,6 +59,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/studentContract/**").hasRole("STUDENT")
                         .requestMatchers("/api/curriculum/**").hasAnyRole("STUDENT")
                         .requestMatchers("/api/specializare/**").hasAnyRole("ADMIN", "PROFESOR")
+                        .requestMatchers("/api/chat/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling((exceptions) -> exceptions

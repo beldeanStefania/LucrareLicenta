@@ -9,6 +9,7 @@ on:
 env:
   SQL_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
   GITHUB_REPOSITORY: ${{ vars.GH_REPOSITORY_URL }}
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
 jobs:
   build:
