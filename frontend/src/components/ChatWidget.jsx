@@ -1,76 +1,78 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FaComments, FaTimes } from 'react-icons/fa';
+import ReactMarkdown from 'react-markdown';
 import { request } from '../helpers/axios-helper';
 import './ChatWidget.css';
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([
+    { from: 'bot', text: 'Salut! Cu ce te pot ajuta azi?' }
+  ]);
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
   const endRef = useRef(null);
 
-  const toggleOpen = () => setOpen(o => !o);
-
-  const scrollToBottom = () => {
+  // scroll la fiecare mesaj nou
+  useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, [messages]);
 
-  useEffect(scrollToBottom, [messages, open]);
-
-  const sendMessage = async () => {
+  const send = async () => {
     if (!input.trim()) return;
-    const content = input.trim();
-    setMessages(msgs => [...msgs, { sender: 'user', content }]);
+
+    const userMsg = { from: 'user', text: input };
+    setMessages(msgs => [...msgs, userMsg]);
     setInput('');
-    setLoading(true);
 
     try {
-      const res = await request('POST', '/api/chat', { message: content });
-      setMessages(msgs => [...msgs, { sender: 'bot', content: res.reply }]);
-    } catch {
-      setMessages(msgs => [...msgs, { sender: 'bot', content: 'A apărut o eroare. Încearcă din nou.' }]);
-    } finally {
-      setLoading(false);
+      const res = await request('POST', '/api/chat', { message: input });
+      console.log('GPT response raw:', res);
+      const botReply = res.data?.reply ?? 'Îmi pare rău, nu am răspuns.';
+      setMessages(msgs => [...msgs, { from: 'bot', text: botReply }]);
+    } catch (e) {
+      console.error('Chat error', e);
+    setMessages(msgs => [
+      ...msgs,
+      { from: 'bot', text: 'A apărut o eroare de server.' }
+    ]);
     }
-  };
-
-  const onKeyDown = e => {
-    if (e.key === 'Enter') sendMessage();
   };
 
   return (
     <>
-      <div className="chat-toggle-btn" onClick={toggleOpen}>
-        {open ? <FaTimes size={20}/> : <FaComments size={20}/>}
-      </div>
-
       {open && (
-        <div className="chat-window">
-          <div className="chat-header">Asistent Facultate</div>
-          <div className="chat-messages">
+        <div className="cw-container">
+          <div className="cw-header">
+            <span>Asistent Virtual</span>
+            <FaTimes onClick={() => setOpen(false)} className="cw-close"/>
+          </div>
+          <div className="cw-body">
             {messages.map((m,i) => (
-              <div key={i} className={`chat-message ${m.sender}`}>
-                {m.content}
+              <div key={i} className={`cw-message ${m.from}`}>
+                {m.text}
               </div>
             ))}
-            <div ref={endRef}/>
+            {messages.map((m,i) => (
+              <div key={i} className={`cw-message ${m.from}`}>
+                <ReactMarkdown>{m.text}</ReactMarkdown>
+              </div>
+            ))}
+            <div ref={endRef} />
           </div>
-          <div className="chat-input-area">
+          <div className="cw-footer">
             <input
-              type="text"
-              placeholder="Scrie un mesaj..."
               value={input}
               onChange={e => setInput(e.target.value)}
-              onKeyDown={onKeyDown}
-              disabled={loading}
+              onKeyDown={e => e.key === 'Enter' && send()}
+              placeholder="Scrie mesaj..."
             />
-            <button onClick={sendMessage} disabled={loading}>
-              {loading ? '…' : 'Trimite'}
-            </button>
+            <button onClick={send}>Trimite</button>
           </div>
         </div>
       )}
+      <div className="cw-toggle" onClick={() => setOpen(o => !o)}>
+        <FaComments size={24}/>
+      </div>
     </>
   );
 }

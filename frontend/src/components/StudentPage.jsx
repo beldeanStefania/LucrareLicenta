@@ -1,7 +1,5 @@
-// src/components/StudentPage.jsx
 import React, { useEffect, useState } from "react";
 import { request } from "../helpers/axios-helper";
-import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import NavigationHeader from "./NavigationHeader";
 import ChatWidget from './ChatWidget';
@@ -22,32 +20,29 @@ export default function StudentPage({ onLogout }) {
     grades: true,
   });
 
+  // filtre pentru an si semestru
+  const [selectedYear, setSelectedYear] = useState("");
+  const [selectedSem, setSelectedSem] = useState("");
+
   const navigate = useNavigate();
   const location = useLocation();
   
-
   // 1) Preluăm userInfo + detalii student
   useEffect(() => {
     request("GET", "/api/auth/userInfo")
       .then(res => {
-        // destructurăm tot ce ne trebuie
         const { username, role, cod, an, grupa } = res.data;
         setUserData({ username, role });
         setStudent({ cod, an, grupa });
-  
-        // încărcăm restul pe baza codului și grupei
         fetchGrades(cod);
         fetchSchedule(grupa);
       })
-      .catch(() => {
-        // chiar dacă e eroare, scoatem spinnerul
-      })
+      .catch(() => {})
       .finally(() => {
         setLoading(l => ({ ...l, user: false }));
       });
   }, []);
   
-
   // 2) Încarcă orarul
   const fetchSchedule = grp => {
     request("GET", `/api/orare/getAll/${grp}`)
@@ -66,10 +61,10 @@ export default function StudentPage({ onLogout }) {
 
   // 4) Calcul medie ponderată
   const getAverageGrade = () => {
-    if (!grades.length) return 0;
-    const totalCred = grades.reduce((sum, g) => sum + (g.credite || 0), 0);
-    if (!totalCred) return 0;
-    const weighted = grades.reduce((sum, g) => sum + g.nota * (g.credite || 0), 0);
+    const validGrades = grades.filter(g => g.nota != null);
+    if (!validGrades.length) return 0;
+    const totalCred = validGrades.reduce((sum, g) => sum + (g.credite || 0), 0);
+    const weighted = validGrades.reduce((sum, g) => sum + g.nota * (g.credite || 0), 0);
     return (weighted / totalCred).toFixed(2);
   };
 
@@ -94,6 +89,15 @@ export default function StudentPage({ onLogout }) {
     if (!student) return;
     navigate(`/contract/select?cod=${student.cod}&an=${student.an}`);
   };
+
+  // filtre pentru dropdown
+  const uniqueYears = Array.from(new Set(grades.map(g => g.an))).sort();
+  const uniqueSems = Array.from(new Set(grades.map(g => g.semestru))).sort();
+  const filteredGrades = grades.filter(g => {
+    const byYear = selectedYear ? g.an === Number(selectedYear) : true;
+    const bySem = selectedSem ? g.semestru === Number(selectedSem) : true;
+    return byYear && bySem;
+  });
 
   // 8) Spinner inițial
   if (loading.user) {
@@ -130,8 +134,8 @@ export default function StudentPage({ onLogout }) {
           </div>
           <div className="stat-card">
             <div className="stat-icon"><FaBook size={24}/></div>
-            <div className="stat-value">{grades.length}</div>
-            <div className="stat-label">Total Courses</div>
+            <div className="stat-value">{filteredGrades.length}</div>
+            <div className="stat-label">Filtered Courses</div>
           </div>
           <div className="stat-card">
             <div className="stat-icon"><FaCalendarAlt size={24}/></div>
@@ -146,12 +150,35 @@ export default function StudentPage({ onLogout }) {
             <FaRegFileAlt style={{ marginRight: '10px' }}/>
             <h2>Your Grades</h2>
           </div>
+
+          {/* Filtre an / semestru */}
+          <div className="filter-bar">
+            <label>
+              An:
+              <select value={selectedYear} onChange={e => setSelectedYear(e.target.value)}>
+                <option value="">Toate</option>
+                {uniqueYears.map(y => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Semestru:
+              <select value={selectedSem} onChange={e => setSelectedSem(e.target.value)}>
+                <option value="">Toate</option>
+                {uniqueSems.map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+
           <div className="section-content">
             {loading.grades ? (
               <div className="loading-container">
                 <div className="loading-spinner"/><p>Loading grades...</p>
               </div>
-            ) : grades.length ? (
+            ) : filteredGrades.length ? (
               <table className="data-table">
                 <thead>
                   <tr>
@@ -160,18 +187,20 @@ export default function StudentPage({ onLogout }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {grades.map((g,i) => (
+                  {filteredGrades.map((g,i) => (
                     <tr key={i}>
                       <td>{g.numeMaterie}</td>
                       <td>{g.codMaterie}</td>
-                      <td className={g.nota>=5?'grade-passing':'grade-failing'}>
-                        {g.nota}
+                      <td>
+                        {g.nota != null ? g.nota : ''}
                       </td>
                       <td>{g.semestru}</td>
                       <td>
-                        {g.nota>=5
-                          ? <span className="grade-passing">Passed</span>
-                          : <span className="grade-failing">Failed</span>
+                        {g.nota != null
+                          ? (g.nota >= 5
+                              ? <span className="grade-passing">Passed</span>
+                              : <span className="grade-failing">Failed</span>)
+                          : ''
                         }
                       </td>
                     </tr>
@@ -181,7 +210,7 @@ export default function StudentPage({ onLogout }) {
             ) : (
               <div className="empty-state">
                 <FaRegFileAlt className="empty-state-icon"/>
-                <div className="empty-state-text">No grades available</div>
+                <div className="empty-state-text">No grades available for selected filters</div>
               </div>
             )}
           </div>
