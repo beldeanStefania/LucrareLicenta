@@ -113,7 +113,21 @@ CREATE TABLE IF NOT EXISTS materii_optionale (
 ) ENGINE=InnoDB
   DEFAULT CHARSET = utf8mb4;
 
--- 2. Apoi curriculum_entry, cu coloanele FK și constrângerile aferente
+CREATE TABLE IF NOT EXISTS `contract` (
+                                          `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                          `student_cod` VARCHAR(255) NOT NULL,
+                                          `an_contract` INT NOT NULL,
+                                          `data_generare` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `contract_materii` (
+                                                  `contract_id` BIGINT NOT NULL,
+                                                  `materie_cod` VARCHAR(255) NOT NULL,
+                                                  CONSTRAINT `fk_contract_materii_contract`
+                                                      FOREIGN KEY (`contract_id`) REFERENCES `contract`(`id`)
+                                                          ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 CREATE TABLE IF NOT EXISTS curriculum_entry (
                                                 id INT AUTO_INCREMENT PRIMARY KEY,
                                                 specializare_id INT NOT NULL,

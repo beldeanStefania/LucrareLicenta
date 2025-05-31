@@ -1,5 +1,6 @@
 package com.orar.Backend.Orar.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,9 +26,11 @@ public class Specializare {
 
     @OneToMany(mappedBy = "specializare", cascade = ALL, orphanRemoval = true)
     @JsonManagedReference
+    @JsonIgnore
     private List<CurriculumEntry> curriculum;
 
     @OneToMany(mappedBy = "specializare", cascade = ALL, orphanRemoval = true)
     @JsonManagedReference
+    @JsonIgnore
     private List<Student> studenti;
 }

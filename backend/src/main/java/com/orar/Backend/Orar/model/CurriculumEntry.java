@@ -36,7 +36,7 @@ public class CurriculumEntry {
     private Integer semestru;
 
     @ManyToOne
-    @JoinColumn(name = "materii_ optionale_id")
+    @JoinColumn(name = "materii_optionale_id")
     private MateriiOptionale optionale;
 
     @Enumerated(EnumType.STRING)
