@@ -3,9 +3,7 @@ package com.orar.Backend.Orar.controller;
 import com.orar.Backend.Orar.dto.ContractDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import com.orar.Backend.Orar.dto.MaterieDTO;
 import com.orar.Backend.Orar.service.StudentContractService;
-import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -79,7 +77,7 @@ public class StudentContractController {
             @RequestBody ContractYearRequest req,
             HttpServletResponse resp) throws IOException {
         try {
-            byte[] pdf = contractService.generateContractFromSelection(
+            byte[] pdf = contractService.generateContractPdfWithoutPersist(
                     req.getStudentCod(),
                     req.getAnContract(),
                     req.getCoduriMaterii()

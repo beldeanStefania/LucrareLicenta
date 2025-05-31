@@ -145,6 +145,71 @@ public class StudentContractService {
                 .forEach(catalogRepo::save);
     }
 
+    public byte[] generateContractPdfWithoutPersist(
+            String studentCod,
+            int anContract,
+            List<String> coduriMaterii
+    ) throws Exception {
+        // 1) Fetch studentul
+        Student student = studentRepository.findByCod(studentCod)
+                .orElseThrow(() -> new Exception("Studentul nu a fost găsit!"));
+
+        // 2) Încarcă lista de Materie pentru codurile trimise
+        List<Materie> materii = materieRepository.findAllByCodIn(coduriMaterii);
+        if (materii.isEmpty()) {
+            throw new Exception("Nu au fost găsite materiile selectate.");
+        }
+
+        // ** NU verificăm dacă sunt deja active – e doar preview **
+        // ** NU apelăm recordActiveCourses **
+        // ** NU salvăm Contract în contractRepository **
+
+        // Filtrăm materiile pe semestru
+        List<Materie> sem1 = materii.stream()
+                .filter(m -> m.getSemestru() == 1)
+                .toList();
+        List<Materie> sem2 = materii.stream()
+                .filter(m -> m.getSemestru() == 2)
+                .toList();
+
+        // Construcție PDF (folosim iText / com.lowagie)
+        Document document = new Document();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        PdfWriter.getInstance(document, out);
+        document.open();
+
+        document.add(new Paragraph("Preview Contract de studii - Anul " + anContract));
+        document.add(new Paragraph("Student: " + student.getNume() + " " + student.getPrenume()));
+        document.add(new Paragraph("Grupa: " + student.getGrupa() + ", An studiu: " + student.getAn()));
+        document.add(new Paragraph(" "));
+
+        BiConsumer<String, List<Materie>> addSemesterTable = (titlu, list) -> {
+            try {
+                document.add(new Paragraph(titlu));
+                PdfPTable tbl = new PdfPTable(3);
+                tbl.setWidthPercentage(100);
+                tbl.addCell("Cod");
+                tbl.addCell("Materie");
+                tbl.addCell("Credite");
+                for (Materie m : list) {
+                    tbl.addCell(m.getCod());
+                    tbl.addCell(m.getNume());
+                    tbl.addCell(String.valueOf(m.getCredite()));
+                }
+                document.add(tbl);
+                document.add(new Paragraph(" "));
+            } catch (Exception ex) {
+                throw new RuntimeException("Eroare la tabelul " + titlu, ex);
+            }
+        };
+
+        addSemesterTable.accept("Semestrul I", sem1);
+        addSemesterTable.accept("Semestrul II", sem2);
+
+        document.close();
+        return out.toByteArray();
+    }
+
 
     public byte[] generateContractFromSelection(
             String studentCod,
@@ -237,6 +302,4 @@ public class StudentContractService {
                 .findByStudentCodAndAnContract(studentCod, anContract)
                 .isPresent();
     }
-
-
 }

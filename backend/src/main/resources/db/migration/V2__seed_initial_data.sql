@@ -194,7 +194,7 @@ WHERE NOT EXISTS (
 -- an 2
 -- sem 3
 INSERT INTO materie (nume, semestru, an, cod, credite)
-SELECT 'Baze de date',2, 2, 'BD201', 5
+SELECT 'Baze de date',3, 2, 'BD201', 5
 WHERE NOT EXISTS (
     SELECT 1 FROM materie WHERE nume = 'Baze de date'
 );
