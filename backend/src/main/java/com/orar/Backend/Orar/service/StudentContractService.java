@@ -49,27 +49,16 @@ public class StudentContractService {
     @Autowired
     private ContractRepository contractRepository;
 
-    /**
-     * Returnează lista de cursuri disponibile pentru un anumit student, an și semestru relativ (1 sau 2),
-     * conform regulilor:
-     *  - include propriile cursuri (obligatorii/opționale/facultative) din semestrul absolut = (anContract-1)*2 + semestruRel.
-     *  - include cursele obligatorii din alte specializări, ca „opționale” externe.
-     *  - include toate cursurile de tip OPTIONALA sau FACULTATIVA din anii > anContract (pentru propria specializare),
-     *    marcate cu semestruRel = ((semestruAbsolut-1)%2)+1 și obligatorie=false.
-     *  - elimină orice curs deja avut cu status ACTIV sau FINALIZATĂ.
-     */
     public List<ContractDTO> getAvailableCoursesForContract(
             String studentCod,
             int anContract,
-            int semestruRel // 1 sau 2
+            int semestruRel  // 1 sau 2
     ) {
-        // 0) Încarcă studentul
+        // 0) Încărcăm studentul și validăm
         Student student = studentRepository.findByCod(studentCod)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
         int specIdCurent = student.getSpecializare().getId();
         int studentYear  = student.getAn();
-
-        // 0.a) Să nu permită generarea pentru un an > studentYear (opțional)
         if (anContract > studentYear) {
             throw new ResponseStatusException(
                     BAD_REQUEST,
@@ -78,26 +67,21 @@ public class StudentContractService {
             );
         }
 
-        // 1) Calculăm semestrul absolut pe baza semestrului relativ
-        //    (ex: dacă anContract=2 și semestruRel=1, semestruAbsolut=3; dacă semRel=2, semAbs=4)
+        // 1) Calculăm semestrul absolut (1,2 → an1; 3,4 → an2; 5,6 → an3 etc)
         int semestruAbsolut = (anContract - 1) * 2 + semestruRel;
 
-        // 2) Preluăm toate CurriculumEntry din propria specializare pentru anContract & semestruAbsolut
+        // 2) Materialele obligatorii/opționale/facultative pentru anul & semestrul curent
         List<CurriculumEntry> ownEntriesThisSem = curriculumEntryRepository
                 .findBySpecializareIdAndAnAndSemestru(specIdCurent, anContract, semestruAbsolut);
 
-        // 3) Preluăm obligatorii din celelalte specializări (pentru același anContract & semestruAbsolut)
+        // 3) Materialele obligatorii din alte specializări (pentru același an & semestru)
         List<CurriculumEntry> externalObligatoryEntries = curriculumEntryRepository
                 .findByAnAndSemestruAndTip(anContract, semestruAbsolut, Tip.OBLIGATORIE)
                 .stream()
                 .filter(e -> e.getSpecializare().getId() != specIdCurent)
                 .toList();
 
-        // 4) Preluăm toate opusurile (OPTIONALA sau FACULTATIVA) pentru propria specializare în anii > anContract
-        List<CurriculumEntry> futureOptionalFacultativeEntries = curriculumEntryRepository
-                .findFutureOptionalsAndFacultatives(specIdCurent, anContract);
-
-        // 5) Construiți un map de codMaterie -> status curent (ACTIV, FINALIZATĂ, PICATĂ) din catalogul studentului
+        // 4) Statusurile (ACTIV/FINALIZATĂ) din catalogul studentului
         Map<String, MaterieStatus> statusMap = catalogRepo
                 .findByStudentCod(studentCod)
                 .stream()
@@ -107,82 +91,71 @@ public class StudentContractService {
                         (first, second) -> first
                 ));
 
-        // 6) Mapăm propriile entry‐uri din semestrul absolut curent
+        // 5) Mapare proprie SPECIALIZARE → ContractDTO (cu materiiOptionaleId, dacă există)
         List<ContractDTO> ownDTOs = ownEntriesThisSem.stream()
                 .map(e -> {
                     Materie m = e.getMaterie();
-                    boolean esteObligatorie = e.getTip() == Tip.OBLIGATORIE;
+                    boolean esteObligatorie = (e.getTip() == Tip.OBLIGATORIE);
+                    Integer materiiOptionaleId = null;
+                    if (e.getOptionale() != null) {
+                        materiiOptionaleId = e.getOptionale().getId();
+                    }
                     return new ContractDTO(
                             m.getCod(),
                             m.getNume(),
                             m.getCredite(),
-                            semestruRel,           // trimitem semestru relativ (1 sau 2)
-                            e.getTip(),
-                            esteObligatorie
+                            semestruRel,        // relativ (1 sau 2)
+                            e.getTip(),         // OBLIGATORIE / OPTIONALA / FACULTATIVA
+                            esteObligatorie,
+                            materiiOptionaleId
                     );
                 })
                 .toList();
 
-        // 7) Mapăm entry‐urile „obligatorii” din alte specializări ca și cum ar fi „opționale externe”
+        // 6) Mapare „opționale externe” din alte specializări (le afișăm la fel ca OPTIONALA, fără pachet)
         List<ContractDTO> externalDTOs = externalObligatoryEntries.stream()
                 .map(e -> {
                     Materie m = e.getMaterie();
+                    // chiar dacă în DB e OBLIGATORIE pentru cealaltă specializare,
+                    // noi o afișăm ca TIP=OPTIONALA (pentru a permite înscrierea).
+                    Integer materiiOptionaleId = null;
+                    if (e.getOptionale() != null) {
+                        materiiOptionaleId = e.getOptionale().getId();
+                    }
                     return new ContractDTO(
                             m.getCod(),
                             m.getNume(),
                             m.getCredite(),
-                            semestruRel,         // le arătăm tot ca semestruRel
-                            Tip.OPTIONALA,       // forțăm tip = OPTIONALA
-                            false                // nu e obligatorie pentru acest student
+                            semestruRel,     // tot ca semestru relativ
+                            Tip.OPTIONALA,   // forțăm să apară OPTIONALA
+                            false,           // nu e obligatorie pentru acest student
+                            materiiOptionaleId
                     );
                 })
                 .toList();
 
-        // 8) Mapăm entry‐urile future (OPTIONALA sau FACULTATIVA) din anii > anContract
-        //    Pentru fiecare trebuie să calculăm semestruRel din semestruAbsolut:
-        //    semestruRelFut = ((semestruAbsolutFut - 1) % 2) + 1
-        List<ContractDTO> futureDTOs = futureOptionalFacultativeEntries.stream()
-                .map(e -> {
-                    Materie m = e.getMaterie();
-                    int semAbs = e.getSemestru(); // 3, 4, 5, 6 etc.
-                    int semRelFut = ((semAbs - 1) % 2) + 1;
-                    return new ContractDTO(
-                            m.getCod(),
-                            m.getNume(),
-                            m.getCredite(),
-                            semRelFut,         // semestru relativ la care trebuie să apară
-                            e.getTip(),        // poate fi OPTIONALA sau FACULTATIVA
-                            false              // nu e obligatorie în anul curent
-                    );
-                })
-                .toList();
-
-        // 9) Combinăm toate trei listele: propriile, externe și future
+        // 7) Combinăm DOAR ownDTOs + externalDTOs (fără futureDTOs!)
         List<ContractDTO> combined = new ArrayList<>();
         combined.addAll(ownDTOs);
         combined.addAll(externalDTOs);
-        combined.addAll(futureDTOs);
 
-        // 10) Filtrăm oricare dintre aceste cursuri care deja există în catalog cu status ACTIV sau FINALIZATĂ
+        // 8) Filtrăm status (nu le afișăm pe cele cu status ACTIV sau FINALIZATĂ)
         List<ContractDTO> filtered = combined.stream()
                 .filter(dto -> {
-                    MaterieStatus currentStatus = statusMap.get(dto.getCod());
-                    // Dacă status e ACTIV sau FINALIZATĂ, nu-l mai afișăm
-                    if (currentStatus == MaterieStatus.ACTIV || currentStatus == MaterieStatus.FINALIZATA) {
-                        return false;
-                    }
-                    // în rest îl păstrăm
-                    return true;
+                    MaterieStatus st = statusMap.get(dto.getCod());
+                    return st != MaterieStatus.ACTIV && st != MaterieStatus.FINALIZATA;
                 })
                 .toList();
 
-        // 11) Din cele rămase, păstrăm doar materiile care au semestruRel == parametrul de intrare
+        // 9) Din cele rămase, păstrăm doar cursurile cu semestruRel == parametrul intrat
         List<ContractDTO> result = filtered.stream()
                 .filter(dto -> dto.getSemestru() == semestruRel)
                 .toList();
 
         return result;
     }
+
+
 
     public List<ContractDTO> getContractCourses(String studentCod, int anContract) {
         Student student = studentRepository.findByCod(studentCod)
@@ -197,13 +170,17 @@ public class StudentContractService {
                 .map(entry -> {
                     var m = entry.getMaterie();
                     boolean obligatorie = entry.getTip() == Tip.OBLIGATORIE;
+                    boolean esteObligatorie = entry.getTip() == Tip.OBLIGATORIE;
+                    Integer pachetId = null;
+                    if (entry.getOptionale() != null) pachetId = entry.getOptionale().getId();
                     return new ContractDTO(
                             m.getCod(),         // codul real al materiei
                             m.getNume(),        // denumirea materiei
                             m.getCredite(),     // credite
                             entry.getSemestru(),// semestru
                             entry.getTip(),
-                            obligatorie
+                            obligatorie,
+                            pachetId            // ID-ul pachetului de opționale, dacă există
                     );
                 })
                 .toList();
