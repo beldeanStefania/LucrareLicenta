@@ -83,54 +83,89 @@ export default function AdminPage({ onLogout }) {
     }
   };
 
-  const handleSaveStudent = (student) => {
-    const endpoint =
-        viewMode === "add"
-            ? "/api/student/add"
-            : `/api/student/update/${student.cod}`;
-    const method = viewMode === "add" ? "POST" : "PUT";
-
-    if (viewMode === "update") {
-        delete student.password;
-        delete student.username;
-        delete student.cod;
-    }
-
-    request(method, endpoint, student)
-        .then(() => {
-            alert(viewMode === "add" ? "Student added successfully!" : "Student updated successfully!");
-            setViewMode("list");
-            fetchStudents();
-        })
-        .catch((error) => {
-            console.error("Error:", error);
-
-            if (error.response) {
-                console.log("Răspuns Backend:", error.response);
-                
-                let errorMessage = "Eroare necunoscută.";
-                
-                if (error.response.data) {
-                    if (typeof error.response.data === "string") {
-                        errorMessage = error.response.data;
-                    } else if (error.response.data.error) {
-                        errorMessage = error.response.data.error;
-                    } else if (error.response.data.message) {
-                        errorMessage = error.response.data.message;
-                    }
-                } else if (error.response.status === 400) {
-                    errorMessage = "Date invalide! Verifică dacă ai completat corect toate câmpurile.";
-                } else if (error.response.status === 409) {
-                    errorMessage = "Codul studentului trebuie să fie unic! Un student cu acest cod există deja.";
-                }
-
-                alert(`Eroare: ${errorMessage}`);
-            } else {
-                alert("Eroare: Nu s-a putut contacta serverul.");
+const handleSaveStudent = (formValues) => {
+  // `formValues` este obiectul obținut din FormData
+  // conține doar câmpurile din formular: nume, prenume, an, grupa, specializare
+  if (viewMode === "add") {
+    // Adăugare student nou
+    request("POST", "/api/student/add", formValues)
+      .then(() => {
+        alert("Student added successfully!");
+        setViewMode("list");
+        fetchStudents();
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        if (error.response) {
+          console.log("Răspuns Backend:", error.response);
+          let errorMessage = "Eroare necunoscută.";
+          if (error.response.data) {
+            if (typeof error.response.data === "string") {
+              errorMessage = error.response.data;
+            } else if (error.response.data.error) {
+              errorMessage = error.response.data.error;
+            } else if (error.response.data.message) {
+              errorMessage = error.response.data.message;
             }
-        });
-};
+          } else if (error.response.status === 400) {
+            errorMessage = "Date invalide! Verifică dacă ai completat corect toate câmpurile.";
+          } else if (error.response.status === 409) {
+            errorMessage = "Codul studentului trebuie să fie unic! Un student cu acest cod există deja.";
+          }
+          alert(`Eroare: ${errorMessage}`);
+        } else {
+          alert("Eroare: Nu s-a putut contacta serverul.");
+        }
+      });
+  } else {
+    // Update student existent
+    // studentToEdit conține obiectul complet cu proprietatea `cod`
+    if (!studentToEdit || !studentToEdit.cod) {
+      alert("Nu a fost selectat un student valid pentru update.");
+      return;
+    }
+    const codPentruUrl = studentToEdit.cod;
+    // Construcția endpoint-ului folosind `cod` din studentToEdit
+    const endpoint = `/api/student/update/${codPentruUrl}`;
 
+    // Payload-ul chiar trebuie să conțină numai câmpurile editabile
+    // pe care backend-ul le așteaptă în StudentDTO (nume, prenume, an, grupă, specializare).
+    const payload = {
+      nume: formValues.nume,
+      prenume: formValues.prenume,
+      an: parseInt(formValues.an, 10),
+      grupa: formValues.grupa,
+      specializare: formValues.specializare
+    };
+
+    request("PUT", endpoint, payload)
+      .then(() => {
+        alert("Student updated successfully!");
+        setViewMode("list");
+        setStudentToEdit(null);
+        fetchStudents();
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        if (error.response) {
+          console.log("Răspuns Backend:", error.response);
+          let errorMessage = "Eroare necunoscută.";
+          if (error.response.data) {
+            if (typeof error.response.data === "string") {
+              errorMessage = error.response.data;
+            } else if (error.response.data.error) {
+              errorMessage = error.response.data.error;
+            } else if (error.response.data.message) {
+              errorMessage = error.response.data.message;
+            }
+          }
+          alert(`Eroare: ${errorMessage}`);
+        } else {
+          alert("Eroare: Nu s-a putut contacta serverul.");
+        }
+      });
+  }
+};
 
   
   
@@ -175,112 +210,115 @@ const renderStudentList = () => (
 );
 
 
-  const renderStudentForm = () => (
-    <div className="form-container">
-      <h2>{viewMode === "add" ? "Add Student" : "Edit Student"}</h2>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          const formData = new FormData(e.target);
-          const student = Object.fromEntries(formData.entries());
-          handleSaveStudent(student);
-        }}
-      >
-        <div className="form-group">
-          <label>First Name:</label>
-          <input
-            name="nume"
-            defaultValue={studentToEdit?.nume || ""}
-            required
-            className="input-field"
-          />
-        </div>
-        <div className="form-group">
-          <label>Last Name:</label>
-          <input
-            name="prenume"
-            defaultValue={studentToEdit?.prenume || ""}
-            required
-            className="input-field"
-          />
-        </div>
-        {viewMode === "add" && (
-          <>
-            <div className="form-group">
-              <label>Code:</label>
-              <input
-                name="cod"
-                defaultValue=""
-                required
-                className="input-field"
-              />
-            </div>
-            <div className="form-group">
-              <label>Username:</label>
-              <input name="username" required className="input-field" />
-            </div>
-            <div className="form-group">
-              <label>Password:</label>
-              <input
-                type="password"
-                name="password"
-                required
-                className="input-field"
-              />
-            </div>
-          </>
-        )}
-        <div className="form-group">
-          <label>Year:</label>
-          <input
-            type="number"
-            name="an"
-            defaultValue={studentToEdit?.an || ""}
-            required
-            className="input-field"
-          />
-        </div>
-        <div className="form-group">
-          <label>Group:</label>
-          <input
-            name="grupa"
-            defaultValue={studentToEdit?.grupa || ""}
-            required
-            className="input-field"
-          />
-        </div>
-        <div className="form-group">
-  <label>Specializare:</label>
-  <select
-    name="specializare"
-    defaultValue={studentToEdit?.specializare?.specializare || ""}
-    required
-    className="input-field"
-  >
-    <option value="" disabled>Selectează specializarea</option>
-    {specializations.map((s) => (
-      <option key={s.id} value={s.specializare}>
-        {s.specializare}
-      </option>
-    ))}
-  </select>
-</div>
+ const renderStudentForm = () => (
+  <div className="form-container">
+    <h2>{viewMode === "add" ? "Add Student" : "Edit Student"}</h2>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const formValues = Object.fromEntries(formData.entries());
+        handleSaveStudent(formValues);
+      }}
+    >
+      <div className="form-group">
+        <label>First Name:</label>
+        <input
+          name="nume"
+          defaultValue={studentToEdit?.nume || ""}
+          required
+          className="input-field"
+        />
+      </div>
+      <div className="form-group">
+        <label>Last Name:</label>
+        <input
+          name="prenume"
+          defaultValue={studentToEdit?.prenume || ""}
+          required
+          className="input-field"
+        />
+      </div>
+      {viewMode === "add" && (
+        <>
+          <div className="form-group">
+            <label>Code:</label>
+            <input
+              name="cod"
+              defaultValue=""
+              required
+              className="input-field"
+            />
+          </div>
+          <div className="form-group">
+            <label>Username:</label>
+            <input name="username" required className="input-field" />
+          </div>
+          <div className="form-group">
+            <label>Password:</label>
+            <input
+              type="password"
+              name="password"
+              required
+              className="input-field"
+            />
+          </div>
+        </>
+      )}
+      <div className="form-group">
+        <label>Year:</label>
+        <input
+          type="number"
+          name="an"
+          defaultValue={studentToEdit?.an || ""}
+          required
+          className="input-field"
+        />
+      </div>
+      <div className="form-group">
+        <label>Group:</label>
+        <input
+          name="grupa"
+          defaultValue={studentToEdit?.grupa || ""}
+          required
+          className="input-field"
+        />
+      </div>
+      <div className="form-group">
+        <label>Specializare:</label>
+        <select
+          name="specializare"
+          defaultValue={studentToEdit?.specializare?.specializare || ""}
+          required
+          className="input-field"
+        >
+          <option value="" disabled>Selectează specializarea</option>
+          {specializations.map((s) => (
+            <option key={s.id} value={s.specializare}>
+              {s.specializare}
+            </option>
+          ))}
+        </select>
+      </div>
 
-        <div className="form-buttons">
-          <button type="submit" className="btn save-btn">
-            {viewMode === "add" ? "Add Student" : "Save"}
-          </button>
-          <button
-            type="button"
-            className="btn cancel-btn"
-            onClick={() => setViewMode("list")}
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
-    </div>
-  );
+      <div className="form-buttons">
+        <button type="submit" className="btn save-btn">
+          {viewMode === "add" ? "Add Student" : "Save"}
+        </button>
+        <button
+          type="button"
+          className="btn cancel-btn"
+          onClick={() => {
+            setViewMode("list");
+            setStudentToEdit(null);
+          }}
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+);
 
   // ========== PROFESSORS ==========
 

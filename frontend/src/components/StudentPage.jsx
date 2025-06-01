@@ -1,3 +1,4 @@
+// Updated StudentPage with schedule reintegrated
 import React, { useEffect, useState } from "react";
 import { request } from "../helpers/axios-helper";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -5,7 +6,7 @@ import NavigationHeader from "./NavigationHeader";
 import ChatWidget from './ChatWidget';
 import { 
   FaGraduationCap, FaBook, FaCalendarAlt, 
-  FaRegFileAlt 
+  FaRegFileAlt, FaClock, FaMapMarkerAlt, FaChalkboardTeacher 
 } from "react-icons/fa";
 import "./StudentPage.css";
 
@@ -20,14 +21,12 @@ export default function StudentPage({ onLogout }) {
     grades: true,
   });
 
-  // filtre pentru an si semestru
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedSem, setSelectedSem] = useState("");
 
   const navigate = useNavigate();
   const location = useLocation();
-  
-  // 1) Preluăm userInfo + detalii student
+
   useEffect(() => {
     request("GET", "/api/auth/userInfo")
       .then(res => {
@@ -42,8 +41,7 @@ export default function StudentPage({ onLogout }) {
         setLoading(l => ({ ...l, user: false }));
       });
   }, []);
-  
-  // 2) Încarcă orarul
+
   const fetchSchedule = grp => {
     request("GET", `/api/orare/getAll/${grp}`)
       .then(res => setSchedule(res.data || []))
@@ -51,7 +49,6 @@ export default function StudentPage({ onLogout }) {
       .finally(() => setLoading(l => ({ ...l, schedule: false })));
   };
 
-  // 3) Încarcă notele
   const fetchGrades = cod => {
     request("GET", `/api/catalogStudentMaterie/getNote/${cod}`)
       .then(res => setGrades(res.data || []))
@@ -59,7 +56,6 @@ export default function StudentPage({ onLogout }) {
       .finally(() => setLoading(l => ({ ...l, grades: false })));
   };
 
-  // 4) Calcul medie ponderată
   const getAverageGrade = () => {
     const validGrades = grades.filter(g => g.nota != null);
     if (!validGrades.length) return 0;
@@ -68,13 +64,11 @@ export default function StudentPage({ onLogout }) {
     return (weighted / totalCred).toFixed(2);
   };
 
-  // 5) Număr clase azi
   const getUpcomingClassesCount = () => {
     const days = ['Duminica','Luni','Marti','Miercuri','Joi','Vineri','Sambata'];
     return schedule.filter(i => i.zi === days[new Date().getDay()]).length;
   };
 
-  // 6) Scroll la fragment/hash
   useEffect(() => {
     if (location.hash) {
       const el = document.getElementById(location.hash.slice(1));
@@ -84,13 +78,11 @@ export default function StudentPage({ onLogout }) {
     }
   }, [location]);
 
-  // 7) Navigare către ContractSelectionPage
   const goToContractSelection = () => {
     if (!student) return;
     navigate(`/contract/select?cod=${student.cod}&an=${student.an}`);
   };
 
-  // filtre pentru dropdown
   const uniqueYears = Array.from(new Set(grades.map(g => g.an))).sort();
   const uniqueSems = Array.from(new Set(grades.map(g => g.semestru))).sort();
   const filteredGrades = grades.filter(g => {
@@ -99,7 +91,6 @@ export default function StudentPage({ onLogout }) {
     return byYear && bySem;
   });
 
-  // 8) Spinner inițial
   if (loading.user) {
     return (
       <div className="loading-container">
@@ -109,17 +100,15 @@ export default function StudentPage({ onLogout }) {
     );
   }
 
-  // 9) UI
   return (
     <div className="student-page">
       <NavigationHeader 
         userRole="ROLE_STUDENT" 
-        userName={userData.username}
+        userName={userData.username || ""}
         onLogout={onLogout}
       />
 
       <div className="student-content">
-        {/* Dashboard */}
         <div className="dashboard-welcome">
           <h1 className="welcome-title">Welcome, {userData.username}!</h1>
           <p className="welcome-subtitle">
@@ -144,31 +133,23 @@ export default function StudentPage({ onLogout }) {
           </div>
         </div>
 
-        {/* Grades Section */}
         <div id="grades" className="section-container">
           <div className="section-header">
             <FaRegFileAlt style={{ marginRight: '10px' }}/>
             <h2>Your Grades</h2>
           </div>
 
-          {/* Filtre an / semestru */}
           <div className="filter-bar">
-            <label>
-              An:
+            <label>An:
               <select value={selectedYear} onChange={e => setSelectedYear(e.target.value)}>
                 <option value="">Toate</option>
-                {uniqueYears.map(y => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
+                {uniqueYears.map(y => <option key={y} value={y}>{y}</option>)}
               </select>
             </label>
-            <label>
-              Semestru:
+            <label>Semestru:
               <select value={selectedSem} onChange={e => setSelectedSem(e.target.value)}>
                 <option value="">Toate</option>
-                {uniqueSems.map(s => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
+                {uniqueSems.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </label>
           </div>
@@ -180,29 +161,15 @@ export default function StudentPage({ onLogout }) {
               </div>
             ) : filteredGrades.length ? (
               <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Course</th><th>Code</th>
-                    <th>Grade</th><th>Semester</th><th>Status</th>
-                  </tr>
-                </thead>
+                <thead><tr><th>Course</th><th>Code</th><th>Grade</th><th>Semester</th><th>Status</th></tr></thead>
                 <tbody>
                   {filteredGrades.map((g,i) => (
                     <tr key={i}>
                       <td>{g.numeMaterie}</td>
                       <td>{g.codMaterie}</td>
-                      <td>
-                        {g.nota != null ? g.nota : ''}
-                      </td>
+                      <td>{g.nota != null ? g.nota : ''}</td>
                       <td>{g.semestru}</td>
-                      <td>
-                        {g.nota != null
-                          ? (g.nota >= 5
-                              ? <span className="grade-passing">Passed</span>
-                              : <span className="grade-failing">Failed</span>)
-                          : ''
-                        }
-                      </td>
+                      <td>{g.nota != null ? (g.nota >= 5 ? <span className="grade-passing">Passed</span> : <span className="grade-failing">Failed</span>) : ''}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -217,14 +184,53 @@ export default function StudentPage({ onLogout }) {
           <ChatWidget />
         </div>
 
-        {/* (Schedule Section rămâne neschimbat) */}
+        <div id="schedule" className="section-container">
+          <div className="section-header">
+            <h2><FaCalendarAlt style={{ marginRight: '10px' }}/>Class Schedule</h2>
+          </div>
+          <div className="section-content">
+            {loading.schedule ? (
+              <div className="loading-container">
+                <div className="loading-spinner"/>
+                <p>Loading schedule...</p>
+              </div>
+            ) : schedule.length ? (
+              <table className="data-table">
+                <thead>
+                  <tr><th>Ziua</th><th>Orele</th><th>Disciplina</th><th>Tipul</th><th>Sala</th><th>Profesor</th><th>Frecvența</th></tr>
+                </thead>
+                <tbody>
+                  {schedule.map((item, index) => {
+                    let itemClass = '';
+                    if (item.tipul === 'Curs') itemClass = 'schedule-item-course';
+                    else if (item.tipul === 'Laborator') itemClass = 'schedule-item-lab';
+                    else if (item.tipul === 'Seminar') itemClass = 'schedule-item-seminar';
 
-        {/* Buton Generare Contract */}
+                    return (
+                      <tr key={index} className={itemClass}>
+                        <td><FaCalendarAlt style={{ marginRight: '8px', opacity: 0.7 }}/> {item.zi}</td>
+                        <td><FaClock style={{ marginRight: '8px', opacity: 0.7 }}/> {`${item.oraInceput}:00 - ${item.oraSfarsit}:00`}</td>
+                        <td>{item.disciplina}</td>
+                        <td>{item.tipul}</td>
+                        <td><FaMapMarkerAlt style={{ marginRight: '8px', opacity: 0.7 }}/> {item.sala}</td>
+                        <td><FaChalkboardTeacher style={{ marginRight: '8px', opacity: 0.7 }}/> {item.cadruDidactic}</td>
+                        <td>{item.frecventa === "saptamanal" ? "Weekly" : item.frecventa}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            ) : (
+              <div className="empty-state">
+                <FaCalendarAlt className="empty-state-icon"/>
+                <div className="empty-state-text">No schedule available</div>
+              </div>
+            )}
+          </div>
+        </div>
+
         <div style={{ textAlign: 'center', margin: '40px 0' }}>
-          <button
-            onClick={goToContractSelection}
-            className="btn-generate"
-          >
+          <button onClick={goToContractSelection} className="btn-generate">
             Generează Contractul de Studii pentru anul {student.an}
           </button>
         </div>
