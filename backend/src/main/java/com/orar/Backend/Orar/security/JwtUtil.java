@@ -33,6 +33,10 @@ public class JwtUtil {
         this.SECRET_KEY = loadOrGenerateKey();
     }
 
+    public String extractRole(String token) {
+        return extractAllClaims(token).get("role", String.class);
+    }
+
     private SecretKey loadOrGenerateKey() {
         // Try to find the key file in any of the potential locations
         for (String path : KEY_FILE_PATHS) {

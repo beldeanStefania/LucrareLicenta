@@ -7,6 +7,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.orar.Backend.Orar.dto.ContractDTO;
 import com.orar.Backend.Orar.enums.MaterieStatus;
 import com.orar.Backend.Orar.enums.Tip;
+import com.orar.Backend.Orar.exception.ValidationException;
 import com.orar.Backend.Orar.model.CatalogStudentMaterie;
 import com.orar.Backend.Orar.model.Contract;
 import com.orar.Backend.Orar.model.CurriculumEntry;
@@ -143,7 +144,7 @@ public class StudentContractService {
         List<ContractDTO> filtered = combined.stream()
                 .filter(dto -> {
                     MaterieStatus st = statusMap.get(dto.getCod());
-                    return st != MaterieStatus.ACTIV && st != MaterieStatus.FINALIZATA;
+                    return st == null || st == MaterieStatus.PICATA;
                 })
                 .toList();
 
@@ -187,18 +188,41 @@ public class StudentContractService {
     }
 
     private void recordActiveCourses(Student student, String studentCod, List<Materie> materii) {
-        materii.stream()
-                .filter(m -> catalogRepo.findByStudentCodAndMaterieCod(studentCod, m.getCod()).isEmpty())
-                .map(m -> {
-                    CatalogStudentMaterie entry = new CatalogStudentMaterie();
-                    entry.setStudent(student);
-                    entry.setMaterie(m);
-                    entry.setSemestru(m.getSemestru());
-                    entry.setStatus(MaterieStatus.ACTIV);
-                    return entry;
-                })
-                .forEach(catalogRepo::save);
+        for (Materie m : materii) {
+            // 1) Caută entry‐ul din catalog pentru (studentCod, m.getCod())
+            Optional<CatalogStudentMaterie> maybeEntry =
+                    catalogRepo.findByStudentCodAndMaterieCod(studentCod, m.getCod());
+
+            if (maybeEntry.isEmpty()) {
+                // –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+                // Dacă nu există deloc, creează rând NOU cu status = ACTIV
+                // –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+                CatalogStudentMaterie newEntry = new CatalogStudentMaterie();
+                newEntry.setStudent(student);
+                newEntry.setMaterie(m);
+                newEntry.setSemestru(m.getSemestru());
+                newEntry.setStatus(MaterieStatus.ACTIV);
+                // (opțional: newEntry.setNota(null); dacă nu ai deja setat default-ul în entitate)
+                catalogRepo.save(newEntry);
+
+            } else {
+                CatalogStudentMaterie existing = maybeEntry.get();
+                MaterieStatus st = existing.getStatus();
+
+                if (st == MaterieStatus.PICATA) {
+                    // –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+                    // Dacă a fost picată anterior, atunci o pot re‐inscrie → actualizez la ACTIV
+                    // (opțional: resetez nota, în caz că acolo era 4 sau 2, înainte de reînscriere)
+                    // –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+                    existing.setStatus(MaterieStatus.ACTIV);
+                    existing.setNota(null); // sau 0, dacă vrei să golești câmpul
+                    catalogRepo.save(existing);
+                }
+                // Dacă st == ACTIV sau st == FINALIZATA, nu facem nimic: materia deja e în contract
+            }
+        }
     }
+
 
     public byte[] generateContractPdfWithoutPersist(
             String studentCod,
@@ -331,12 +355,28 @@ public class StudentContractService {
                 .toList();
 
         if (!dejaActive.isEmpty()) {
-            throw new ResponseStatusException(
-                    BAD_REQUEST,
+            throw new ValidationException(
                     "Următoarele materii nu pot fi adăugate din nou în contract: "
                             + String.join(", ", dejaActive)
             );
         }
+
+        List<String> interzise = materii.stream()
+                .filter(m -> catalogRepo
+                        .findByStudentCodAndMaterieCod(studentCod, m.getCod())
+                        .filter(e -> e.getStatus() == MaterieStatus.ACTIV || e.getStatus() == MaterieStatus.FINALIZATA)
+                        .isPresent()
+                )
+                .map(Materie::getCod)
+                .toList();
+
+        if (!interzise.isEmpty()) {
+            throw new ValidationException(
+                    "Următoarele materii nu pot fi adăugate în contract deoarece sunt deja active sau finalizate: "
+                            + String.join(", ", interzise)
+            );
+        }
+
         // ────────────────────────────────────────────────────
 
         // 4) Înregistrează nou-venitele ca ACTIV

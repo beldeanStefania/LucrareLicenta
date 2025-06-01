@@ -89,6 +89,8 @@ public class CatalogStudentMaterieService {
         if (existingEntry.isPresent()) {
             CatalogStudentMaterie catalog = existingEntry.get();
             catalog.setNota(catalogStudentMaterieDTO.getNota());
+            if (catalogStudentMaterieDTO.getNota() < 5) catalog.setStatus(MaterieStatus.PICATA);
+            else if (catalogStudentMaterieDTO.getNota() >= 5) catalog.setStatus(MaterieStatus.FINALIZATA);
             return catalogStudentMaterieRepository.save(catalog);
         } else {
             CatalogStudentMaterie catalog = new CatalogStudentMaterie();
@@ -107,6 +109,11 @@ public class CatalogStudentMaterieService {
 
         catalog.setNota(catalogStudentMaterieDTO.getNota());
         catalog.setSemestru(catalogStudentMaterieDTO.getSemestru());
+        if(catalogStudentMaterieDTO.getNota() < 5) {
+            catalog.setStatus(MaterieStatus.PICATA);
+        } else if (catalogStudentMaterieDTO.getNota() >= 5) {
+            catalog.setStatus(MaterieStatus.FINALIZATA);
+        }
         return catalogStudentMaterieRepository.save(catalog);
     }
 
