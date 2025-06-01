@@ -11,6 +11,5 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
     Optional<Student> findByAnAndGrupa(Integer an, String grupa);
     Optional<Student> findByCod(String cod);
     List<Student> findByGrupa(String grupa);
-
     Optional<Student> findByUserUsername(String username);
 }

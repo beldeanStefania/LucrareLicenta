@@ -1,6 +1,10 @@
 package com.orar.Backend.Orar.service;
 
+import com.orar.Backend.Orar.model.CatalogStudentMaterie;
+import com.orar.Backend.Orar.model.CurriculumEntry;
 import com.orar.Backend.Orar.model.Materie;
+import com.orar.Backend.Orar.model.Specializare;
+import com.orar.Backend.Orar.model.Student;
 import com.orar.Backend.Orar.repository.CatalogStudentMaterieRepository;
 import com.orar.Backend.Orar.repository.MaterieRepository;
 import com.orar.Backend.Orar.repository.OrarRepository;
@@ -53,35 +57,58 @@ public class ChatService {
 
     public String chat(String userMessage, String username) {
         // 1. Încarcă contextul din DB
+        Student stud = studentRepo.findByUserUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Specializare spec = stud.getSpecializare();
+        List<CatalogStudentMaterie> istoricul = catalogRepo.findByStudent(stud);
         List<Materie> materii = materieRepo.findAll();
-        String catalog = materii.stream()
-                .map(m -> String.format("%s – %s (%d credite)",
-                        m.getCod(), m.getNume(), m.getCredite()))
+        List<CurriculumEntry> curriculum = orarRepo.findCurriculumBySpecializare(spec);
+
+        // 2. Construiește secțiunea de profil
+        String noteProfil = istoricul.stream()
+                .map(c -> String.format("%s – %s: nota %.1f",
+                        c.getMaterie().getCod(),
+                        c.getMaterie().getNume(),
+                        c.getNota()))
+                .collect(Collectors.joining("\n"));
+        String cursuriSpec = curriculum.stream()
+                .map(e -> String.format("%s (%d credite, sem %d anul %d)",
+                        e.getMaterie().getNume(),
+                        e.getMaterie().getCredite(),
+                        e.getSemestru(),
+                        e.getAn()))
                 .collect(Collectors.joining("\n"));
 
-        // 2. Construiește prompt-ul de sistem
+        // 3. Prompt de sistem extins
         String systemPrompt = """
-        Ești un asistent virtual pentru platforma universitară.
-        Numele de utilizator al studentului este: %s
-        Ai la dispoziție catalogul următor:
-        %s
+    Ești un asistent virtual pentru platforma universitară.
+    Student: %s
+    Specializare: %s
+    Istoric note:
+    %s
 
-        Exemple:
-        Student: „Câte credite are materia Tehnici Avansate de Programare?”
-        Asistent: „Materia «TAP101 – Tehnici Avansate de Programare» are 5 credite.”
+    Curriculum specializare:
+    %s
 
-        Student: „Ce se învață la Rețele de Calculatoare?”
-        Asistent: „«RC202 – Rețele de Calculatoare»: Model OSI, TCP/IP, protocoale...”
+    Folosește aceste date pentru a:
+     - răspunde la întrebări despre credite, conținut de curs, profesori
+     - face recomandări de materii opționale pe baza notelor și intereselor
+     - oferi răspunsuri de tip FAQ (echivalări, contract de studii, etc.)
+     - genera drafturi de cereri (de ex. pentru echivalări)
+    Răspunde concis și exact.
+    """.formatted(
+                username,
+                spec.getSpecializare(),
+                noteProfil,
+                cursuriSpec
+        );
 
-        Răspunde concis și corect.
-        """.formatted(username, catalog);
-
-        // 3. Pregătește body-ul JSON
+        // 4. Pregătim body-ul și apelăm OpenAI așa cum ai deja…
         Map<String,Object> body = new HashMap<>();
         body.put("model", model);
         body.put("messages", List.of(
-                Map.of("role", "system", "content", systemPrompt),
-                Map.of("role", "user",   "content", userMessage)
+                Map.of("role","system","content",systemPrompt),
+                Map.of("role","user","content",userMessage)
         ));
 
         int maxRetries = 3;

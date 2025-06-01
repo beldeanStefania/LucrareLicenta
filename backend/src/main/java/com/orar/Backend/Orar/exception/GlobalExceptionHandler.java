@@ -27,4 +27,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(INTERNAL_SERVER_ERROR).body("Eroare internă: " + ex.getMessage());
     }
 
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<String> handleValidation(ValidationException ex) {
+        return ResponseEntity.status(BAD_REQUEST).body(ex.getMessage());
+    }
 }

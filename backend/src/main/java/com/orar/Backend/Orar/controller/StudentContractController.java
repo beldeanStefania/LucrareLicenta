@@ -1,11 +1,10 @@
 package com.orar.Backend.Orar.controller;
 
 import com.orar.Backend.Orar.dto.ContractDTO;
+import com.orar.Backend.Orar.exception.ValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import com.orar.Backend.Orar.dto.MaterieDTO;
 import com.orar.Backend.Orar.service.StudentContractService;
-import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -47,31 +46,27 @@ public class StudentContractController {
     }
 
     @PostMapping("/generateContract")
-    public void generateContract(
-            @RequestBody ContractYearRequest req,
-            HttpServletResponse resp) throws IOException {
+    public ResponseEntity<byte[]> generateContract(@RequestBody ContractYearRequest req) {
         try {
-            // all of the persistence (contract + catalog entries) now happens in the service
             byte[] pdf = contractService.generateContractFromSelection(
                     req.getStudentCod(),
                     req.getAnContract(),
                     req.getCoduriMaterii()
             );
 
-            resp.setContentType("application/pdf");
-            resp.setContentLength(pdf.length);
-            resp.setHeader(
-                    "Content-Disposition",
-                    "attachment; filename=\"contract_" + req.getStudentCod() + ".pdf\""
-            );
-            resp.getOutputStream().write(pdf);
-        } catch (IllegalArgumentException e) {
-            resp.sendError(SC_BAD_REQUEST, e.getMessage());
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=\"contract_" + req.getStudentCod() + ".pdf\"")
+                    .header("Content-Type", "application/pdf")
+                    .body(pdf);
+
+        } catch (IllegalArgumentException | ValidationException e) {
+            return ResponseEntity.badRequest().body(e.getMessage().getBytes());
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendError(SC_INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Eroare la generare.".getBytes());
         }
     }
+
 
 
     @PostMapping("/preview")
@@ -79,7 +74,7 @@ public class StudentContractController {
             @RequestBody ContractYearRequest req,
             HttpServletResponse resp) throws IOException {
         try {
-            byte[] pdf = contractService.generateContractFromSelection(
+            byte[] pdf = contractService.generateContractPdfWithoutPersist(
                     req.getStudentCod(),
                     req.getAnContract(),
                     req.getCoduriMaterii()

@@ -13,13 +13,15 @@ public class ContractDTO {
     private int semestru;
     private Tip tip;
     private boolean selected;
+    private Integer materiiOptionaleId;
 
-    public ContractDTO(String cod, String nume, int credite, int semestru, Tip tip, boolean selected) {
+    public ContractDTO(String cod, String nume, int credite, int semestru, Tip tip, boolean selected, Integer materiiOptionaleId) {
         this.cod = cod;
         this.nume = nume;
         this.credite = credite;
         this.semestru = semestru;
         this.tip = tip;
         this.selected = selected;
+        this.materiiOptionaleId = materiiOptionaleId;
     }
 }

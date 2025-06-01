@@ -32,10 +32,18 @@ CREATE TABLE IF NOT EXISTS sala (
 
 CREATE TABLE IF NOT EXISTS materie (
                                        id INT AUTO_INCREMENT PRIMARY KEY,
-                                       nume VARCHAR(255),
-                                       semestru INT,
-                                       cod VARCHAR(255),
-                                       credite INT
+                                       nume VARCHAR(255) NOT NULL,
+                                       semestru INT NOT NULL,
+                                       an INT NOT NULL,
+                                       cod VARCHAR(255) NOT NULL,
+                                       credite INT NOT NULL,
+                                       CONSTRAINT uk_materie UNIQUE (nume)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS specializare (
+                                            id INT AUTO_INCREMENT PRIMARY KEY,
+                                            specializare VARCHAR(255) NOT NULL,
+                                            CONSTRAINT uk_specializare UNIQUE (specializare)
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS student (
@@ -46,7 +54,11 @@ CREATE TABLE IF NOT EXISTS student (
                                        an INT,
                                        grupa VARCHAR(255),
                                        user_id INT NOT NULL,
+                                       specializare_id INT,
                                        CONSTRAINT fk_student_user FOREIGN KEY (user_id) REFERENCES `user`(id),
+                                       CONSTRAINT fk_student_specializare FOREIGN KEY (specializare_id) REFERENCES specializare(id)
+                                       ON DELETE SET NULL
+                                       ON UPDATE CASCADE,
                                        UNIQUE KEY uk_student_user (user_id)
 ) ENGINE=InnoDB;
 
@@ -86,20 +98,36 @@ CREATE TABLE IF NOT EXISTS catalog_student_materie (
                                                        id INT AUTO_INCREMENT PRIMARY KEY,
                                                        nota DOUBLE,
                                                        semestru INT,
+                                                       status VARCHAR(20) NOT NULL,
                                                        student_id INT NOT NULL,
                                                        materie_id INT NOT NULL,
-                                                       CONSTRAINT fk_catalog_student_materie_student FOREIGN KEY (student_id) REFERENCES student(id),
-                                                       CONSTRAINT fk_catalog_student_materie_materie FOREIGN KEY (materie_id) REFERENCES materie(id)
+                                                       CONSTRAINT fk_catalog_student_materie_student FOREIGN KEY (student_id) REFERENCES student(id) ON DELETE CASCADE
+                                                           ON UPDATE CASCADE,
+                                                       CONSTRAINT fk_catalog_student_materie_materie FOREIGN KEY (materie_id) REFERENCES materie(id) ON DELETE CASCADE
+                                                           ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- 1. Creăm mai întâi specializarea, căci curriculum_entry o va referenția
-CREATE TABLE IF NOT EXISTS specializare (
-                                            id INT AUTO_INCREMENT PRIMARY KEY,
-                                            nume VARCHAR(255) NOT NULL,
-                                            UNIQUE KEY uk_specializare (nume)
+CREATE TABLE IF NOT EXISTS materii_optionale (
+                                                 id   INT AUTO_INCREMENT PRIMARY KEY,
+                                                 nume VARCHAR(100) NOT NULL UNIQUE
+) ENGINE=InnoDB
+  DEFAULT CHARSET = utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `contract` (
+                                          `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                          `student_cod` VARCHAR(255) NOT NULL,
+                                          `an_contract` INT NOT NULL,
+                                          `data_generare` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
--- 2. Apoi curriculum_entry, cu coloanele FK și constrângerile aferente
+CREATE TABLE IF NOT EXISTS `contract_materii` (
+                                                  `contract_id` BIGINT NOT NULL,
+                                                  `materie_cod` VARCHAR(255) NOT NULL,
+                                                  CONSTRAINT `fk_contract_materii_contract`
+                                                      FOREIGN KEY (`contract_id`) REFERENCES `contract`(`id`)
+                                                          ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 CREATE TABLE IF NOT EXISTS curriculum_entry (
                                                 id INT AUTO_INCREMENT PRIMARY KEY,
                                                 specializare_id INT NOT NULL,
@@ -107,10 +135,16 @@ CREATE TABLE IF NOT EXISTS curriculum_entry (
                                                 an            INT NOT NULL,
                                                 semestru      INT NOT NULL,
                                                 tip           VARCHAR(255),
+                                                materii_optionale_id INT NULL,
 
                                                 CONSTRAINT fk_curriculum_entry_specializare
                                                     FOREIGN KEY (specializare_id) REFERENCES specializare(id),
 
                                                 CONSTRAINT fk_curriculum_entry_materie
-                                                    FOREIGN KEY (materie_id)    REFERENCES materie(id)
+                                                    FOREIGN KEY (materie_id)    REFERENCES materie(id),
+
+                                                CONSTRAINT fk_curriculum_entry_optionale
+                                                    FOREIGN KEY (materii_optionale_id) REFERENCES materii_optionale(id)
+                                            ON DELETE RESTRICT ON UPDATE CASCADE
+
 ) ENGINE=InnoDB;

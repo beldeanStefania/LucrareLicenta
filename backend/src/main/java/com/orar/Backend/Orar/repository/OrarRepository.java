@@ -1,6 +1,8 @@
 package com.orar.Backend.Orar.repository;
 
+import com.orar.Backend.Orar.model.CurriculumEntry;
 import com.orar.Backend.Orar.model.Orar;
+import com.orar.Backend.Orar.model.Specializare;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,4 +22,7 @@ public interface OrarRepository extends JpaRepository<Orar, Integer> {
                                    @Param("oraSfarsit") int oraSfarsit);
 
     List<Orar> findByRepartizareProf_Profesor_Id(Integer profesorId);
+
+    @Query("SELECT c FROM CurriculumEntry c WHERE c.specializare = :spec")
+    List<CurriculumEntry> findCurriculumBySpecializare(Specializare spec);
 }

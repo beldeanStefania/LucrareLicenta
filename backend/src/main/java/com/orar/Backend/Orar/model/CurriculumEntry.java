@@ -35,6 +35,10 @@ public class CurriculumEntry {
     private Integer an;
     private Integer semestru;
 
+    @ManyToOne
+    @JoinColumn(name = "materii_optionale_id")
+    private MateriiOptionale optionale;
+
     @Enumerated(EnumType.STRING)
     private Tip tip;
 }
