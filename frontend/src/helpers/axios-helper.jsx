@@ -1,5 +1,4 @@
 import axios from "axios";
-// Import for jwt-decode v3
 import jwt_decode from "jwt-decode";
 
 export const getAuthToken = () => {
@@ -49,13 +48,33 @@ export const setAuthHeader = (token) => {
 axios.defaults.baseURL = "http://localhost:8080";
 axios.defaults.headers.post["Content-Type"] = "application/json";
 
-export const request = (method, url, data) => {
-  const token = getAuthToken();
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+
+export function request(method, url, data = null) {
+  const token = window.localStorage.getItem("auth_token");
+  const headers = {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {})
+  };
   return axios({
     method,
-    url,
-    headers,
+    url: API_BASE_URL + url,
     data,
+    headers
   });
-};
+}
+
+export function requestBlob(method, url, data = null) {
+  const token = window.localStorage.getItem("auth_token");
+  const headers = {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {})
+  };
+  return axios({
+    method,
+    url: API_BASE_URL + url,
+    data,
+    headers,
+    responseType: "blob"
+  });
+}

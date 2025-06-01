@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import {request, requestBlob} from "../helpers/axios-helper";
 import { useSearchParams } from "react-router-dom";
+import axios from "axios";
 import NavigationHeader from "./NavigationHeader";
 import "./StudentPage.css";
 
-// Folosește import.meta.env pentru Vite sau default la localhost
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 export default function ContractSelectionPage({ onLogout }) {
@@ -26,10 +26,10 @@ export default function ContractSelectionPage({ onLogout }) {
       setSuggestions([]);
       return;
     }
-    axios.get(`${API_BASE}/api/materie/search?q=${encodeURIComponent(filter)}`)
-      .then(res => setSuggestions(res.data || []))
-      .catch(() => setSuggestions([]));
-  }, [filter]);
+    request("GET", `/api/materie/search?q=${encodeURIComponent(filter)}`)
+    .then(res => setSuggestions(res.data || []))
+    .catch(() => setSuggestions([]));
+}, [filter]);
 
   // Verificăm existența contractului
   useEffect(() => {
@@ -37,8 +37,15 @@ export default function ContractSelectionPage({ onLogout }) {
     const studentAn  = parseInt(searchParams.get("an"), 10);
     if (!studentCod || isNaN(studentAn)) return;
     setCod(studentCod);
-    axios.get(`${API_BASE}/api/studentContract/exists/${studentCod}/${studentAn}`)
-      .then(res => setAn(res.data ? studentAn + 1 : studentAn))
+    request("GET", `/api/studentContract/exists/${studentCod}/${studentAn}`)
+      .then(res => {
+        if (res.data) {
+          alert("Ai deja contract generat pentru acest an. Nu poți genera pentru anul următor.");
+          setAn(null); // sau setăm la studentAn, dar dezactivăm butonul
+        } else {
+          setAn(studentAn);
+        }
+      })
       .catch(() => setAn(studentAn));
   }, [searchParams]);
 
@@ -47,8 +54,8 @@ export default function ContractSelectionPage({ onLogout }) {
     if (!cod || an == null) return;
     setLoading(true);
     Promise.all([
-      axios.get(`${API_BASE}/api/studentContract/availableCourses/${cod}/${an}/1`),
-      axios.get(`${API_BASE}/api/studentContract/availableCourses/${cod}/${an}/2`)
+      request("GET", `/api/studentContract/availableCourses/${cod}/${an}/1`),
+      request("GET", `/api/studentContract/availableCourses/${cod}/${an}/2`)
     ])
     .then(([res1, res2]) => {
       const list1 = res1.data || [];
@@ -80,52 +87,66 @@ export default function ContractSelectionPage({ onLogout }) {
   };
 
   // Generare / previzualizare PDF prin axios
-  const handleSubmit = async (preview) => {
-    if (selectedSet.size === 0) {
-      alert("Trebuie să ai cel puțin o materie selectată.");
+const handleSubmit = async (preview) => {
+  if (selectedSet.size === 0) {
+    alert("Trebuie să ai cel puțin o materie selectată.");
+    return;
+  }
+
+  const payload = {
+    studentCod: cod,
+    anContract: an,
+    coduriMaterii: Array.from(selectedSet)
+  };
+
+  try {
+    preview ? setPreviewing(true) : setGenerating(true);
+
+    const endpoint = `/api/studentContract/${preview ? "preview" : "generateContract"}`;
+    const response = await axios.post(endpoint, payload, {
+      responseType: 'blob',
+      validateStatus: () => true
+    });
+
+    if (response.status >= 400) {
+      const contentType = response.headers['content-type'] || '';
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const text = reader.result;
+          const msg = text || "A apărut o eroare.";
+          alert(msg);
+        } catch (e) {
+          alert("Eroare necunoscută.");
+        }
+      };
+      reader.readAsText(response.data);
       return;
     }
 
-    const payload = {
-      studentCod: cod,
-      anContract: an,
-      coduriMaterii: Array.from(selectedSet)
-    };
+    const blob = new Blob([response.data], { type: 'application/pdf' });
+    const blobUrl = URL.createObjectURL(blob);
 
-    try {
-      preview ? setPreviewing(true) : setGenerating(true);
-      const url = `${API_BASE}/api/studentContract/${preview ? 'preview' : 'generateContract'}`;
-      const response = await axios.post(url, payload, {
-        responseType: 'blob',
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      const blobUrl = URL.createObjectURL(blob);
-
-      if (preview) {
-        window.open(blobUrl, '_blank');
-      } else {
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = `contract_${cod}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      }
-
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
-    } catch (err) {
-      console.error(err);
-      let message = 'Eroare la generarea contractului.';
-      if (err.response && err.response.data) {
-        try { message = await err.response.data.text(); } catch {};
-      }
-      alert(message);
-    } finally {
-      preview ? setPreviewing(false) : setGenerating(false);
+    if (preview) {
+      window.open(blobUrl, '_blank');
+    } else {
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `contract_${cod}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
-  };
+
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+  } catch (err) {
+    console.error("Eroare la generare:", err);
+    alert("Eroare la generarea contractului.");
+  } finally {
+    preview ? setPreviewing(false) : setGenerating(false);
+  }
+};
+
 
   return (
     <div className="student-page">
@@ -149,11 +170,13 @@ export default function ContractSelectionPage({ onLogout }) {
               {suggestions.map(m => (
                 <li key={m.cod} onClick={() => {
                   setSelectedSet(prev => new Set([...prev, m.cod]));
-                  const list = m.semestru === 1 ? sem1Courses : sem2Courses;
-                  const setter = m.semestru === 1 ? setSem1Courses : setSem2Courses;
-                  setter(prev => prev.some(c => c.cod === m.cod)
-                    ? prev
-                    : [...prev, { ...m, tip: 'OPTIONALA', selected: true }]
+
+                  const semRel = (m.semestru % 2) === 1 ? 1 : 2;
+                  const setter = semRel === 1 ? setSem1Courses : setSem2Courses;
+                  setter(prev => {
+                    if(prev.some(c => c.cod === m.cod)) { return prev; }
+                    return [...prev, { ...m, tip: 'OPTIONALA', selected: true }];
+                  }
                   );
                   setSuggestions([]);
                   setFilter('');
@@ -206,4 +229,5 @@ export default function ContractSelectionPage({ onLogout }) {
       </div>
     </div>
   );
+
 }
