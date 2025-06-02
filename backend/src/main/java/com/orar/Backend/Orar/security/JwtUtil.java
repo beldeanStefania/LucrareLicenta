@@ -19,10 +19,10 @@ public class JwtUtil {
 
     // Multiple possible paths for finding the key file
     private static final String[] KEY_FILE_PATHS = {
-        "/app/jwtSecretKey.key",                  // Docker container path
-        "jwtSecretKey.key",                       // Project root path
-        "../jwtSecretKey.key",                    // One level up
-        System.getProperty("user.dir") + "/jwtSecretKey.key" // Absolute path using user.dir
+        "/app/jwtSecretKey.key",
+        "jwtSecretKey.key",
+        "../jwtSecretKey.key",
+        System.getProperty("user.dir") + "/jwtSecretKey.key"
     };
     private static SecretKey SECRET_KEY;
 

@@ -66,6 +66,7 @@ public class ChatService {
         List<Materie> materii = materieRepo.findAll();
         List<CurriculumEntry> curriculum = orarRepo.findCurriculumBySpecializare(spec);
         List<Orar> orar = orarRepo.findByGrupa(stud.getGrupa());
+        boolean hasContract = !istoricul.isEmpty();
 
         // 2. Construiește secțiunea de profil
         String noteProfil = istoricul.stream()
@@ -86,6 +87,17 @@ public class ChatService {
                         o.getZi(), o.getRepartizareProf().getMaterie().getNume(), o.getRepartizareProf().getTip(), o.getOraInceput()+ ":00-" + "-" + o.getOraSfarsit() + ":00",
                         o.getSala(), o.getRepartizareProf().getProfesor().getNume()))
                 .collect(Collectors.joining("\n"));
+        String contractStatus = hasContract
+                ? "Studentul are deja contracte active."
+                : "Studentul NU are încă un contract de studii generat.";
+        String contractMaterii = istoricul.stream()
+                .map(c -> String.format("%s (an %d, sem %d, credite: %d)",
+                        c.getMaterie().getNume(),
+                        c.getMaterie().getAn(),
+                        c.getMaterie().getSemestru(),
+                        c.getMaterie().getCredite()))
+                .collect(Collectors.joining("\n"));
+
 
 
         // 3. Prompt de sistem extins
@@ -103,6 +115,9 @@ public class ChatService {
 
                 Orar săptămânal:
                 %s
+                
+                Contractul curent:
+                %s
 
                 Folosește aceste date pentru a:
                  - răspunde la întrebări despre credite, conținut de curs, profesori
@@ -113,6 +128,7 @@ public class ChatService {
                 Răspunde concis și exact.
                 """.formatted(
                 username,
+                contractStatus,
                 spec.getSpecializare(),
                 stud.getGrupa(),
                 noteProfil,

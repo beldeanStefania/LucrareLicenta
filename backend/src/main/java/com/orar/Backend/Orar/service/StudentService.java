@@ -70,6 +70,7 @@ public class StudentService {
         user.setUsername(studentDTO.getUsername());
         user.setPassword(passwordEncoder.encode(studentDTO.getPassword()));
         user.setRole(studentRole);
+        user.setEmail(studentDTO.getEmail());
         userRepository.save(user);
 
         Student student = new Student();

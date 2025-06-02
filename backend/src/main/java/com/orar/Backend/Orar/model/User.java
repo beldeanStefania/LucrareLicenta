@@ -25,6 +25,7 @@ public class User {
 
     private String username;
     private String password;
+    private String email;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "rol_id", nullable = false)
