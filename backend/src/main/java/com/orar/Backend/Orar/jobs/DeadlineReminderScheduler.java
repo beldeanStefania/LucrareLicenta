@@ -27,7 +27,7 @@ public class DeadlineReminderScheduler {
      * Rulează zilnic la ora 08:00 (Europe/Bucharest) și trimite emailuri pentru
      * sarcinile nefinalizate cu deadline AZI sau MÂINE.
      */
-    @Scheduled(cron = "0 0 8 * * *", zone = "Europe/Bucharest") // ora 08:00:00 zilnic , in fiecare minut "0 * * * * *"
+    @Scheduled(cron = "0 * * * * *", zone = "Europe/Bucharest") // ora 08:00:00 zilnic "0 0 8 * * *", in fiecare minut "0 * * * * *"
     @Transactional
     public void sendDeadlineReminders() {
         LocalDate today = LocalDate.now();
