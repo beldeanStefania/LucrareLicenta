@@ -1,288 +1,140 @@
-/* pages.css */
-
-/* ==== CONTAINER PRINCIPAL ==== */
-.page-wrapper {
-  min-height: 100vh;
-  background-color: var(--bg-secondary);
+.professor-page {
+    min-height: 100vh;
+    background-color: var(--bg-secondary);
+  }
+  
+  .professor-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-lg);
+  }
+  
+  .professor-page section {
+    margin-bottom: 30px;
+  }
+  
+  .professor-page h2 {
+    margin-bottom: 15px;
+    color: #007bff;
+  }
+  
+  .professor-page label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  .professor-page input,
+  .professor-page select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+  }
+  
+  .professor-page input:focus,
+  .professor-page select:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+  
+  .professor-page button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .professor-page button:hover {
+    transform: scale(1.05);
+  }
+  
+  button {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  button.logout-btn {
+    background-color: #dc3545;
+  }
+  
+  button.logout-btn:hover {
+    background-color: #c82333;
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+  }
+  
+  .professor-page .students-list {
+    margin-top: 10px;
+  }
+  
+  .professor-page .students-list div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .professor-page .students-list span {
+    font-size: 14px;
+    color: #333;
+    font-weight: bold; 
 }
 
-.page-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: var(--spacing-lg);
+  
+  .professor-page .students-list input {
+    width: 70px;
+    margin-left: 10px;
+  }
+
+  .professor-page .students-list div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px; 
+    padding: 5px 10px; 
 }
 
-/* ==== HEADER NAVIGAȚIE ==== */
-/* (NavigationHeader rămâne neschimbat) */
-
-/* ==== SECTIUNI (note, orar, to-do etc.) ==== */
-.section-container {
-  background-color: var(--bg-primary);
-  border-radius: var(--border-radius-md);
-  box-shadow: var(--shadow-sm);
-  margin-bottom: var(--spacing-xl);
-  overflow: hidden;
+.professor-page .students-list {
+  max-height: 250px; 
+  overflow-y: auto; 
+  border: 1px solid #ccc; 
+  border-radius: 5px; 
+  padding: 5px; 
+  background-color: #fff; 
 }
 
-.section-header {
-  background-color: var(--bg-tertiary);
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.section-header h2 {
-  margin: 0;
-  font-size: var(--font-size-xl);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  color: var(--primary-color);
-}
-
-.section-content {
-  padding: var(--spacing-lg);
-}
-
-/* ==== GRID-UL DE STAT-CARD-URI (numai pentru StudentPage) ==== */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-xl);
-}
-
-.stat-card {
-  background-color: var(--bg-primary);
-  border-radius: var(--border-radius-md);
-  padding: var(--spacing-lg);
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
-  display: flex;
-  flex-direction: column;
-}
-
-.stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-md);
-}
-
-.stat-icon {
-  background-color: rgba(52, 152, 219, 0.1);
-  color: var(--secondary-color);
-  width: 50px;
-  height: 50px;
-  border-radius: var(--border-radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: var(--spacing-md);
-}
-
-.stat-value {
-  font-size: var(--font-size-3xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--primary-color);
-  margin-bottom: var(--spacing-xs);
-}
-
-.stat-label {
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-/* ==== TABEL GENERIC ==== */
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.data-table th {
-  background-color: var(--bg-secondary);
-  color: var(--text-secondary);
-  font-weight: var(--font-weight-bold);
-  text-align: left;
-  padding: var(--spacing-md);
-  font-size: var(--font-size-sm);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 2px solid var(--border-color);
-}
-
-.data-table td {
-  padding: var(--spacing-md);
-  border-bottom: 1px solid var(--border-light);
-  font-size: var(--font-size-sm);
-}
-
-.data-table tbody tr:hover {
-  background-color: var(--bg-secondary);
-}
-
-.data-table .grade-passing {
-  color: var(--success-color);
-  font-weight: var(--font-weight-bold);
-}
-
-.data-table .grade-failing {
-  color: var(--danger-color);
-  font-weight: var(--font-weight-bold);
-}
-
-/* ==== EMPTY STATE (tabele fără date) ==== */
-.empty-state {
-  padding: var(--spacing-xl);
+.error-message {
+  color: red;
+  font-weight: bold;
+  margin-top: 10px;
   text-align: center;
-  color: var(--text-secondary);
 }
 
-.empty-state-icon {
-  font-size: 48px;
-  color: var(--border-color);
-  margin-bottom: var(--spacing-md);
-}
-
-.empty-state-text {
-  font-size: var(--font-size-lg);
-  margin-bottom: var(--spacing-sm);
-}
-
-/* ==== LOADING ==== */
-.loading-container {
-  min-height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid rgba(0, 0, 0, 0.1);
-  border-left-color: var(--secondary-color);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-.loading-text {
-  color: var(--text-secondary);
-  font-size: var(--font-size-base);
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* ==== FORM-URI GENERICE (To-Do, filter, rezervări) ==== */
-.todo-form,
-.schedule-filter,
-.filter-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
-}
-
-.todo-form input,
-.schedule-filter input,
-.schedule-filter select,
-.filter-bar select {
-  flex: 1;
-  padding: var(--spacing-xs) var(--spacing-md);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-sm);
-  font-size: var(--font-size-sm);
-  transition: border-color 0.3s ease;
-}
-
-.todo-form input:focus,
-.schedule-filter input:focus,
-.schedule-filter select:focus,
-.filter-bar select:focus {
-  outline: none;
-  border-color: var(--primary-color);
-}
-
-.todo-form button,
-.schedule-filter button,
-.filter-bar button {
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  padding: var(--spacing-xs) var(--spacing-md);
-  border-radius: var(--border-radius-sm);
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.todo-form button:hover,
-.schedule-filter button:hover,
-.filter-bar button:hover {
-  background-color: var(--primary-color-dark);
-  transform: translateY(-2px);
-}
-
-/* ==== STILURI SPECIFICE PENTRU LISTELE DE STUDENȚI/PROFESORI ==== */
-.students-list {
-  max-height: 250px;
-  overflow-y: auto;
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-sm);
-  padding: var(--spacing-sm);
-  background-color: white;
-}
-
-.students-list .student-entry {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-xs);
-  padding: var(--spacing-xs) var(--spacing-md);
-  border-bottom: 1px solid var(--border-light);
-}
-
-.students-list .student-entry:last-child {
-  border-bottom: none;
-}
-
-/* ==== ADAPȚĂM CULORILE ȘI FONTELE DIN VARIABILE ==== */
-:root {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f5f7fa;
-  --bg-tertiary: #e9ecef;
-  --border-color: #dee2e6;
-  --border-light: #dee2e680;
-  --text-secondary: #6c757d;
-  --text-light: #adb5bd;
-  --primary-color: #007bff;
-  --primary-color-dark: #0056b3;
-  --secondary-color: #ffffff;
-  --success-color: #28a745;
-  --danger-color: #dc3545;
-  --accent-color: #17a2b8;
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
-  --font-size-sm: 0.875rem;
-  --font-size-base: 1rem;
-  --font-size-lg: 1.25rem;
-  --font-size-xl: 1.5rem;
-  --font-size-3xl: 2.25rem;
-  --font-weight-light: 300;
-  --font-weight-bold: 700;
-  --border-radius-sm: 4px;
-  --border-radius-md: 8px;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-  --transition-normal: 0.3s ease;
-}
+  .professor-page .schedule-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  
+  .professor-page .schedule-form div {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .professor-page .schedule-form label {
+    margin-bottom: 5px;
+  }
+  
+  .professor-page .schedule-form select,
+  .professor-page .schedule-form input {
+    width: 100%;
+  }

@@ -12,6 +12,8 @@ export default function ChatWidget() {
   const [input, setInput] = useState('');
   const endRef = useRef(null);
 
+  const role = localStorage.getItem('role') || 'student';
+
   // scroll la fiecare mesaj nou
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });

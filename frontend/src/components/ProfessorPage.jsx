@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { request } from "../helpers/axios-helper";
 import NavigationHeader from "./NavigationHeader";
-//import "./ProfessorPage.css";
-import "../styles/pages.css";
+//import "../styles/pages.css";
+import "./ProfessorPage.css"; // Assuming you have a CSS file for styling
+import ChatWidget from "./ChatWidget"; // Importing the ChatWidget component
 
 export default function ProfessorPage({ onLogout }) {
 const [todos, setTodos] = useState([]);
@@ -283,6 +284,7 @@ useEffect(() => {
       />
 
       <div className="professor-content">
+         <ChatWidget />
         {}
         <section>
           <h2>Acordă note studenților</h2>
@@ -293,8 +295,8 @@ useEffect(() => {
               value={selectedGradeMaterie}
             >
               <option value="">Selectează materie</option>
-              {materiiUnice.map((materie, index) => (
-                <option key={index} value={materie.denumire}>
+              {materiiUnice.map((materie) => (
+                <option key={materie.denumire} value={materie.denumire}>
                   {materie.denumire}
                 </option>
               ))}
@@ -329,6 +331,7 @@ useEffect(() => {
             ) : (
               <p>Nu au fost găsiți studenți pentru grupa specificată.</p>
             )}
+            
           </div>
 
 
@@ -347,7 +350,7 @@ useEffect(() => {
             >
               <option value="">Selectează materie</option>
               {materiiUnice.map((materie, index) => (
-                <option key={index} value={materie.denumire}>
+                <option key={materie.denumire} value={materie.denumire}>
                   {materie.denumire}
                 </option>
               ))}
@@ -547,9 +550,9 @@ useEffect(() => {
             <td>{todo.done ? "Finalizat" : "Nefinalizat"}</td>
             <td>
               {!todo.done && (
-                <button onClick={() => handleMarkDone(todo.id)}>✔️ Done</button>
+                <button onClick={() => handleMarkDone(todo.id)}> Done</button>
               )}
-              <button onClick={() => handleDeleteTodo(todo.id)}>🗑️</button>
+              <button onClick={() => handleDeleteTodo(todo.id)}>Sterge </button>
             </td>
           </tr>
         ))}
