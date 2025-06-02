@@ -3,7 +3,7 @@ import { request } from "../helpers/axios-helper";
 import NavigationHeader from "./NavigationHeader"; 
 import "./AdminPage.css";
 
-export default function AdminPage({ onLogout }) {
+export default function AdminPage({ onLogout, currentUserName }) {
 
   const [specializations, setSpecializations] = useState([]);
   
@@ -14,6 +14,7 @@ export default function AdminPage({ onLogout }) {
   const [students, setStudents] = useState([]);
   const [viewMode, setViewMode] = useState("list"); 
   const [studentToEdit, setStudentToEdit] = useState(null);
+  const [email, setEmail] = useState(""); 
 
   // ---------------------------
   // PROFESSOR LOGIC
@@ -21,6 +22,7 @@ export default function AdminPage({ onLogout }) {
   const [professors, setProfessors] = useState([]);
   const [viewModeProf, setViewModeProf] = useState("list"); 
   const [professorToEdit, setProfessorToEdit] = useState(null);
+  const [professorEmail, setProfessorEmail] = useState(""); // Pentru email-ul profesorului
 
   // ---------------------------
   // SUBJECT/REPARTIZARE LOGIC
@@ -263,6 +265,16 @@ const renderStudentList = () => (
               className="input-field"
             />
           </div>
+              <div className="form-group">
+      <label>Email:</label>
+      <input
+        type="email"
+        name="email"
+        defaultValue=""
+        required
+        className="input-field"
+      />
+    </div>
         </>
       )}
       <div className="form-group">
@@ -410,6 +422,7 @@ const renderStudentList = () => (
                   <td>{prof.nume}</td>
                   <td>{prof.prenume}</td>
                   <td>{prof.user?.username || "N/A"}</td>
+                  <td>{prof.user?.email || "N/A"}</td>
                   <td>
                     <button className="btn edit-btn" onClick={() => handleEditProfessor(prof)}>Edit</button>
                     <button className="btn delete-btn" onClick={() => handleDeleteProfessor(prof)}>Delete</button>
@@ -478,6 +491,16 @@ const renderStudentList = () => (
             className="input-field"
           />
         </div>
+        <div className="form-group">
+      <label>Email:</label>
+      <input
+        type="email"
+        name="email"
+        defaultValue={professorToEdit?.user?.email || ""}
+        required
+        className="input-field"
+      />
+    </div>
 
         <div className="form-buttons">
           <button type="submit" className="btn save-btn">
@@ -824,7 +847,7 @@ const renderStudentList = () => (
     <div className="admin-page">
       <NavigationHeader 
         userRole="ROLE_ADMIN" 
-        userName="Admin"
+        userName={currentUserName}
         onLogout={onLogout}
       />
 

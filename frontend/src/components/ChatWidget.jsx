@@ -49,11 +49,6 @@ export default function ChatWidget() {
           <div className="cw-body">
             {messages.map((m,i) => (
               <div key={i} className={`cw-message ${m.from}`}>
-                {m.text}
-              </div>
-            ))}
-            {messages.map((m,i) => (
-              <div key={i} className={`cw-message ${m.from}`}>
                 <ReactMarkdown>{m.text}</ReactMarkdown>
               </div>
             ))}

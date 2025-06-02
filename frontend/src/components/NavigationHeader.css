@@ -72,7 +72,8 @@
   opacity: 0.8;
 }
 
-.nav-link:hover, .nav-link:focus {
+.nav-link:hover,
+.nav-link:focus {
   opacity: 1;
 }
 
@@ -106,6 +107,24 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
+  cursor: pointer;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+/* Hover effect pentru zona cu numele user-ului */
+.user-info:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  opacity: 1;
+  border-radius: 4px;
+}
+
+.user-info:hover .user-name,
+.user-info:hover .user-role {
+  color: #ffffff;
+}
+
+.user-info:hover svg {
+  color: #ffffff;
 }
 
 .user-details {
@@ -221,4 +240,32 @@
   .logo-section h1 {
     display: none;
   }
+}
+
+.user-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  min-width: 180px;
+}
+
+.user-dropdown-menu button {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.user-dropdown-menu button:hover {
+  background-color: var(--bg-secondary);
 }

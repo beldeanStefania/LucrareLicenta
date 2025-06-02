@@ -16,48 +16,34 @@ import "./App.css";
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState(null);
+  const [username, setUsername] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
     const checkAuthStatus = () => {
       const token = getAuthToken();
-      console.log("Auth status check - Token exists:", !!token);
       if (token) {
-        setAuthHeader(token);
         try {
-          const decodedToken = decodeToken(token);
-          console.log("Decoded token in App:", decodedToken);
-          setUserRole(decodedToken?.role || null);
+          const decoded = decodeToken(token);
+          setUserRole(decoded.role || null);
+          setUsername(decoded.sub || null);  // JWT-ul tău probabil folosește `sub` pentru username
           setIsLoggedIn(true);
-        } catch (error) {
-          console.error("Invalid token:", error);
-          // Clear invalid token
+        } catch (err) {
           localStorage.removeItem("auth_token");
-          setAuthHeader(null);
           setIsLoggedIn(false);
           setUserRole(null);
+          setUsername(null);
         }
-      } else {
-        // No token found in localStorage
-        setIsLoggedIn(false);
-        setUserRole(null);
       }
       setAuthChecked(true);
     };
 
     checkAuthStatus();
-
-    const handleStorageChange = (e) => {
-      if (e.key === "auth_token") {
-        checkAuthStatus();
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
+    window.addEventListener("storage", () => checkAuthStatus());
+    return () => window.removeEventListener("storage", () => checkAuthStatus());
   }, []);
+  // …
+
   
   if (!authChecked) {
     return <div className="loading-container">
@@ -128,7 +114,8 @@ export default function App() {
             element={
               <ErrorBoundary>
                 {isLoggedIn && userRole === "ROLE_ADMIN" ? (
-                  <AdminPage onLogout={handleLogout} />
+                  <AdminPage onLogout={handleLogout}
+                  currentUsername={username} />
                 ) : (
                   <Navigate to="/login" />
                 )}
