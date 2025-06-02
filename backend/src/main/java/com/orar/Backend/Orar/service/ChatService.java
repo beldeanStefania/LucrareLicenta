@@ -3,6 +3,7 @@ package com.orar.Backend.Orar.service;
 import com.orar.Backend.Orar.model.CatalogStudentMaterie;
 import com.orar.Backend.Orar.model.CurriculumEntry;
 import com.orar.Backend.Orar.model.Materie;
+import com.orar.Backend.Orar.model.Orar;
 import com.orar.Backend.Orar.model.Specializare;
 import com.orar.Backend.Orar.model.Student;
 import com.orar.Backend.Orar.repository.CatalogStudentMaterieRepository;
@@ -25,6 +26,7 @@ import org.springframework.core.ParameterizedTypeReference;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
 
 @Service
 public class ChatService {
@@ -63,6 +65,8 @@ public class ChatService {
         List<CatalogStudentMaterie> istoricul = catalogRepo.findByStudent(stud);
         List<Materie> materii = materieRepo.findAll();
         List<CurriculumEntry> curriculum = orarRepo.findCurriculumBySpecializare(spec);
+        List<Orar> orar = orarRepo.findByGrupa(stud.getGrupa());
+        boolean hasContract = !istoricul.isEmpty();
 
         // 2. Construiește secțiunea de profil
         String noteProfil = istoricul.stream()
@@ -78,37 +82,67 @@ public class ChatService {
                         e.getSemestru(),
                         e.getAn()))
                 .collect(Collectors.joining("\n"));
+        String orarInfo = orar.stream()
+                .map(o -> String.format("%s: %s %s (%s), sala %s, prof. %s",
+                        o.getZi(), o.getRepartizareProf().getMaterie().getNume(), o.getRepartizareProf().getTip(), o.getOraInceput()+ ":00-" + "-" + o.getOraSfarsit() + ":00",
+                        o.getSala(), o.getRepartizareProf().getProfesor().getNume()))
+                .collect(Collectors.joining("\n"));
+        String contractStatus = hasContract
+                ? "Studentul are deja contracte active."
+                : "Studentul NU are încă un contract de studii generat.";
+        String contractMaterii = istoricul.stream()
+                .map(c -> String.format("%s (an %d, sem %d, credite: %d)",
+                        c.getMaterie().getNume(),
+                        c.getMaterie().getAn(),
+                        c.getMaterie().getSemestru(),
+                        c.getMaterie().getCredite()))
+                .collect(Collectors.joining("\n"));
+
+
 
         // 3. Prompt de sistem extins
         String systemPrompt = """
-    Ești un asistent virtual pentru platforma universitară.
-    Student: %s
-    Specializare: %s
-    Istoric note:
-    %s
+                Ești un asistent virtual pentru platforma universitară.
+                Student: %s
+                Specializare: %s
+                Grupa: %s
 
-    Curriculum specializare:
-    %s
+                Istoric note:
+                %s
 
-    Folosește aceste date pentru a:
-     - răspunde la întrebări despre credite, conținut de curs, profesori
-     - face recomandări de materii opționale pe baza notelor și intereselor
-     - oferi răspunsuri de tip FAQ (echivalări, contract de studii, etc.)
-     - genera drafturi de cereri (de ex. pentru echivalări)
-    Răspunde concis și exact.
-    """.formatted(
+                Curriculum specializare:
+                %s
+
+                Orar săptămânal:
+                %s
+                
+                Contractul curent:
+                %s
+
+                Folosește aceste date pentru a:
+                 - răspunde la întrebări despre credite, conținut de curs, profesori
+                 - face recomandări de materii opționale pe baza notelor și intereselor
+                 - răspunde la întrebări despre programul dintr-o anumită zi (ex: „Câte cursuri am marți?”)
+                 - oferi răspunsuri de tip FAQ (echivalări, contract de studii, etc.)
+                 - genera drafturi de cereri (de ex. pentru echivalări)
+                Răspunde concis și exact.
+                """.formatted(
                 username,
+                contractStatus,
                 spec.getSpecializare(),
+                stud.getGrupa(),
                 noteProfil,
-                cursuriSpec
+                cursuriSpec,
+                orarInfo
         );
 
+
         // 4. Pregătim body-ul și apelăm OpenAI așa cum ai deja…
-        Map<String,Object> body = new HashMap<>();
+        Map<String, Object> body = new HashMap<>();
         body.put("model", model);
         body.put("messages", List.of(
-                Map.of("role","system","content",systemPrompt),
-                Map.of("role","user","content",userMessage)
+                Map.of("role", "system", "content", systemPrompt),
+                Map.of("role", "user", "content", userMessage)
         ));
 
         int maxRetries = 3;
@@ -180,7 +214,8 @@ public class ChatService {
         }
         // 2xx
         else if (statusCode.is2xxSuccessful()) {
-            return response.bodyToMono(new ParameterizedTypeReference<Map<String,Object>>() {});
+            return response.bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {
+            });
         }
         // alte erori
         else {
@@ -192,10 +227,12 @@ public class ChatService {
     // excepţie custom pentru retry
     private static class TooManyRequestsException extends RuntimeException {
         private final long retryAfterSeconds;
+
         public TooManyRequestsException(long retryAfterSeconds) {
             super("429 Too Many Requests, retry after " + retryAfterSeconds + "s");
             this.retryAfterSeconds = retryAfterSeconds;
         }
+
         public long getRetryAfterSeconds() {
             return retryAfterSeconds;
         }

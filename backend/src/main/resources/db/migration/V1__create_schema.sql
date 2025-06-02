@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS `user` (
                                       id INT AUTO_INCREMENT PRIMARY KEY,
                                       username VARCHAR(255) NOT NULL UNIQUE,
                                       password VARCHAR(255) NOT NULL,
+                                      email VARCHAR(255) NOT NULL UNIQUE,
                                       rol_id INT NOT NULL,
                                       CONSTRAINT fk_user_rol FOREIGN KEY (rol_id) REFERENCES rol(id)
 ) ENGINE=InnoDB;
@@ -147,4 +148,14 @@ CREATE TABLE IF NOT EXISTS curriculum_entry (
                                                     FOREIGN KEY (materii_optionale_id) REFERENCES materii_optionale(id)
                                             ON DELETE RESTRICT ON UPDATE CASCADE
 
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `todo_item` (
+                                           id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                           title VARCHAR(255) NOT NULL,
+                                           description TEXT NULL,
+                                           deadline DATE NOT NULL,
+                                           done TINYINT(1) NOT NULL DEFAULT 0,
+                                           user_id INT NOT NULL,
+                                           CONSTRAINT fk_todo_user FOREIGN KEY (user_id) REFERENCES user(id)
 ) ENGINE=InnoDB;

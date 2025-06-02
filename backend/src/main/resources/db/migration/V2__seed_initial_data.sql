@@ -478,8 +478,12 @@ WHERE NOT EXISTS (
 );
 
 -- Insert a user
-INSERT INTO user (username, password, rol_id)
-SELECT 'admin1', '$2a$12$G0OuquMudPvJljVVMUEXLeO18MYnikPuun6S3OE97AoVWGMt.oCrm', 1
+INSERT INTO user (username, password, email, rol_id)
+SELECT
+    'admin1',
+    '$2a$12$G0OuquMudPvJljVVMUEXLeO18MYnikPuun6S3OE97AoVWGMt.oCrm',
+    'admin@yahoo.com',
+    (SELECT id FROM rol WHERE name = 'ADMIN')
 WHERE NOT EXISTS (
     SELECT 1
     FROM user
