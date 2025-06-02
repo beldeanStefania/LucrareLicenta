@@ -1,12 +1,16 @@
 package com.orar.Backend.Orar.service;
 
+import com.orar.Backend.Orar.dto.TodoDTO;
 import com.orar.Backend.Orar.exception.StudentNotFoundException;
 import com.orar.Backend.Orar.exception.TodoItemNotFoundException;
 import com.orar.Backend.Orar.model.Student;
 import com.orar.Backend.Orar.model.TodoItem;
+import com.orar.Backend.Orar.model.User;
 import com.orar.Backend.Orar.repository.StudentRepository;
 import com.orar.Backend.Orar.repository.TodoItemRepository;
+import com.orar.Backend.Orar.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -19,30 +23,38 @@ public class TodoItemService {
     private TodoItemRepository todoItemRepository;
 
     @Autowired
-    private StudentRepository studentRepository;
+    private UserRepository userRepository;
 
-    public TodoItem createTodo(String cod, String title, String description, LocalDate deadline)
-            throws StudentNotFoundException {
-        Student student = studentRepository.findByCod(cod)
-                .orElseThrow(() -> new StudentNotFoundException("Student cu cod " + cod + " nu există"));
+    public TodoItem createTodo(String username, String title, String description, LocalDate deadline) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Userul cu username " + username + " nu există"));
 
         TodoItem todo = TodoItem.builder()
                 .title(title)
                 .description(description)
                 .deadline(deadline)
                 .done(false)
-                .student(student)
+                .user(user)
                 .build();
 
         return todoItemRepository.save(todo);
     }
 
-    public List<TodoItem> getTodosForStudentByCod(String cod) throws StudentNotFoundException {
-        Student student = studentRepository.findByCod(cod)
-                .orElseThrow(() -> new StudentNotFoundException("Student cu cod " + cod + " nu există"));
+    public List<TodoDTO> getTodosForUser(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        return todoItemRepository.findByStudent(student);
+        return todoItemRepository.findByUser(user).stream()
+                .map(todo -> TodoDTO.builder()
+                        .username(user.getUsername())
+                        .title(todo.getTitle())
+                        .description(todo.getDescription())
+                        .deadline(todo.getDeadline().toString())
+                        .done(todo.getDone())
+                        .build())
+                .toList();
     }
+
 
     public TodoItem updateTodo(Integer todoId, String newTitle, String newDescription,
                                LocalDate newDeadline, Boolean isDone) {

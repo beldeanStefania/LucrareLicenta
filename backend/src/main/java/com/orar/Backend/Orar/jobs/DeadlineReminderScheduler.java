@@ -46,7 +46,7 @@ public class DeadlineReminderScheduler {
         }
 
         for (TodoItem todo : allReminders) {
-            var student = todo.getStudent();
+            var student = todo.getUser().getStudent();
             var user = student.getUser();
             String toEmail = user.getEmail();
 

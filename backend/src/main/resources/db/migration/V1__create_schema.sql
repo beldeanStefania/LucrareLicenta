@@ -156,6 +156,6 @@ CREATE TABLE IF NOT EXISTS `todo_item` (
                                            description TEXT NULL,
                                            deadline DATE NOT NULL,
                                            done TINYINT(1) NOT NULL DEFAULT 0,
-                                           student_id INT NOT NULL,
-                                           CONSTRAINT fk_todo_student FOREIGN KEY (student_id) REFERENCES student(id)
+                                           user_id INT NOT NULL,
+                                           CONSTRAINT fk_todo_user FOREIGN KEY (user_id) REFERENCES user(id)
 ) ENGINE=InnoDB;

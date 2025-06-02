@@ -27,15 +27,10 @@ public class TodoItemController {
      * GET /api/todo/student/{cod}
      * Returnează toate to-do-urile pentru studentul cu codul specificat.
      */
-    @GetMapping("/student/{cod}")
-    public ResponseEntity<?> getAllForStudentByCod(@PathVariable String cod) {
-        try {
-            List<TodoItem> list = todoItemService.getTodosForStudentByCod(cod);
-            return ResponseEntity.ok(list);
-        } catch (StudentNotFoundException ex) {
-            return ResponseEntity.status(404)
-                    .body("{\"error\":\"" + ex.getMessage() + "\"}");
-        }
+    @GetMapping("/user/{username}")
+    public ResponseEntity<List<TodoDTO>> getTodosForUser(@PathVariable String username) {
+        List<TodoDTO> dtos = todoItemService.getTodosForUser(username);
+        return ResponseEntity.ok(dtos);
     }
 
     /**
@@ -43,32 +38,24 @@ public class TodoItemController {
      * Așteaptă în body JSON:
      * { "studentCod": "...", "title": "...", "description": "...", "deadline": "YYYY-MM-DD" }
      */
-    @Operation(summary = "Adaugă o sarcină nouă pentru student (după cod)")
     @PostMapping("/create")
     public ResponseEntity<?> createTodo(@RequestBody TodoDTO todoDTO) {
         try {
-            // Validăm și parseăm deadline-ul
             if (todoDTO.getDeadline() == null || todoDTO.getDeadline().isBlank()) {
                 return ResponseEntity.badRequest()
                         .body("{\"error\":\"Câmpul 'deadline' este obligatoriu.\"}");
             }
-            LocalDate dl;
-            try {
-                dl = LocalDate.parse(todoDTO.getDeadline());
-            } catch (Exception e) {
-                return ResponseEntity.badRequest()
-                        .body("{\"error\":\"Format invalid al câmpului 'deadline'. Trebuie YYYY-MM-DD.\"}");
-            }
+            LocalDate dl = LocalDate.parse(todoDTO.getDeadline());
 
             TodoItem saved = todoItemService.createTodo(
-                    todoDTO.getStudentCod(),
+                    todoDTO.getUsername(),
                     todoDTO.getTitle(),
                     todoDTO.getDescription(),
                     dl
             );
             return ResponseEntity.ok(saved);
 
-        } catch (StudentNotFoundException e) {
+        } catch (RuntimeException e) {
             return ResponseEntity.status(404)
                     .body("{\"error\":\"" + e.getMessage() + "\"}");
         } catch (Exception e) {
