@@ -19,6 +19,13 @@ export default function ContractSelectionPage({ onLogout }) {
   const [suggestions, setSuggestions] = useState([]);
   const [sem1Courses, setSem1Courses] = useState([]);
   const [sem2Courses, setSem2Courses] = useState([]);
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+  request("GET", "/api/auth/userInfo")
+    .then(res => setUserData(res.data))
+    .catch(() => setUserData({ username: "User" }));
+}, []);
 
   // Autocomplete
   useEffect(() => {
@@ -150,7 +157,11 @@ const handleSubmit = async (preview) => {
 
   return (
     <div className="student-page">
-      <NavigationHeader userRole="ROLE_STUDENT" onLogout={onLogout} />
+     <NavigationHeader
+  userRole="ROLE_STUDENT"
+  userName={userData?.username || "User"}
+  onLogout={onLogout}
+/>
 
       <div className="student-content">
         <h1 className="welcome-title">

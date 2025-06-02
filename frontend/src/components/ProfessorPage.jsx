@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { request } from "../helpers/axios-helper";
 import NavigationHeader from "./NavigationHeader";
-import "./ProfessorPage.css";
+//import "../styles/pages.css";
+import "./ProfessorPage.css"; // Assuming you have a CSS file for styling
+import ChatWidget from "./ChatWidget"; // Importing the ChatWidget component
 
 export default function ProfessorPage({ onLogout }) {
+const [todos, setTodos] = useState([]);
+  const [newTodo, setNewTodo] = useState({ title: "", description: "", deadline: "" });
+
+
   const [professorInfo, setProfessorInfo] = useState(null);
 
   const [repartizari, setRepartizari] = useState([]);
@@ -19,6 +25,11 @@ export default function ProfessorPage({ onLogout }) {
   const [gradeStudentNotes, setGradeStudentNotes] = useState({});
   const [students, setStudents] = useState([]);
 
+  const [newTitle, setNewTitle] = useState("");
+  const [newDescription, setNewDescription] = useState("");
+  const [newDeadline, setNewDeadline] = useState("");
+  const [loadingTodos, setLoadingTodos] = useState(true);
+
   const [selectedMaterieForSchedule, setSelectedMaterieForSchedule] = useState("");
   const [selectedTip, setSelectedTip] = useState("");
   const [selectedFrecventa, setSelectedFrecventa] = useState("");
@@ -32,6 +43,71 @@ export default function ProfessorPage({ onLogout }) {
   });
 
   const [profSchedule, setProfSchedule] = useState([]);  
+
+const fetchTodos = (username) => {
+  setLoadingTodos(true);
+  request("GET", `/api/todo/user/${username}`)
+    .then((res) => {
+      setTodos(res.data || []);
+    })
+    .catch((err) => {
+      console.error("Eroare la fetchTodos:", err);
+      setTodos([]);
+    })
+    .finally(() => setLoadingTodos(false));
+};
+
+const handleAddTodo = () => {
+  if (!newTitle || !newDeadline) return;
+
+  const payload = {
+    username: professorInfo?.username,
+    title: newTitle,
+    description: newDescription,
+    deadline: newDeadline,
+  };
+
+  request("POST", "/api/todo/create", payload)
+    .then(() => {
+      setNewTitle("");
+      setNewDescription("");
+      setNewDeadline("");
+      fetchTodos(professorInfo?.username);
+    })
+    .catch((err) => {
+      console.error("Eroare la adăugare todo:", err);
+      alert("Eroare la crearea To-Do-ului!");
+    });
+};
+
+const handleMarkDone = (todoId) => {
+  const todo = todos.find((t) => t.id === todoId);
+  if (!todo) return;
+
+  const updatedTodo = {
+    title: todo.title,
+    description: todo.description,
+    deadline: todo.deadline,
+    done: true,
+  };
+
+  request("PUT", `/api/todo/update/${todoId}`, updatedTodo)
+    .then(() => fetchTodos(professorInfo?.username))
+    .catch((err) => console.error("Eroare la marcare todo ca done:", err));
+};
+
+const handleDeleteTodo = (todoId) => {
+  request("DELETE", `/api/todo/delete/${todoId}`)
+    .then(() => fetchTodos(professorInfo?.username))
+    .catch((err) => console.error(err));
+};
+
+useEffect(() => {
+  if (professorInfo?.username) {
+    fetchTodos(professorInfo.username);
+  }
+}, [professorInfo]);
+
 
   useEffect(() => {
     fetchProfessorInfo();
@@ -208,6 +284,7 @@ export default function ProfessorPage({ onLogout }) {
       />
 
       <div className="professor-content">
+         <ChatWidget />
         {}
         <section>
           <h2>Acordă note studenților</h2>
@@ -218,8 +295,8 @@ export default function ProfessorPage({ onLogout }) {
               value={selectedGradeMaterie}
             >
               <option value="">Selectează materie</option>
-              {materiiUnice.map((materie, index) => (
-                <option key={index} value={materie.denumire}>
+              {materiiUnice.map((materie) => (
+                <option key={materie.denumire} value={materie.denumire}>
                   {materie.denumire}
                 </option>
               ))}
@@ -254,6 +331,7 @@ export default function ProfessorPage({ onLogout }) {
             ) : (
               <p>Nu au fost găsiți studenți pentru grupa specificată.</p>
             )}
+            
           </div>
 
 
@@ -272,7 +350,7 @@ export default function ProfessorPage({ onLogout }) {
             >
               <option value="">Selectează materie</option>
               {materiiUnice.map((materie, index) => (
-                <option key={index} value={materie.denumire}>
+                <option key={materie.denumire} value={materie.denumire}>
                   {materie.denumire}
                 </option>
               ))}
@@ -426,6 +504,65 @@ export default function ProfessorPage({ onLogout }) {
             <p>Nicio oră planificată pentru acest profesor.</p>
           )}
         </section>
+        <section id="todo">
+  <h2>To-Do List</h2>
+
+  <div className="todo-form">
+    <input
+      type="text"
+      placeholder="Titlu"
+      value={newTitle}
+      onChange={(e) => setNewTitle(e.target.value)}
+    />
+    <input
+      type="text"
+      placeholder="Descriere (opțional)"
+      value={newDescription}
+      onChange={(e) => setNewDescription(e.target.value)}
+    />
+    <input
+      type="date"
+      value={newDeadline}
+      onChange={(e) => setNewDeadline(e.target.value)}
+    />
+    <button onClick={handleAddTodo}>Adaugă</button>
+  </div>
+
+  {loadingTodos ? (
+    <p>Se încarcă To-Do-urile...</p>
+  ) : todos.length > 0 ? (
+    <table className="data-table">
+      <thead>
+        <tr>
+          <th>Titlu</th>
+          <th>Descriere</th>
+          <th>Deadline</th>
+          <th>Status</th>
+          <th>Acțiuni</th>
+        </tr>
+      </thead>
+      <tbody>
+        {todos.map((todo) => (
+          <tr key={todo.id}>
+            <td>{todo.title}</td>
+            <td>{todo.description || "—"}</td>
+            <td>{todo.deadline}</td>
+            <td>{todo.done ? "Finalizat" : "Nefinalizat"}</td>
+            <td>
+              {!todo.done && (
+                <button onClick={() => handleMarkDone(todo.id)}> Done</button>
+              )}
+              <button onClick={() => handleDeleteTodo(todo.id)}>Sterge </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  ) : (
+    <p>Nu ai niciun To-Do momentan.</p>
+  )}
+</section>
+
       </div>
     </div>
   );

@@ -1,11 +1,17 @@
-// NavigationHeader.jsx
-import React, { useState } from 'react';
-import { FaUserCircle, FaSignOutAlt, FaUniversity, FaBars, FaTimes } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';          // <-- Am adăugat useEffect aici
+import { request } from '../helpers/axios-helper';            // <-- Am adăugat importul pentru request
+import { FaUserCircle, FaBars, FaTimes, FaUniversity } from 'react-icons/fa';
 import { NavLink, useNavigate } from 'react-router-dom';
+import PasswordChangeModal from './PasswordChangeModal';
 import './NavigationHeader.css';
+
 
 export default function NavigationHeader({ userRole, userName, onLogout }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showChangePwd, setShowChangePwd] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [fetchedUsername, setFetchedUsername] = useState('');
+
   const navigate = useNavigate();
 
   const toggleMenu = () => setMenuOpen(open => !open);
@@ -23,6 +29,18 @@ export default function NavigationHeader({ userRole, userName, onLogout }) {
       default:               return 'User';
     }
   };
+
+
+   useEffect(() => {
+    request('GET', '/api/auth/userInfo')
+      .then(res => {
+        setFetchedUsername(res.data.username);
+      })
+      .catch(err => {
+        console.error('Nu am putut obține username-ul:', err);
+      });
+  }, []);
+
 
   return (
     <header className="app-header">
@@ -130,21 +148,38 @@ export default function NavigationHeader({ userRole, userName, onLogout }) {
             )}
           </ul>
 
-          <div className="user-section">
-            <div className="user-info">
+           <div className="user-section">
+            <div className="user-info" onClick={() => setShowDropdown(d => !d)}>
               <FaUserCircle size={24} />
               <div className="user-details">
-                <span className="user-name">{userName || 'User'}</span>
+                {/* Dacă fetchedUsername a fost încărcat, îl afișăm; altfel arătăm prop-ul userName */}
+                <span className="user-name">{fetchedUsername || userName || 'User'}</span>
                 <span className="user-role">{getRoleName(userRole)}</span>
               </div>
             </div>
-            <button className="logout-button" onClick={onLogout}>
-              <FaSignOutAlt />
-              <span>Logout</span>
-            </button>
+            {showDropdown && (
+              <div className="user-dropdown-menu">
+                <button
+                  onClick={() => {
+                    setShowChangePwd(true);
+                    setShowDropdown(false);
+                  }}
+                >
+                  Schimbă parola
+                </button>
+                <button onClick={onLogout}>Logout</button>
+              </div>
+            )}
           </div>
         </nav>
       </div>
+
+      {showChangePwd && (
+        <PasswordChangeModal
+          username={fetchedUsername || userName}
+          onClose={() => setShowChangePwd(false)}
+        />
+      )}
     </header>
   );
 }
