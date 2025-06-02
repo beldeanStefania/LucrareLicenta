@@ -46,7 +46,8 @@ public class ProfesorService {
         User user = new User();
         user.setUsername(profesorDTO.getUsername());
         user.setPassword(passwordEncoder.encode(profesorDTO.getPassword()));
-        user.setRole(profesorRole); 
+        user.setRole(profesorRole);
+        user.setEmail(profesorDTO.getEmail());
         userRepository.save(user); 
 
         Profesor profesor = new Profesor();

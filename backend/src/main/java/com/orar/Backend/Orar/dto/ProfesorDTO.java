@@ -10,4 +10,5 @@ public class ProfesorDTO {
     private String prenume;
     private String username; 
     private String password;
+    private String email;
 }

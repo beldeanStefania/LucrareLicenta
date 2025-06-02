@@ -1,6 +1,7 @@
 package com.orar.Backend.Orar.jobs;
 
 import com.orar.Backend.Orar.model.TodoItem;
+import com.orar.Backend.Orar.model.User;
 import com.orar.Backend.Orar.service.EmailService;
 import com.orar.Backend.Orar.service.TodoItemService;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +28,7 @@ public class DeadlineReminderScheduler {
      * Rulează zilnic la ora 08:00 (Europe/Bucharest) și trimite emailuri pentru
      * sarcinile nefinalizate cu deadline AZI sau MÂINE.
      */
-    @Scheduled(cron = "0 * * * * *", zone = "Europe/Bucharest") // ora 08:00:00 zilnic "0 0 8 * * *", in fiecare minut "0 * * * * *"
+    @Scheduled(cron = "0 0 8 * * *", zone = "Europe/Bucharest") // ora 08:00:00 zilnic "0 0 8 * * *", in fiecare minut "0 * * * * *"
     @Transactional
     public void sendDeadlineReminders() {
         LocalDate today = LocalDate.now();
@@ -46,20 +47,27 @@ public class DeadlineReminderScheduler {
         }
 
         for (TodoItem todo : allReminders) {
-            var student = todo.getUser().getStudent();
-            var user = student.getUser();
+            User user = todo.getUser();
             String toEmail = user.getEmail();
 
             if (toEmail == null || toEmail.isBlank()) {
-                log.warn("Studentul {} nu are email configurat. Sarcina ID={} nu primește reminder.", student.getCod(), todo.getId());
+                log.warn("Userul {} nu are email. Sarcina ID={} nu primește reminder.", user.getUsername(), todo.getId());
                 continue;
+            }
+
+            String numeDestinatar = "utilizator";
+
+            if (user.getStudent() != null) {
+                numeDestinatar = user.getStudent().getNume();
+            } else if (user.getProfesor() != null) {
+                numeDestinatar = user.getProfesor().getNume();
             }
 
             LocalDate deadline = todo.getDeadline();
             String zi = deadline.equals(today) ? "azi" : "mâine";
 
             String subject = "[Reminder] Sarcină în termen " + zi + ": " + todo.getTitle();
-            String text = "Salut " + student.getNume() + ",\n\n" +
+            String text = "Salut " + numeDestinatar + ",\n\n" +
                     "Ai o sarcină în to-do list care expiră " + zi + " (" + deadline + "):\n" +
                     "- Titlu: " + todo.getTitle() + "\n" +
                     "- Descriere: " + (todo.getDescription() != null ? todo.getDescription() : "(fără descriere)") + "\n\n" +
