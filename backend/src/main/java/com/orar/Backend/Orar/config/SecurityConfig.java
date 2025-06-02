@@ -61,7 +61,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/specializare/**").hasAnyRole("ADMIN", "PROFESOR")
                         .requestMatchers("/api/todo/**").hasAnyRole("STUDENT", "PROFESOR", "ADMIN")
                         .requestMatchers("/api/test-email/**").permitAll()
-                        .requestMatchers("/api/chat/**").permitAll()
+                        .requestMatchers("/api/chat/**").hasAnyRole("STUDENT", "PROFESOR", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling((exceptions) -> exceptions

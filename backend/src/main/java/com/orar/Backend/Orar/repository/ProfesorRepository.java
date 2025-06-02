@@ -9,4 +9,6 @@ public interface ProfesorRepository extends JpaRepository<Profesor, Integer> {
     Optional<Profesor> findByNumeAndPrenume(String nume, String prenume);
 
     Optional<Profesor> findByNume(String profesor);
+
+    Optional<Profesor> findByUserUsername(String username);
 }
