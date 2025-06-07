@@ -1,0 +1,1153 @@
+---
+# Source: app/charts/mysql/templates/networkpolicy.yaml
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: app-mysql
+  namespace: "licenta"
+  labels:
+    app.kubernetes.io/instance: app
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: mysql
+    app.kubernetes.io/version: 9.3.0
+    helm.sh/chart: mysql-13.0.0
+    app.kubernetes.io/part-of: mysql
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: app
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: mysql
+      app.kubernetes.io/version: 9.3.0
+      helm.sh/chart: mysql-13.0.0
+  policyTypes:
+    - Ingress
+    - Egress
+  egress:
+    - {}
+  ingress:
+    # Allow connection from other cluster pods
+    - ports:
+        - port: 3306
+---
+# Source: app/charts/mysql/templates/primary/pdb.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: app-mysql
+  namespace: "licenta"
+  labels:
+    app.kubernetes.io/instance: app
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: mysql
+    app.kubernetes.io/version: 9.3.0
+    helm.sh/chart: mysql-13.0.0
+    app.kubernetes.io/part-of: mysql
+    app.kubernetes.io/component: primary
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: app
+      app.kubernetes.io/name: mysql
+      app.kubernetes.io/part-of: mysql
+      app.kubernetes.io/component: primary
+---
+# Source: app/charts/mysql/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: app-mysql
+  namespace: "licenta"
+  labels:
+    app.kubernetes.io/instance: app
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: mysql
+    app.kubernetes.io/version: 9.3.0
+    helm.sh/chart: mysql-13.0.0
+    app.kubernetes.io/part-of: mysql
+automountServiceAccountToken: false
+secrets:
+  - name: app-mysql
+---
+# Source: app/charts/mysql/templates/secrets.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-mysql
+  namespace: "licenta"
+  labels:
+    app.kubernetes.io/instance: app
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: mysql
+    app.kubernetes.io/version: 9.3.0
+    helm.sh/chart: mysql-13.0.0
+    app.kubernetes.io/part-of: mysql
+type: Opaque
+data:
+  mysql-root-password: "ekNpbWlWMUlPaw=="
+  mysql-password: "NndZMzBTUnVtTw=="
+---
+# Source: app/charts/mysql/templates/primary/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-mysql
+  namespace: "licenta"
+  labels:
+    app.kubernetes.io/instance: app
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: mysql
+    app.kubernetes.io/version: 9.3.0
+    helm.sh/chart: mysql-13.0.0
+    app.kubernetes.io/part-of: mysql
+    app.kubernetes.io/component: primary
+data:
+  my.cnf: |-
+    [mysqld]
+    authentication_policy='* ,,'
+    skip-name-resolve
+    explicit_defaults_for_timestamp
+    basedir=/opt/bitnami/mysql
+    plugin_dir=/opt/bitnami/mysql/lib/plugin
+    port=3306
+    mysqlx=0
+    mysqlx_port=33060
+    socket=/opt/bitnami/mysql/tmp/mysql.sock
+    datadir=/bitnami/mysql/data
+    tmpdir=/opt/bitnami/mysql/tmp
+    max_allowed_packet=16M
+    bind-address=*
+    pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+    log-error=/opt/bitnami/mysql/logs/mysqld.log
+    character-set-server=UTF8
+    slow_query_log=0
+    long_query_time=10.0
+    
+    [client]
+    port=3306
+    socket=/opt/bitnami/mysql/tmp/mysql.sock
+    default-character-set=UTF8
+    plugin_dir=/opt/bitnami/mysql/lib/plugin
+    
+    [manager]
+    port=3306
+    socket=/opt/bitnami/mysql/tmp/mysql.sock
+    pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+---
+# Source: app/templates/flyway-migrate-job.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: 'app-flyway-scripts'
+data:
+  V1__create_schema.sql: |-
+    CREATE DATABASE IF NOT EXISTS orar CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    USE orar;
+    
+    CREATE TABLE IF NOT EXISTS rol (
+                                       id INT AUTO_INCREMENT PRIMARY KEY,
+                                       name VARCHAR(50) NOT NULL UNIQUE
+    ) ENGINE=InnoDB;
+    
+    CREATE TABLE IF NOT EXISTS `user` (
+                                          id INT AUTO_INCREMENT PRIMARY KEY,
+                                          username VARCHAR(255) NOT NULL UNIQUE,
+                                          password VARCHAR(255) NOT NULL,
+                                          rol_id INT NOT NULL,
+                                          CONSTRAINT fk_user_rol FOREIGN KEY (rol_id) REFERENCES rol(id)
+    ) ENGINE=InnoDB;
+    
+    CREATE TABLE IF NOT EXISTS cladire (
+                                           id INT AUTO_INCREMENT PRIMARY KEY,
+                                           nume VARCHAR(255) NOT NULL,
+                                           adresa VARCHAR(255) NOT NULL,
+                                           UNIQUE KEY uk_cladire (nume, adresa)
+    ) ENGINE=InnoDB;
+    
+    CREATE TABLE IF NOT EXISTS sala (
+                                        id INT AUTO_INCREMENT PRIMARY KEY,
+                                        nume VARCHAR(255) NOT NULL,
+                                        capacitate INT,
+                                        cladire_id INT NOT NULL,
+                                        UNIQUE KEY uk_sala (nume, cladire_id),
+                                        CONSTRAINT fk_sala_cladire FOREIGN KEY (cladire_id) REFERENCES cladire(id)
+    ) ENGINE=InnoDB;
+    
+    CREATE TABLE IF NOT EXISTS materie (
+                                           id INT AUTO_INCREMENT PRIMARY KEY,
+                                           nume VARCHAR(255),
+                                           semestru INT,
+                                           cod VARCHAR(255),
+                                           credite INT
+    ) ENGINE=InnoDB;
+    
+    CREATE TABLE IF NOT EXISTS student (
+                                           id INT AUTO_INCREMENT PRIMARY KEY,
+                                           cod VARCHAR(255),
+                                           nume VARCHAR(255),
+                                           prenume VARCHAR(255),
+                                           an INT,
+                                           grupa VARCHAR(255),
+                                           user_id INT NOT NULL,
+                                           CONSTRAINT fk_student_user FOREIGN KEY (user_id) REFERENCES `user`(id),
+                                           UNIQUE KEY uk_student_user (user_id)
+    ) ENGINE=InnoDB;
+    
+    CREATE TABLE IF NOT EXISTS profesor (
+                                            id INT AUTO_INCREMENT PRIMARY KEY,
+                                            nume VARCHAR(255),
+                                            prenume VARCHAR(255),
+                                            user_id INT NOT NULL,
+                                            CONSTRAINT fk_profesor_user FOREIGN KEY (user_id) REFERENCES `user`(id),
+                                            UNIQUE KEY uk_profesor_user (user_id)
+    ) ENGINE=InnoDB;
+    
+    CREATE TABLE IF NOT EXISTS repartizare_prof (
+                                                    id INT AUTO_INCREMENT PRIMARY KEY,
+                                                    tip VARCHAR(255),
+                                                    profesor_id INT NOT NULL,
+                                                    materie_id INT NOT NULL,
+                                                    CONSTRAINT fk_repartizare_prof_profesor FOREIGN KEY (profesor_id) REFERENCES profesor(id),
+                                                    CONSTRAINT fk_repartizare_prof_materie FOREIGN KEY (materie_id) REFERENCES materie(id)
+    ) ENGINE=InnoDB;
+    
+    CREATE TABLE IF NOT EXISTS orar (
+                                        id INT AUTO_INCREMENT PRIMARY KEY,
+                                        formatia VARCHAR(255),
+                                        ora_inceput INT NOT NULL,
+                                        ora_sfarsit INT NOT NULL,
+                                        grupa VARCHAR(255),
+                                        zi VARCHAR(255),
+                                        frecventa VARCHAR(255),
+                                        sala_id INT NOT NULL,
+                                        repartizare_prof_id INT NOT NULL,
+                                        CONSTRAINT fk_orar_sala FOREIGN KEY (sala_id) REFERENCES sala(id),
+                                        CONSTRAINT fk_orar_repartizare_prof FOREIGN KEY (repartizare_prof_id) REFERENCES repartizare_prof(id)
+    ) ENGINE=InnoDB;
+    
+    CREATE TABLE IF NOT EXISTS catalog_student_materie (
+                                                           id INT AUTO_INCREMENT PRIMARY KEY,
+                                                           nota DOUBLE,
+                                                           semestru INT,
+                                                           student_id INT NOT NULL,
+                                                           materie_id INT NOT NULL,
+                                                           CONSTRAINT fk_catalog_student_materie_student FOREIGN KEY (student_id) REFERENCES student(id),
+                                                           CONSTRAINT fk_catalog_student_materie_materie FOREIGN KEY (materie_id) REFERENCES materie(id)
+    ) ENGINE=InnoDB;
+    
+    -- 1. Creăm mai întâi specializarea, căci curriculum_entry o va referenția
+    CREATE TABLE IF NOT EXISTS specializare (
+                                                id INT AUTO_INCREMENT PRIMARY KEY,
+                                                nume VARCHAR(255) NOT NULL,
+                                                UNIQUE KEY uk_specializare (nume)
+    ) ENGINE=InnoDB;
+    
+    -- 2. Apoi curriculum_entry, cu coloanele FK și constrângerile aferente
+    CREATE TABLE IF NOT EXISTS curriculum_entry (
+                                                    id INT AUTO_INCREMENT PRIMARY KEY,
+                                                    specializare_id INT NOT NULL,
+                                                    materie_id    INT NOT NULL,
+                                                    an            INT NOT NULL,
+                                                    semestru      INT NOT NULL,
+                                                    tip           VARCHAR(255),
+    
+                                                    CONSTRAINT fk_curriculum_entry_specializare
+                                                        FOREIGN KEY (specializare_id) REFERENCES specializare(id),
+    
+                                                    CONSTRAINT fk_curriculum_entry_materie
+                                                        FOREIGN KEY (materie_id)    REFERENCES materie(id)
+    ) ENGINE=InnoDB;
+    
+  V2__seed_initial_data.sql: |-
+    -- Insert buildings (cladire)
+    INSERT INTO cladire (nume, adresa)
+    SELECT 'Facultatea de drept', 'Strada Avram Iancu 11'
+    WHERE NOT EXISTS (
+        SELECT 1 FROM cladire WHERE nume = 'Facultatea de drept' AND adresa = 'Strada Avram Iancu 11'
+    );
+    
+    INSERT INTO cladire (nume, adresa)
+    SELECT 'Cladirea Centrala', 'Strada Mihail Kogalniceanu 1'
+    WHERE NOT EXISTS (
+        SELECT 1 FROM cladire WHERE nume = 'Cladirea Centrala' AND adresa = 'Strada Mihail Kogalniceanu 1'
+    );
+    
+    INSERT INTO cladire (nume, adresa)
+    SELECT 'Mathematica', 'Strada Ploiesti 23-25'
+    WHERE NOT EXISTS (
+        SELECT 1 FROM cladire WHERE nume = 'Mathematica' AND adresa = 'Strada Ploiesti 23-25'
+    );
+    
+    INSERT INTO cladire (nume, adresa)
+    SELECT 'FSEGA', 'Strada Teodor Mihali 58-60'
+    WHERE NOT EXISTS (
+        SELECT 1 FROM cladire WHERE nume = 'FSEGA' AND adresa = 'Strada Teodor Mihali 58-60'
+    );
+    
+    INSERT INTO cladire (nume, adresa)
+    SELECT 'NTT Data', 'Strada Teodor Mihali 58-60'
+    WHERE NOT EXISTS (
+        SELECT 1 FROM cladire WHERE nume = 'NTT Data' AND adresa = 'Strada Teodor Mihali 58-60'
+    );
+    
+    
+    -- (Repeat for other buildings...)
+    
+    -- Insert rooms (sala)
+    -- Insert rooms (sala)
+    INSERT INTO sala (nume, capacitate, cladire_id)
+    SELECT '2\\I', 30, (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
+    WHERE NOT EXISTS (
+        SELECT 1 FROM sala WHERE nume = '2\\I' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
+    );
+    
+    INSERT INTO sala (nume, capacitate, cladire_id)
+    SELECT '5\\I', 25, (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
+    WHERE NOT EXISTS (
+        SELECT 1 FROM sala WHERE nume = '5\\I' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
+    );
+    
+    INSERT INTO sala (nume, capacitate, cladire_id)
+    SELECT '6\\II', 40, (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
+    WHERE NOT EXISTS (
+        SELECT 1 FROM sala WHERE nume = '6\\II' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
+    );
+    
+    INSERT INTO sala (nume, capacitate, cladire_id)
+    SELECT '7\\I', 40, (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
+    WHERE NOT EXISTS (
+        SELECT 1 FROM sala WHERE nume = '7\\I' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
+    );
+    
+    INSERT INTO sala (nume, capacitate, cladire_id)
+    SELECT '9\\I', 40, (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
+    WHERE NOT EXISTS (
+        SELECT 1 FROM sala WHERE nume = '9\\I' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Cladirea Centrala')
+    );
+    
+    INSERT INTO sala (nume, capacitate, cladire_id)
+    SELECT 'A303', 33, (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
+    WHERE NOT EXISTS (
+        SELECT 1 FROM sala WHERE nume = 'A303' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
+    );
+    
+    INSERT INTO sala (nume, capacitate, cladire_id)
+    SELECT 'A308', 33, (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
+    WHERE NOT EXISTS (
+        SELECT 1 FROM sala WHERE nume = 'A308' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
+    );
+    
+    INSERT INTO sala (nume, capacitate, cladire_id)
+    SELECT 'A311', 33, (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
+    WHERE NOT EXISTS (
+        SELECT 1 FROM sala WHERE nume = 'A311' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
+    );
+    
+    INSERT INTO sala (nume, capacitate, cladire_id)
+    SELECT 'A312', 33, (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
+    WHERE NOT EXISTS (
+        SELECT 1 FROM sala WHERE nume = 'A312' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
+    );
+    
+    INSERT INTO sala (nume, capacitate, cladire_id)
+    SELECT 'A313', 33, (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
+    WHERE NOT EXISTS (
+        SELECT 1 FROM sala WHERE nume = 'A313' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Facultatea de drept')
+    );
+    
+    INSERT INTO sala (nume, capacitate, cladire_id)
+    SELECT 'Multimedia', 33, (SELECT id FROM cladire WHERE nume = 'Mathematica')
+    WHERE NOT EXISTS (
+        SELECT 1 FROM sala WHERE nume = 'Multimedia' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Mathematica')
+    );
+    
+    INSERT INTO sala (nume, capacitate, cladire_id)
+    SELECT 'gamma', 33, (SELECT id FROM cladire WHERE nume = 'Mathematica')
+    WHERE NOT EXISTS (
+        SELECT 1 FROM sala WHERE nume = 'gamma' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'Mathematica')
+    );
+    
+    INSERT INTO sala (nume, capacitate, cladire_id)
+    SELECT 'A2', 33, (SELECT id FROM cladire WHERE nume = 'FSEGA')
+    WHERE NOT EXISTS (
+        SELECT 1 FROM sala WHERE nume = 'A2' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'FSEGA')
+    );
+    
+    INSERT INTO sala (nume, capacitate, cladire_id)
+    SELECT 'C310', 33, (SELECT id FROM cladire WHERE nume = 'FSEGA')
+    WHERE NOT EXISTS (
+        SELECT 1 FROM sala WHERE nume = 'C310' AND cladire_id = (SELECT id FROM cladire WHERE nume = 'FSEGA')
+    );
+    
+    
+    -- Insert subjects (materii)
+    INSERT INTO materie (nume, semestru, cod, credite)
+    SELECT 'OOP', 1, 'OOP101', 6
+    WHERE NOT EXISTS (
+        SELECT 1 FROM materie WHERE nume = 'OOP'
+    );
+    
+    INSERT INTO materie (nume, semestru, cod, credite)
+    SELECT 'LFTC', 1, 'LFTC102', 6
+    WHERE NOT EXISTS (
+        SELECT 1 FROM materie WHERE nume = 'LFTC'
+    );
+    
+    INSERT INTO materie (nume, semestru, cod, credite)
+    SELECT 'Mecanica', 1, 'MEC103', 6
+    WHERE NOT EXISTS (
+        SELECT 1 FROM materie WHERE nume = 'Mecanica'
+    );
+    
+    INSERT INTO materie (nume, semestru, cod, credite)
+    SELECT 'Algebra1', 1, 'ALG101', 6
+    WHERE NOT EXISTS (
+        SELECT 1 FROM materie WHERE nume = 'Algebra1'
+    );
+    
+    INSERT INTO materie (nume, semestru, cod, credite)
+    SELECT 'Algebra2', 2, 'ALG102', 6
+    WHERE NOT EXISTS (
+        SELECT 1 FROM materie WHERE nume = 'Algebra2'
+    );
+    
+    INSERT INTO materie (nume, semestru, cod, credite)
+    SELECT 'Logica matematica', 1, 'LOG104', 6
+    WHERE NOT EXISTS (
+        SELECT 1 FROM materie WHERE nume = 'Logica matematica'
+    );
+    
+    INSERT INTO materie (nume, semestru, cod, credite)
+    SELECT 'Geometrie1', 1, 'GEO101', 6
+    WHERE NOT EXISTS (
+        SELECT 1 FROM materie WHERE nume = 'Geometrie1'
+    );
+    
+    INSERT INTO materie (nume, semestru, cod, credite)
+    SELECT 'Geometrie2', 2, 'GEO102', 6
+    WHERE NOT EXISTS (
+        SELECT 1 FROM materie WHERE nume = 'Geometrie2'
+    );
+    
+    INSERT INTO materie (nume, semestru, cod, credite)
+    SELECT 'Analiza numerica', 2, 'AN105', 6
+    WHERE NOT EXISTS (
+        SELECT 1 FROM materie WHERE nume = 'Analiza numerica'
+    );
+    
+    INSERT INTO materie (nume, semestru, cod, credite)
+    SELECT 'Analiza complexa', 3, 'AC106', 6
+    WHERE NOT EXISTS (
+        SELECT 1 FROM materie WHERE nume = 'Analiza complexa'
+    );
+    
+    INSERT INTO materie (nume, semestru, cod, credite)
+    SELECT 'Analiza reala1', 3, 'AR107', 6
+    WHERE NOT EXISTS (
+        SELECT 1 FROM materie WHERE nume = 'Analiza reala1'
+    );
+    
+    INSERT INTO materie (nume, semestru, cod, credite)
+    SELECT 'Analiza reala2', 4, 'AR108', 6
+    WHERE NOT EXISTS (
+        SELECT 1 FROM materie WHERE nume = 'Analiza reala2'
+    );
+    
+    
+    -- Insert roles (rol)
+    INSERT INTO rol (name)
+    SELECT 'ADMIN'
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM rol
+        WHERE name = 'ADMIN'
+    );
+    
+    INSERT INTO rol (name)
+    SELECT 'STUDENT'
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM rol
+        WHERE name = 'STUDENT'
+    );
+    
+    INSERT INTO rol (name)
+    SELECT 'PROFESOR'
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM rol
+        WHERE name = 'PROFESOR'
+    );
+    
+    -- Insert a user (user)
+    INSERT INTO user (username, password, rol_id)
+    SELECT 'admin1', '$2a$12$G0OuquMudPvJljVVMUEXLeO18MYnikPuun6S3OE97AoVWGMt.oCrm', 1
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM user
+        WHERE username = 'admin1'
+    );
+    
+  V3__add_specializare_to_student.sql: |-
+    ALTER TABLE student
+        ADD COLUMN specializare_id INT;
+    
+    ALTER TABLE student
+        ADD CONSTRAINT fk_student_specializare
+            FOREIGN KEY (specializare_id)
+                REFERENCES specializare(id);
+    
+  V4__rename_field.sql: |-
+    ALTER TABLE specializare
+        CHANGE COLUMN nume specializare VARCHAR(255) NOT NULL;
+    
+  V5__add_an_to_materie.sql: |-
+    ALTER TABLE materie
+        ADD COLUMN an INT NOT NULL DEFAULT 1;
+    
+    UPDATE materie
+    SET an = CASE
+                 WHEN semestru IN (1,2) THEN 1
+                 WHEN semestru IN (3,4) THEN 2
+                 WHEN semestru IN (5,6) THEN 3
+                 ELSE 1
+        END;
+    
+    ALTER TABLE materie
+        ALTER COLUMN an DROP DEFAULT;
+  V6__add_status_to_csm.sql: |-
+    ALTER TABLE catalog_student_materie
+        ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'ACTIV';
+    
+    UPDATE catalog_student_materie
+    SET status = 'ACTIV'
+    WHERE status IS NULL;
+    
+    ALTER TABLE catalog_student_materie
+        ALTER COLUMN status DROP DEFAULT;
+    
+  V7__seed_specializari.sql: |-
+    INSERT INTO specializare(specializare)
+    SELECT * FROM (SELECT 'Informatica') AS tmp
+    WHERE NOT EXISTS (
+        SELECT 1 FROM specializare WHERE specializare = 'Informatica'
+    );
+    
+    INSERT INTO specializare(specializare)
+    SELECT * FROM (SELECT 'Matematica') AS tmp
+    WHERE NOT EXISTS (
+        SELECT 1 FROM specializare WHERE specializare = 'Matematica'
+    );
+    
+    INSERT INTO specializare(specializare)
+    SELECT * FROM (SELECT 'Matematica-Informatica') AS tmp
+    WHERE NOT EXISTS (
+        SELECT 1 FROM specializare WHERE specializare = 'Matematica-Informatica'
+    );
+    
+  V8__seed_curriculum_entry.sql: |-
+    -- Informatica - OBLIGATORII
+    INSERT INTO curriculum_entry (specializare_id, materie_id, an, semestru, tip)
+    SELECT s.id, m.id, m.an, m.semestru, 'OBLIGATORIE'
+    FROM specializare s, materie m
+    WHERE s.specializare = 'Informatica'
+      AND m.nume IN ('OOP', 'LFTC', 'Algebra1', 'Algebra2')
+      AND NOT EXISTS (
+        SELECT 1 FROM curriculum_entry ce WHERE ce.specializare_id = s.id AND ce.materie_id = m.id
+    );
+    
+    -- Informatica - OPTIONALE
+    INSERT INTO curriculum_entry (specializare_id, materie_id, an, semestru, tip)
+    SELECT s.id, m.id, m.an, m.semestru, 'OPTIONALA'
+    FROM specializare s, materie m
+    WHERE s.specializare = 'Informatica'
+      AND m.nume IN ('Geometrie1', 'Geometrie2')
+      AND NOT EXISTS (
+        SELECT 1 FROM curriculum_entry ce WHERE ce.specializare_id = s.id AND ce.materie_id = m.id
+    );
+    
+    -- Matematica - OBLIGATORII
+    INSERT INTO curriculum_entry (specializare_id, materie_id, an, semestru, tip)
+    SELECT s.id, m.id, m.an, m.semestru, 'OBLIGATORIE'
+    FROM specializare s, materie m
+    WHERE s.specializare = 'Matematica'
+      AND m.nume IN ('Algebra1', 'Algebra2', 'Geometrie1', 'Geometrie2')
+      AND NOT EXISTS (
+        SELECT 1 FROM curriculum_entry ce WHERE ce.specializare_id = s.id AND ce.materie_id = m.id
+    );
+    
+    -- Matematica - FACULTATIVE
+    INSERT INTO curriculum_entry (specializare_id, materie_id, an, semestru, tip)
+    SELECT s.id, m.id, m.an, m.semestru, 'FACULTATIVA'
+    FROM specializare s, materie m
+    WHERE s.specializare = 'Matematica'
+      AND m.nume IN ('Logica matematica')
+      AND NOT EXISTS (
+        SELECT 1 FROM curriculum_entry ce WHERE ce.specializare_id = s.id AND ce.materie_id = m.id
+    );
+    
+    -- Matematica-Informatica - OBLIGATORII
+    INSERT INTO curriculum_entry (specializare_id, materie_id, an, semestru, tip)
+    SELECT s.id, m.id, m.an, m.semestru, 'OBLIGATORIE'
+    FROM specializare s, materie m
+    WHERE s.specializare = 'Matematica-Informatica'
+      AND m.nume IN ('LFTC', 'Algebra1', 'Geometrie1')
+      AND NOT EXISTS (
+        SELECT 1 FROM curriculum_entry ce WHERE ce.specializare_id = s.id AND ce.materie_id = m.id
+    );
+    
+    -- Matematica-Informatica - OPTIONALE
+    INSERT INTO curriculum_entry (specializare_id, materie_id, an, semestru, tip)
+    SELECT s.id, m.id, m.an, m.semestru, 'OPTIONALA'
+    FROM specializare s, materie m
+    WHERE s.specializare = 'Matematica-Informatica'
+      AND m.nume IN ('OOP', 'Analiza numerica')
+      AND NOT EXISTS (
+        SELECT 1 FROM curriculum_entry ce WHERE ce.specializare_id = s.id AND ce.materie_id = m.id
+    );
+    
+  V9__seed_curriculum_entry2.sql: |-
+    -- =========================================
+    --  INFORMATICA – ANUL 2
+    -- =========================================
+    -- Obligatorii
+    INSERT INTO curriculum_entry (specializare_id, materie_id, an, semestru, tip)
+    SELECT s.id, m.id, 2, m.semestru, 'OBLIGATORIE'
+    FROM specializare s
+             JOIN materie m ON m.nume IN ('Algebra2','Geometrie2','Analiza numerica')
+    WHERE s.specializare = 'Informatica'
+      AND NOT EXISTS (
+        SELECT 1
+        FROM curriculum_entry ce
+        WHERE ce.specializare_id = s.id
+          AND ce.materie_id       = m.id
+          AND ce.an               = 2
+    );
+    
+    -- Opționale
+    INSERT INTO curriculum_entry (specializare_id, materie_id, an, semestru, tip)
+    SELECT s.id, m.id, 2, m.semestru, 'OPTIONALA'
+    FROM specializare s
+             JOIN materie m ON m.nume IN ('Mecanica','Logica matematica')
+    WHERE s.specializare = 'Informatica'
+      AND NOT EXISTS (
+        SELECT 1
+        FROM curriculum_entry ce
+        WHERE ce.specializare_id = s.id
+          AND ce.materie_id       = m.id
+          AND ce.an               = 2
+    );
+    
+    -- =========================================
+    --  INFORMATICA – ANUL 3
+    -- =========================================
+    -- Obligatorii
+    INSERT INTO curriculum_entry (specializare_id, materie_id, an, semestru, tip)
+    SELECT s.id, m.id, 3, m.semestru, 'OBLIGATORIE'
+    FROM specializare s
+             JOIN materie m ON m.nume IN ('Analiza complexa','Analiza reala1')
+    WHERE s.specializare = 'Informatica'
+      AND NOT EXISTS (
+        SELECT 1
+        FROM curriculum_entry ce
+        WHERE ce.specializare_id = s.id
+          AND ce.materie_id       = m.id
+          AND ce.an               = 3
+    );
+    
+    -- =========================================
+    --  MATEMATICA – ANUL 2
+    -- =========================================
+    -- Obligatorii
+    INSERT INTO curriculum_entry (specializare_id, materie_id, an, semestru, tip)
+    SELECT s.id, m.id, 2, m.semestru, 'OBLIGATORIE'
+    FROM specializare s
+             JOIN materie m ON m.nume IN ('Algebra2','Geometrie2','Analiza numerica')
+    WHERE s.specializare = 'Matematica'
+      AND NOT EXISTS (
+        SELECT 1
+        FROM curriculum_entry ce
+        WHERE ce.specializare_id = s.id
+          AND ce.materie_id       = m.id
+          AND ce.an               = 2
+    );
+    
+    -- Opționale
+    INSERT INTO curriculum_entry (specializare_id, materie_id, an, semestru, tip)
+    SELECT s.id, m.id, 2, m.semestru, 'OPTIONALA'
+    FROM specializare s
+             JOIN materie m ON m.nume IN ('Logica matematica','Mecanica')
+    WHERE s.specializare = 'Matematica'
+      AND NOT EXISTS (
+        SELECT 1
+        FROM curriculum_entry ce
+        WHERE ce.specializare_id = s.id
+          AND ce.materie_id       = m.id
+          AND ce.an               = 2
+    );
+    
+    -- =========================================
+    --  MATEMATICA – ANUL 3
+    -- =========================================
+    -- Obligatorii
+    INSERT INTO curriculum_entry (specializare_id, materie_id, an, semestru, tip)
+    SELECT s.id, m.id, 3, m.semestru, 'OBLIGATORIE'
+    FROM specializare s
+             JOIN materie m ON m.nume IN ('Analiza complexa','Analiza reala1')
+    WHERE s.specializare = 'Matematica'
+      AND NOT EXISTS (
+        SELECT 1
+        FROM curriculum_entry ce
+        WHERE ce.specializare_id = s.id
+          AND ce.materie_id       = m.id
+          AND ce.an               = 3
+    );
+    
+    -- =========================================
+    --  MATEMATICA-INFORMATICA – ANUL 2
+    -- =========================================
+    -- Obligatorii
+    INSERT INTO curriculum_entry (specializare_id, materie_id, an, semestru, tip)
+    SELECT s.id, m.id, 2, m.semestru, 'OBLIGATORIE'
+    FROM specializare s
+             JOIN materie m ON m.nume IN ('Algebra2','Geometrie2','Analiza numerica')
+    WHERE s.specializare = 'Matematica-Informatica'
+      AND NOT EXISTS (
+        SELECT 1
+        FROM curriculum_entry ce
+        WHERE ce.specializare_id = s.id
+          AND ce.materie_id       = m.id
+          AND ce.an               = 2
+    );
+    
+    -- Opționale
+    INSERT INTO curriculum_entry (specializare_id, materie_id, an, semestru, tip)
+    SELECT s.id, m.id, 2, m.semestru, 'OPTIONALA'
+    FROM specializare s
+             JOIN materie m ON m.nume IN ('OOP','Mecanica')
+    WHERE s.specializare = 'Matematica-Informatica'
+      AND NOT EXISTS (
+        SELECT 1
+        FROM curriculum_entry ce
+        WHERE ce.specializare_id = s.id
+          AND ce.materie_id       = m.id
+          AND ce.an               = 2
+    );
+    
+    -- =========================================
+    --  MATEMATICA-INFORMATICA – ANUL 3
+    -- =========================================
+    -- Obligatorii
+    INSERT INTO curriculum_entry (specializare_id, materie_id, an, semestru, tip)
+    SELECT s.id, m.id, 3, m.semestru, 'OBLIGATORIE'
+    FROM specializare s
+             JOIN materie m ON m.nume IN ('Analiza complexa','Analiza reala1')
+    WHERE s.specializare = 'Matematica-Informatica'
+      AND NOT EXISTS (
+        SELECT 1
+        FROM curriculum_entry ce
+        WHERE ce.specializare_id = s.id
+          AND ce.materie_id       = m.id
+          AND ce.an               = 3
+    );
+---
+# Source: app/charts/mysql/templates/primary/svc-headless.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-mysql-headless
+  namespace: "licenta"
+  labels:
+    app.kubernetes.io/instance: app
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: mysql
+    app.kubernetes.io/version: 9.3.0
+    helm.sh/chart: mysql-13.0.0
+    app.kubernetes.io/part-of: mysql
+    app.kubernetes.io/component: primary
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: mysql
+      port: 3306
+      targetPort: mysql
+  selector:
+    app.kubernetes.io/instance: app
+    app.kubernetes.io/name: mysql
+    app.kubernetes.io/component: primary
+---
+# Source: app/charts/mysql/templates/primary/svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-mysql
+  namespace: "licenta"
+  labels:
+    app.kubernetes.io/instance: app
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: mysql
+    app.kubernetes.io/version: 9.3.0
+    helm.sh/chart: mysql-13.0.0
+    app.kubernetes.io/part-of: mysql
+    app.kubernetes.io/component: primary
+spec:
+  type: ClusterIP
+  sessionAffinity: None  
+  ports:
+    - name: mysql
+      port: 3306
+      protocol: TCP
+      targetPort: mysql
+      nodePort: null
+  selector:
+    app.kubernetes.io/instance: app
+    app.kubernetes.io/name: mysql
+    app.kubernetes.io/part-of: mysql
+    app.kubernetes.io/component: primary
+---
+# Source: app/templates/mysql-deployment.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-mysql
+  labels:
+    app: app-mysql
+spec:
+  type: ClusterIP
+  selector:
+    app: app-mysql
+  ports:
+    - name: mysql
+      port: 3306
+      targetPort: 3306
+---
+# Source: app/charts/mysql/templates/primary/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: app-mysql
+  namespace: "licenta"
+  labels:
+    app.kubernetes.io/instance: app
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: mysql
+    app.kubernetes.io/version: 9.3.0
+    helm.sh/chart: mysql-13.0.0
+    app.kubernetes.io/part-of: mysql
+    app.kubernetes.io/component: primary
+spec:
+  replicas: 1
+  podManagementPolicy: ""
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: app
+      app.kubernetes.io/name: mysql
+      app.kubernetes.io/part-of: mysql
+      app.kubernetes.io/component: primary
+  serviceName: app-mysql-headless
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/configuration: 653a023058cbfa6d3afb9fd83d0d19d96b9ce1f40f9a61f8d492ff3ff05bc22e
+      labels:
+        app.kubernetes.io/instance: app
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: mysql
+        app.kubernetes.io/version: 9.3.0
+        helm.sh/chart: mysql-13.0.0
+        app.kubernetes.io/part-of: mysql
+        app.kubernetes.io/component: primary
+    spec:
+      serviceAccountName: app-mysql
+      
+      automountServiceAccountToken: false
+      affinity:
+        podAffinity:
+          
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/instance: app
+                    app.kubernetes.io/name: mysql
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        nodeAffinity:
+          
+      securityContext:
+        fsGroup: 1001
+        fsGroupChangePolicy: Always
+        supplementalGroups: []
+        sysctls: []
+      initContainers:
+        - name: preserve-logs-symlinks
+          image: docker.io/bitnami/mysql:9.3.0-debian-12-r0
+          imagePullPolicy: "IfNotPresent"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 1001
+            runAsNonRoot: true
+            runAsUser: 1001
+            seLinuxOptions: {}
+            seccompProfile:
+              type: RuntimeDefault
+          resources:
+            limits:
+              cpu: 750m
+              ephemeral-storage: 2Gi
+              memory: 768Mi
+            requests:
+              cpu: 500m
+              ephemeral-storage: 50Mi
+              memory: 512Mi
+          command:
+            - /bin/bash
+          args:
+            - -ec
+            - |
+              #!/bin/bash
+
+              . /opt/bitnami/scripts/libfs.sh
+              # We copy the logs folder because it has symlinks to stdout and stderr
+              if ! is_dir_empty /opt/bitnami/mysql/logs; then
+                cp -r /opt/bitnami/mysql/logs /emptydir/app-logs-dir
+              fi
+          volumeMounts:
+            - name: empty-dir
+              mountPath: /emptydir
+      containers:
+        - name: mysql
+          image: docker.io/bitnami/mysql:9.3.0-debian-12-r0
+          imagePullPolicy: "IfNotPresent"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 1001
+            runAsNonRoot: true
+            runAsUser: 1001
+            seLinuxOptions: {}
+            seccompProfile:
+              type: RuntimeDefault
+          env:
+            - name: BITNAMI_DEBUG
+              value: "false"
+            - name: MYSQL_ROOT_PASSWORD_FILE
+              value: /opt/bitnami/mysql/secrets/mysql-root-password
+            - name: MYSQL_ENABLE_SSL
+              value: "no"
+            - name: MYSQL_PORT
+              value: "3306"
+            - name: MYSQL_DATABASE
+              value: "my_database"
+          envFrom:
+          ports:
+            - name: mysql
+              containerPort: 3306
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - |
+                  password_aux="${MYSQL_ROOT_PASSWORD:-}"
+                  if [[ -f "${MYSQL_ROOT_PASSWORD_FILE:-}" ]]; then
+                      password_aux=$(cat "$MYSQL_ROOT_PASSWORD_FILE")
+                  fi
+                  mysqladmin status -uroot -p"${password_aux}"
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - |
+                  password_aux="${MYSQL_ROOT_PASSWORD:-}"
+                  if [[ -f "${MYSQL_ROOT_PASSWORD_FILE:-}" ]]; then
+                      password_aux=$(cat "$MYSQL_ROOT_PASSWORD_FILE")
+                  fi
+                  mysqladmin ping -uroot -p"${password_aux}" | grep "mysqld is alive"
+          startupProbe:
+            failureThreshold: 10
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - |
+                  password_aux="${MYSQL_ROOT_PASSWORD:-}"
+                  if [[ -f "${MYSQL_ROOT_PASSWORD_FILE:-}" ]]; then
+                      password_aux=$(cat "$MYSQL_ROOT_PASSWORD_FILE")
+                  fi
+                  mysqladmin ping -uroot -p"${password_aux}" | grep "mysqld is alive"
+          resources:
+            limits:
+              cpu: 750m
+              ephemeral-storage: 2Gi
+              memory: 768Mi
+            requests:
+              cpu: 500m
+              ephemeral-storage: 50Mi
+              memory: 512Mi
+          volumeMounts:
+            - name: data
+              mountPath: /bitnami/mysql
+            - name: empty-dir
+              mountPath: /tmp
+              subPath: tmp-dir
+            - name: empty-dir
+              mountPath: /opt/bitnami/mysql/conf
+              subPath: app-conf-dir
+            - name: empty-dir
+              mountPath: /opt/bitnami/mysql/tmp
+              subPath: app-tmp-dir
+            - name: empty-dir
+              mountPath: /opt/bitnami/mysql/logs
+              subPath: app-logs-dir
+            - name: config
+              mountPath: /opt/bitnami/mysql/conf/my.cnf
+              subPath: my.cnf
+            - name: mysql-credentials
+              mountPath: /opt/bitnami/mysql/secrets/
+      volumes:
+        - name: config
+          configMap:
+            name: app-mysql
+        - name: mysql-credentials
+          secret:
+            secretName: app-mysql
+            items:
+              - key: mysql-root-password
+                path: mysql-root-password
+              - key: mysql-password
+                path: mysql-password
+        - name: empty-dir
+          emptyDir: {}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          app.kubernetes.io/instance: app
+          app.kubernetes.io/name: mysql
+          app.kubernetes.io/component: primary
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "8Gi"
+---
+# Source: app/templates/mysql-deployment.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: app-mysql
+  labels:
+    app: app-mysql
+spec:
+  serviceName: app-mysql
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-mysql
+  template:
+    metadata:
+      labels:
+        app: app-mysql
+    spec:
+      containers:
+        - name: app-mysql
+          image: bitnami/mysql:9.3.0-debian-12-r0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "3676"
+            - name: MYSQL_DATABASE
+              value: "orar"
+            - name: MYSQL_USER
+              value: "root"
+            - name: MYSQL_PASSWORD
+              value: "3676"
+          ports:
+            - name: mysql
+              containerPort: 3306
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /bitnami/mysql
+          readinessProbe:
+            exec:
+              command:
+                - mysqladmin
+                - ping
+                - "-h"
+                - "127.0.0.1"
+                - "-u"
+                - "root"
+                - "-p3676"
+            initialDelaySeconds: 5
+            periodSeconds: 10
+  volumeClaimTemplates:
+    - metadata:
+        name: mysql-data
+        labels:
+          app: app-mysql
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+---
+# Source: app/templates/flyway-migrate-job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: app-flyway
+spec:
+  backoffLimit: 4
+  template:
+    metadata:
+      labels:
+        app: app-flyway
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: flyway
+          image: "flyway/flyway:9.22.3"
+          command:
+            - "flyway"
+            - "migrate"
+            - "-url=jdbc:mysql://app-mysql:3306/orar"
+            - "-user=root"
+            - "-password=3676"
+          volumeMounts:
+            - name: flyway-scripts
+              mountPath: /flyway/sql
+      volumes:
+        - name: flyway-scripts
+          configMap:
+            name: 'app-flyway-scripts'
