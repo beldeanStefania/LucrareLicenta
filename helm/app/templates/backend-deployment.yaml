@@ -1,3 +1,5 @@
+{{ if .Values.backend.enabled }}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,20 +19,28 @@ spec:
       containers:
         - name: backend
           image: "{{ .Values.image.backend.repository }}:{{ .Values.image.backend.tag }}"
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           env:
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ .Values.mysql.auth.database }}
+              value: "jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ .Values.mysql.database }}"
             - name: SPRING_DATASOURCE_USERNAME
-              value: {{ .Values.mysql.auth.username }}
+              value: "{{ .Values.mysql.username }}"
             - name: SPRING_DATASOURCE_PASSWORD
-              value: {{ .Values.mysql.auth.password }}
-          readinessProbe:
-            httpGet:
-              path: /actuator/health
-              port: 8080
-          livenessProbe:
-            httpGet:
-              path: /actuator/health
-              port: 8080
+              value: "{{ .Values.mysql.password }}"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-backend
+  labels:
+    app: {{ .Release.Name }}-backend
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Release.Name }}-backend
+  ports:
+    - port: 8080
+      targetPort: 8080
+{{ end }}

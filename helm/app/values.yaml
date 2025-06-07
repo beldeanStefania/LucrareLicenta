@@ -1,22 +1,36 @@
 image:
   backend:
     repository: 863518419988.dkr.ecr.eu-west-1.amazonaws.com/app-backend
-    tag : latest
+    tag: latest
 
   frontend:
     repository: 863518419988.dkr.ecr.eu-west-1.amazonaws.com/app-frontend
-    tag : latest
+    tag: latest
 
 frontend:
-  replicaCount: 2
+  enabled: false
+  replicaCount: 1
 
 backend:
-  replicaCount: 2
+  enabled: false
+  replicaCount: 1
 
 mysql:
-  enabled: false
-  auth:
-    rootPassword: <MYSQL_ROOT_PASSWORD>
-    username: <MYSQL_USER>
-    password: <MYSQL_PASSWORD>
-    database: orar
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: bitnami/mysql
+    tag: "9.3.0-debian-12-r0"
+  rootPassword: "3676"
+  username: "root"
+  password: "3676"
+  database: "orar"
+  persistence:
+    enabled: true
+    storageClass: gp2
+    size: 10Gi
+
+flyway:
+  image:
+    repository: flyway/flyway
+    tag: "9.22.3"

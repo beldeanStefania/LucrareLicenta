@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-flyway
+spec:
+  backoffLimit: 4
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-flyway
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: flyway
+          image: "{{ .Values.flyway.image.repository }}:{{ .Values.flyway.image.tag }}"
+          command:
+            - "flyway"
+            - "migrate"
+            - "-url=jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ .Values.mysql.database }}"
+            - "-user={{ .Values.mysql.username }}"
+            - "-password={{ .Values.mysql.password }}"
+          volumeMounts:
+            - name: flyway-scripts
+              mountPath: /flyway/sql
+      volumes:
+        - name: flyway-scripts
+          configMap:
+            name: '{{ .Release.Name }}-flyway-scripts'
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: '{{ .Release.Name }}-flyway-scripts'
+data:
+{{- range $path, $bytes := .Files.Glob "sql/*.sql" }}
+  {{ base $path }}: |-
+{{ $bytes | toString | indent 4 }}
+{{- end }}
