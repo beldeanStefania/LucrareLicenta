@@ -7,7 +7,6 @@ on:
   workflow_dispatch:
 
 permissions:
-  # allow OIDC-based role assumptionsa
   id-token: write
   contents: read
 
@@ -16,6 +15,8 @@ env:
   AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
   BACKEND_REPO: app-backend
   FRONTEND_REPO: app-frontend
+  EKS_CLUSTER_NAME: unitrack-app
+  K8S_NAMESPACE: default
 
 jobs:
   build-and-push:
@@ -52,3 +53,32 @@ jobs:
           docker tag $FRONTEND_REPO:latest \
             $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$FRONTEND_REPO:latest
           docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$FRONTEND_REPO:latest
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: "stable"
+
+      - name: Update kubeconfig for EKS
+        run: |
+          aws eks update-kubeconfig \
+            --region $AWS_REGION \
+            --name  $EKS_CLUSTER_NAME
+
+      - name: Deploy backend (rolling update)
+        run: |
+          kubectl set image deployment/app-backend \
+            backend=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/app-backend:latest \
+            --namespace $K8S_NAMESPACE \
+            --record
+          kubectl rollout status deployment/app-backend \
+            --namespace $K8S_NAMESPACE
+
+      - name: Deploy frontend (rolling update)
+        run: |
+          kubectl set image deployment/app-frontend \
+            frontend=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/app-frontend:latest \
+            --namespace $K8S_NAMESPACE \
+            --record
+          kubectl rollout status deployment/app-frontend \
+            --namespace $K8S_NAMESPACE

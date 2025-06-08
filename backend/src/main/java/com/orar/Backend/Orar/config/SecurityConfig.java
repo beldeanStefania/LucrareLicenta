@@ -42,7 +42,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
-                                "/swagger-ui.html", "/webjars/**", "/v3/api-docs/swagger-config").permitAll()
+                                "/swagger-ui.html", "/webjars/**", "/v3/api-docs/swagger-config")
+                        .permitAll()
                         .requestMatchers("/api/student/getAllStudents").hasRole("ADMIN")
                         .requestMatchers("/api/repartizareProf/**").hasAnyRole("ADMIN", "PROFESOR")
                         .requestMatchers("/api/student/**").hasAnyRole("ADMIN", "STUDENT", "PROFESOR")
@@ -62,14 +63,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/todo/**").hasAnyRole("STUDENT", "PROFESOR", "ADMIN")
                         .requestMatchers("/api/test-email/**").permitAll()
                         .requestMatchers("/api/chat/**").hasAnyRole("STUDENT", "PROFESOR", "ADMIN")
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 .exceptionHandling((exceptions) -> exceptions
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
                             System.out.println("Access Denied: " + accessDeniedException.getMessage());
                             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
-                        })
-                )
+                        }))
                 .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -78,7 +77,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
@@ -90,7 +90,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:*", "http://127.0.0.1:*"));
+        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:*", "http://127.0.0.1:*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);

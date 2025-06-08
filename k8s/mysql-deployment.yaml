@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: app-mysql
+  labels:
+    app: app-mysql
+spec:
+  serviceName: app-mysql
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-mysql
+  template:
+    metadata:
+      labels:
+        app: app-mysql
+    spec:
+      containers:
+        - name: app-mysql
+          image: bitnami/mysql:9.3.0-debian-12-r0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "3676"
+            - name: MYSQL_DATABASE
+              value: "orar"
+          ports:
+            - name: mysql
+              containerPort: 3306
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /bitnami/mysql
+          readinessProbe:
+            exec:
+              command:
+                - mysqladmin
+                - ping
+                - "-h"
+                - "127.0.0.1"
+                - "-u"
+                - "root"
+                - "-p3676"
+            initialDelaySeconds: 5
+            periodSeconds: 10
+  volumeClaimTemplates:
+    - metadata:
+        name: mysql-data
+        labels:
+          app: app-mysql
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-mysql
+  labels:
+    app: app-mysql
+spec:
+  type: ClusterIP
+  selector:
+    app: app-mysql
+  ports:
+    - name: mysql
+      port: 3306
+      targetPort: 3306
