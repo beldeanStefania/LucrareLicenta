@@ -1,0 +1,33 @@
+name: EKS Bootstrap
+
+on:
+  workflow_dispatch:
+
+jobs:
+  map-github-role:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Configure AWS credentials as Cluster-Admin
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: arn:aws:iam::863518419988:role/YourClusterAdminRole
+          aws-region: eu-west-1
+
+      - name: Install eksctl
+        run: |
+          curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" \
+          | tar xz -C /usr/local/bin
+
+      - name: Map GitHubActionsEKSDeploy in aws-auth
+        run: |
+          eksctl create iamidentitymapping \
+            --cluster unitrack \
+            --region eu-west-1 \
+            --arn    arn:aws:iam::863518419988:role/GitHubActionsEKSDeploy \
+            --username github-actions \
+            --group   system:masters \
+            --cluster-iam-user
