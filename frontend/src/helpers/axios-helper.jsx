@@ -13,7 +13,7 @@ export const getAuthToken = () => {
 
 export const decodeToken = (token) => {
   if (!token) return null;
-  
+
   // Check if token has a valid format (at least has two dots for three parts)
   if (!token.includes('.') || token.split('.').length !== 3) {
     console.error("Invalid token format - must have header, payload, and signature parts");
@@ -45,10 +45,10 @@ export const setAuthHeader = (token) => {
 };
 
 
-axios.defaults.baseURL = "http://localhost:8080";
+axios.defaults.baseURL = "http://18.201.125.255:30081";
 axios.defaults.headers.post["Content-Type"] = "application/json";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://18.201.125.255:30081";
 
 export function request(method, url, data = null) {
   const token = window.localStorage.getItem("auth_token");

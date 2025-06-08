@@ -29,9 +29,10 @@ metadata:
   labels:
     app: app-frontend
 spec:
-  type: ClusterIP
+  type: Nodeort
   selector:
     app: app-frontend
   ports:
     - port: 80
       targetPort: 80
+      nodePort: 30080

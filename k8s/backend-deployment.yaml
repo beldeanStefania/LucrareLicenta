@@ -35,9 +35,10 @@ metadata:
   labels:
     app: app-backend
 spec:
-  type: ClusterIP
+  type: NodePort
   selector:
     app: app-backend
   ports:
     - port: 8080
       targetPort: 8080
+      nodePort: 30081
