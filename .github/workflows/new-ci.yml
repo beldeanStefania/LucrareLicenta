@@ -65,6 +65,15 @@ jobs:
             --name $EKS_CLUSTER_NAME \
             --region $AWS_REGION
 
+      - name: Debug AWS caller identity
+        run: aws sts get-caller-identity
+
+      - name: Debug EKS token fetch
+        run: aws eks get-token \
+          --cluster-name ${{ env.EKS_CLUSTER_NAME }} \
+          --region      ${{ env.AWS_REGION }} \
+          --output      json
+
       - name: Show kubeconfig & nodes
         run: |
           kubectl config view
