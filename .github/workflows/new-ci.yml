@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: New CI/CD Pipeline
 
 on:
   push:
@@ -62,15 +62,14 @@ jobs:
       - name: Update kubeconfig for EKS
         run: |
           aws eks update-kubeconfig \
-            --region $AWS_REGION \
-            --name  $EKS_CLUSTER_NAME
+            --name $EKS_CLUSTER_NAME \
+            --region $AWS_REGION
 
       - name: Deploy backend (rolling update)
         run: |
           kubectl set image deployment/app-backend \
             backend=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/app-backend:latest \
             --namespace $K8S_NAMESPACE \
-            --record
           kubectl rollout status deployment/app-backend \
             --namespace $K8S_NAMESPACE
 
@@ -79,6 +78,5 @@ jobs:
           kubectl set image deployment/app-frontend \
             frontend=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/app-frontend:latest \
             --namespace $K8S_NAMESPACE \
-            --record
           kubectl rollout status deployment/app-frontend \
             --namespace $K8S_NAMESPACE
