@@ -29,5 +29,4 @@ jobs:
             --region eu-west-1 \
             --arn    arn:aws:iam::863518419988:role/GitHubActionsEKSDeploy \
             --username github-actions \
-            --group   system:masters \
-            --cluster-iam-user
+            --group   system:masters
