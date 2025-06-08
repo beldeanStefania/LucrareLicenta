@@ -34,6 +34,22 @@ jobs:
           role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/GitHubActionsEKSDeploy
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Install eksctl
+        run: |
+          curl -sSL \
+            "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" \
+            | tar xz -C /usr/local/bin
+
+      - name: Map GitHubActionsEKSDeploy into aws-auth
+        run: |
+          eksctl create iamidentitymapping \
+            --cluster ${EKS_CLUSTER_NAME} \
+            --region ${AWS_REGION} \
+            --arn arn:aws:iam::${AWS_ACCOUNT_ID}:role/GitHubActionsEKSDeploy \
+            --username github-action \
+            --group system:masters \
+            --no-duplicate-arns
+
       - name: Login to Amazon ECR
         run: |
           aws ecr get-login-password --region ${{ env.AWS_REGION }} \
@@ -64,21 +80,6 @@ jobs:
           aws eks update-kubeconfig \
             --name $EKS_CLUSTER_NAME \
             --region $AWS_REGION
-
-      - name: Debug AWS caller identity
-        run: aws sts get-caller-identity
-
-      - name: Debug EKS token fetch
-        run: |
-          aws eks get-token \
-          --cluster-name ${{ env.EKS_CLUSTER_NAME }} \
-          --region ${{ env.AWS_REGION }} \
-          --output json
-
-      - name: Show kubeconfig & nodes
-        run: |
-          kubectl config view
-          kubectl get nodes
 
       - name: Deploy backend (rolling update)
         run: |
