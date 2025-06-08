@@ -12,9 +12,9 @@ jobs:
 
     steps:
       - name: Configure AWS credentials as Cluster-Admin
-        uses: aws-actions/configure-aws-credentials@v3
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::863518419988:role/YourClusterAdminRole
+          role-to-assume: arn:aws:iam::863518419988:role/GitHubActionsEKSDeploy
           aws-region: eu-west-1
 
       - name: Install eksctl
