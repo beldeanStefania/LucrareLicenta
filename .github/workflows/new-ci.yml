@@ -69,7 +69,7 @@ jobs:
         run: |
           kubectl set image deployment/app-backend \
             backend=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/app-backend:latest \
-            --namespace $K8S_NAMESPACE \
+            --namespace $K8S_NAMESPACE
           kubectl rollout status deployment/app-backend \
             --namespace $K8S_NAMESPACE
 
@@ -77,6 +77,6 @@ jobs:
         run: |
           kubectl set image deployment/app-frontend \
             frontend=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/app-frontend:latest \
-            --namespace $K8S_NAMESPACE \
+            --namespace $K8S_NAMESPACE
           kubectl rollout status deployment/app-frontend \
             --namespace $K8S_NAMESPACE
