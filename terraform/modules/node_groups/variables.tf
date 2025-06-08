@@ -16,7 +16,7 @@ variable "private_db_subnets" {
 variable "desired_size" {
   description = "Desired number of app nodes"
   type        = number
-  default     = 1
+  default     = 0
 }
 
 variable "max_size" {
@@ -28,13 +28,13 @@ variable "max_size" {
 variable "min_size" {
   description = "Minimum number of app nodes"
   type        = number
-  default     = 1
+  default     = 0
 }
 
 variable "db_desired_size" {
   description = "Desired number of db nodes"
   type        = number
-  default     = 1
+  default     = 0
 }
 
 variable "db_max_size" {
@@ -46,7 +46,7 @@ variable "db_max_size" {
 variable "db_min_size" {
   description = "Minimum number of db nodes"
   type        = number
-  default     = 1
+  default     = 0
 }
 
 variable "instance_types" {

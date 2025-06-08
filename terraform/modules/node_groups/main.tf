@@ -11,7 +11,6 @@ resource "aws_iam_role" "nodes" {
     ]
   })
 }
-
 locals {
   policies = [
     "AmazonEKSWorkerNodePolicy",
