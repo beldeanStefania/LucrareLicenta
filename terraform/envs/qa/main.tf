@@ -52,7 +52,7 @@ module "eks" {
 
 module "nodes" {
   source              = "../../modules/node_groups"
-  cluster_name        = var.cluster_name
+  cluster_name        = module.eks.cluster_name
   private_app_subnets = module.vpc.private_app_subnets
   private_db_subnets  = module.vpc.private_db_subnets
 }

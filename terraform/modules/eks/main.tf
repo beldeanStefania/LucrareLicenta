@@ -11,9 +11,7 @@ resource "aws_eks_cluster" "this" {
   tags = { Name = "${var.cluster_name}-eks" }
 }
 
-# resource "null_resource" "kubeconfig" {
-#   provisioner "local-exec" {
-#     command = "aws eks update-kubeconfig --region ${var.region} --name ${aws_eks_cluster.this.name} --profile simon-admin"
-#   }
-#   depends_on = [aws_eks_cluster.this]
-# }
+resource "aws_iam_role_policy_attachment" "gha_deploy_eks_describe" {
+  role       = "GitHubActionsEKSDeploy"
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+}
