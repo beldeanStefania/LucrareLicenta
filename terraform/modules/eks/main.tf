@@ -10,8 +10,3 @@ resource "aws_eks_cluster" "this" {
 
   tags = { Name = "${var.cluster_name}-eks" }
 }
-
-resource "aws_iam_role_policy_attachment" "gha_deploy_eks_describe" {
-  role       = "GitHubActionsEKSDeploy"
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-}
