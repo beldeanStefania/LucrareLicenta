@@ -1,16 +1,18 @@
 package com.orar.Backend.Orar.controller;
 
+import com.orar.Backend.Orar.dto.ImportResultDTO;
 import com.orar.Backend.Orar.dto.StudentDTO;
 import com.orar.Backend.Orar.exception.StudentAlreadyExistsException;
 import com.orar.Backend.Orar.exception.StudentNotFoundException;
 import com.orar.Backend.Orar.model.Student;
-import com.orar.Backend.Orar.repository.StudentRepository;
 import com.orar.Backend.Orar.service.StudentService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +23,6 @@ import static org.springframework.http.ResponseEntity.*;
 @RequestMapping("/api/student")
 @RequiredArgsConstructor
 public class StudentController {
-    @Autowired
-    private final StudentRepository studentRepository;
     @Autowired
     private final StudentService studentService;
 
@@ -92,6 +92,13 @@ public class StudentController {
         } catch (StudentNotFoundException e) {
             return notFound().build();
         }
+    }
+
+    @Operation(summary = "Importă studenți din CSV")
+    @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<List<ImportResultDTO>> importStudents(@RequestParam("file") MultipartFile file) {
+        List<ImportResultDTO> report = studentService.importFromCsv(file);
+        return ResponseEntity.ok(report);
     }
 
 }
