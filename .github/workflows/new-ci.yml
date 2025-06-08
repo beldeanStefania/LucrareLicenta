@@ -57,7 +57,7 @@ jobs:
       - name: Install kubectl
         uses: azure/setup-kubectl@v4
         with:
-          version: "stable"
+          version: "latest"
 
       - name: Update kubeconfig for EKS
         run: |
