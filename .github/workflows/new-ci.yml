@@ -65,6 +65,11 @@ jobs:
             --name $EKS_CLUSTER_NAME \
             --region $AWS_REGION
 
+      - name: Show kubeconfig & nodes
+        run: |
+          kubectl config view
+          kubectl get nodes
+
       - name: Deploy backend (rolling update)
         run: |
           kubectl set image deployment/app-backend \
