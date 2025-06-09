@@ -26,7 +26,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 import org.springframework.core.ParameterizedTypeReference;
-
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+import com.orar.Backend.Orar.model.MateriiOptionale;
+import com.orar.Backend.Orar.enums.Tip;
+import com.orar.Backend.Orar.model.CurriculumEntry;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -77,6 +81,11 @@ public class ChatService {
         List<Materie> materii = materieRepo.findAll();
         List<CurriculumEntry> curriculum = orarRepo.findCurriculumBySpecializare(spec);
         List<Orar> orar = orarRepo.findByGrupa(stud.getGrupa());
+        String conflictReply = buildOptionalConflictReply(userMessage, stud.getAn(), curriculum);
+        if (conflictReply != null) {
+            return conflictReply;
+        }
+
         boolean hasContract = !istoricul.isEmpty();
 
         // 2. Construiește secțiunea de profil
@@ -206,6 +215,62 @@ public class ChatService {
                 );
             }
         }
+    }
+
+    private String buildOptionalConflictReply(
+            String userMessage,
+            int anContract,
+            List<CurriculumEntry> curriculum
+    ) {
+        // regex care prinde două nume separate prin "și" sau "si"
+        Pattern p = Pattern.compile("alege\\s+(.+?)\\s+(?:și|si)\\s+(.+?)\\b", Pattern.CASE_INSENSITIVE);
+        Matcher m = p.matcher(userMessage);
+        if (!m.find()) return null;
+
+        String name1 = m.group(1).trim();
+        String name2 = m.group(2).trim();
+
+        // găsim entry‐urile pentru acel anContract și tip OPTIONALA
+        CurriculumEntry e1 = curriculum.stream()
+                .filter(e -> e.getAn() == anContract && e.getTip() == Tip.OPTIONALA)
+                .filter(e -> e.getMaterie().getNume().equalsIgnoreCase(name1))
+                .findFirst().orElse(null);
+        CurriculumEntry e2 = curriculum.stream()
+                .filter(e -> e.getAn() == anContract && e.getTip() == Tip.OPTIONALA)
+                .filter(e -> e.getMaterie().getNume().equalsIgnoreCase(name2))
+                .findFirst().orElse(null);
+
+        if (e1 != null && e2 != null
+                && e1.getOptionale() != null
+                && e1.getOptionale().getId().equals(e2.getOptionale().getId()))
+        {
+            MateriiOptionale pack = e1.getOptionale();
+            // grupăm curriculum‐ul pentru acel an pe pachete opționale
+            Map<MateriiOptionale, List<String>> byPack = curriculum.stream()
+                    .filter(e -> e.getAn() == anContract && e.getTip() == Tip.OPTIONALA && e.getOptionale() != null)
+                    .collect(Collectors.groupingBy(
+                            CurriculumEntry::getOptionale,
+                            Collectors.mapping(ent -> ent.getMaterie().getNume(), Collectors.toList())
+                    ));
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(String.format(
+                    "Nu poți alege \"%s\" și \"%s\" deoarece fac parte din același pachet opțional: \"%s\".%n",
+                    name1, name2, pack.getNume()));
+            sb.append("Pachetele opționale disponibile pentru anul ")
+                    .append(anContract)
+                    .append(" sunt:\n");
+            byPack.forEach((pkg, names) ->
+                    sb.append("• ")
+                            .append(pkg.getNume())
+                            .append(": ")
+                            .append(String.join(", ", names))
+                            .append("\n")
+            );
+            return sb.toString();
+        }
+
+        return null;
     }
 
     public String chatForProfessor(String userMessage, String username) {

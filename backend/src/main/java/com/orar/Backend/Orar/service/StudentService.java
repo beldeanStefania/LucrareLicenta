@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import com.opencsv.CSVReader;
 import com.orar.Backend.Orar.dto.ImportResultDTO;
 import org.springframework.web.multipart.MultipartFile;
@@ -134,12 +136,15 @@ public class StudentService {
     public List<ImportResultDTO> importFromCsv(MultipartFile file) {
         List<ImportResultDTO> results = new ArrayList<>();
         try (CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream()))) {
-            String[] header = reader.readNext(); // cod,nume,prenume,an,grupa,specializare,username,password,email
+            // skip header
+            reader.readNext();
             String[] line;
             int row = 1;
+
             while ((line = reader.readNext()) != null) {
                 row++;
                 try {
+                    // build DTO
                     StudentDTO dto = new StudentDTO();
                     dto.setCod(line[0]);
                     dto.setNume(line[1]);
@@ -150,17 +155,35 @@ public class StudentService {
                     dto.setUsername(line[6]);
                     dto.setPassword(line[7]);
                     dto.setEmail(line[8]);
-                    this.add(dto);
-                    results.add(new ImportResultDTO(row, true, "OK"));
+
+                    // lookup by cod
+                    Optional<Student> opt = studentRepository.findByCod(dto.getCod());
+                    if (opt.isPresent()) {
+                        // update existing
+                        Student existing = opt.get();
+                        existing.setAn(dto.getAn());
+                        existing.setGrupa(dto.getGrupa());
+                        // re-resolve specializare
+                        Specializare spec = specializareRepository
+                                .findBySpecializare(dto.getSpecializare());
+                        existing.setSpecializare(spec);
+                        studentRepository.save(existing);
+                        results.add(new ImportResultDTO(row, true, "Updated existing student"));
+                    } else {
+                        // create new
+                        this.add(dto);
+                        results.add(new ImportResultDTO(row, true, "Created new student"));
+                    }
+
                 } catch (Exception ex) {
                     results.add(new ImportResultDTO(row, false, ex.getMessage()));
                 }
             }
-        } catch (IOException e) {
-            throw new RuntimeException("Nu am putut citi fișierul: " + e.getMessage());
-        } catch (CsvValidationException e) {
-            throw new RuntimeException(e);
+
+        } catch (IOException | CsvValidationException e) {
+            throw new RuntimeException("Could not read CSV file: " + e.getMessage(), e);
         }
         return results;
     }
+
 }
