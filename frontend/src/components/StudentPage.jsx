@@ -34,6 +34,14 @@ export default function StudentPage({ onLogout }) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const filteredGrades = grades.filter(g => {
+  const byYear = selectedYear
+    ? Math.ceil(g.semestru / 2) === Number(selectedYear)
+    : true;
+  const bySem = selectedSem ? g.semestru === Number(selectedSem) : true;
+  return byYear && bySem;
+});
+
 const fetchTodos = (username) => {
   setLoadingTodos(true);
   request("GET", `/api/todo/user/${username}`)
@@ -145,12 +153,21 @@ const handleAddTodo = () => {
   };
 
   const getAverageGrade = () => {
-    const validGrades = grades.filter(g => g.nota != null);
-    if (!validGrades.length) return 0;
-    const totalCred = validGrades.reduce((sum, g) => sum + (g.credite || 0), 0);
-    const weighted = validGrades.reduce((sum, g) => sum + g.nota * (g.credite || 0), 0);
-    return (weighted / totalCred).toFixed(2);
-  };
+  // dacă nu e niciun filtru, returnăm 0
+  if (!selectedYear && !selectedSem) return 0;
+
+  const valid = filteredGrades.filter(g => g.nota != null);
+  if (valid.length === 0) return 0;
+  const totalCred = valid.reduce((sum, g) => sum + (g.credite || 0), 0);
+  const weighted  = valid.reduce((sum, g) => sum + g.nota * (g.credite || 0), 0);
+  return (weighted / totalCred).toFixed(2);
+};
+
+const getFilteredCoursesCount = () => {
+  // dacă nu e niciun filtru, returnăm 0
+  if (!selectedYear && !selectedSem) return 0;
+  return filteredGrades.length;
+};
 
   const getUpcomingClassesCount = () => {
     const days = ['Duminica','Luni','Marti','Miercuri','Joi','Vineri','Sambata'];
@@ -173,12 +190,6 @@ const handleAddTodo = () => {
 
   const uniqueYears = [1, 2, 3];
   const uniqueSems = [1, 2, 3, 4, 5, 6];
-
-  const filteredGrades = grades.filter(g => {
-  const byYear = selectedYear ? Math.ceil(g.semestru / 2) === Number(selectedYear) : true;
-  const bySem = selectedSem ? g.semestru === Number(selectedSem) : true;
-  return byYear && bySem;
-});
 
 
   if (!student) {
@@ -212,7 +223,7 @@ const handleAddTodo = () => {
         </div>
         <div className="stat-card">
           <div className="stat-icon"><FaBook size={24} /></div>
-          <div className="stat-value">{filteredGrades.length}</div>
+          <div className="stat-value">{getFilteredCoursesCount()}</div>
           <div className="stat-label">Filtered Courses</div>
         </div>
         <div className="stat-card">

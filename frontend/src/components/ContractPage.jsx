@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import NavigationHeader from "./NavigationHeader";
 import "./StudentPage.css";
+import ChatWidget from './ChatWidget'
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
@@ -301,6 +302,7 @@ export default function ContractSelectionPage({ onLogout }) {
           </>
         )}
       </div>
+       <ChatWidget />
     </div>
   );
 }
