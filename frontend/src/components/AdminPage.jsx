@@ -126,7 +126,7 @@ export default function AdminPage({ onLogout }) {
       });
   };
 
-  const handleAddStudent = () => {
+const handleAddStudent = () => {
     setViewMode("add");
     setStudentToEdit(null);
   };
@@ -157,10 +157,7 @@ export default function AdminPage({ onLogout }) {
   };
 
 const handleSaveStudent = (formValues) => {
-  // `formValues` este obiectul obținut din FormData
-  // conține doar câmpurile din formular: nume, prenume, an, grupa, specializare
   if (viewMode === "add") {
-    // Adăugare student nou
     request("POST", "/api/student/add", formValues)
       .then(() => {
         alert("Student added successfully!");
@@ -240,6 +237,25 @@ const handleSaveStudent = (formValues) => {
   }
 };
 
+const handleImportStudents = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const formData = new FormData();
+  formData.append("file", file);
+
+  // folosește wrapper-ul care deja pune Authorization
+  request("POST", "/api/student/import", formData)
+    .then(res => {
+      setStudentImportReport(res.data);
+      fetchStudents();
+    })
+    .catch(err => {
+      console.error("Import error", err);
+      alert("Eroare la import. Verifică console pentru detalii.");
+    });
+};
+
+
   
   
 const renderStudentList = () => (
@@ -248,6 +264,27 @@ const renderStudentList = () => (
     <button className="btn add-btn" onClick={handleAddStudent}>
       Add Student
     </button>
+    <>
+  <label className="btn import-btn">
+    Import CSV
+    <input type="file" accept=".csv"
+      onChange={handleImportStudents}
+      style={{ display: 'none' }}
+    />
+  </label>
+  {studentImportReport.length > 0 && (
+    <div className="import-report">
+      <h3>Raport import:</h3>
+      <ul>
+        {studentImportReport.map(r =>
+          <li key={r.row} style={{ color: r.success ? 'green' : 'red' }}>
+            Linie {r.row}: {r.success ? 'OK' : r.message}
+          </li>
+        )}
+      </ul>
+    </div>
+  )}
+</>
     {students.length > 0 ? (
       <div className="scroll-container">
         <table className="students-table">
@@ -511,6 +548,7 @@ const renderStudentList = () => (
                 <th>First Name</th>
                 <th>Last Name</th>
                 <th>Username</th>
+                <th>Email</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -536,8 +574,6 @@ const renderStudentList = () => (
       )}
     </div>
   );
-  
- 
 
   const renderProfessorForm = () => (
     <div className="form-container">
