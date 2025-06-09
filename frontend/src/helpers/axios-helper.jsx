@@ -45,10 +45,10 @@ export const setAuthHeader = (token) => {
 };
 
 
-axios.defaults.baseURL = "http://18.201.125.255:30081";
+axios.defaults.baseURL = "http://54.155.59.152:30081";
 axios.defaults.headers.post["Content-Type"] = "application/json";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://18.201.125.255:30081";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://54.155.59.152:30081";
 
 export function request(method, url, data = null) {
   const token = window.localStorage.getItem("auth_token");
