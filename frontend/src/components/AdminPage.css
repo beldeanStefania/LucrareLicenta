@@ -41,12 +41,14 @@ h1 {
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-.add-btn {
+.add-btn,
+.btn.import-btn {
     background-color: #28a745;
     color: #fff;
 }
 
-.add-btn:hover {
+.add-btn:hover,
+.btn.import-btn:hover {
     background-color: #218838;
     transform: scale(1.05);
 }
@@ -71,7 +73,7 @@ h1 {
     transform: scale(1.05);
 }
 
-.save-btn {
+.btn.save-btn {
     background-color: #28a745;
     color: #fff;
     padding: 10px 20px;
@@ -82,12 +84,12 @@ h1 {
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-.save-btn:hover {
+.btn.save-btn:hover {
     background-color: #218838;
     transform: scale(1.05);
 }
 
-.cancel-btn {
+.btn.cancel-btn {
     background-color: #6c757d;
     color: #fff;
     padding: 10px 20px;
@@ -98,7 +100,7 @@ h1 {
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-.cancel-btn:hover {
+.btn.cancel-btn:hover {
     background-color: #5a6268;
     transform: scale(1.05);
 }
