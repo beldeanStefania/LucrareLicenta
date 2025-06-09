@@ -1,6 +1,10 @@
 package com.orar.Backend.Orar.service;
 
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvValidationException;
+import com.orar.Backend.Orar.dto.ImportResultDTO;
 import com.orar.Backend.Orar.dto.ProfesorDTO;
+import com.orar.Backend.Orar.dto.StudentDTO;
 import com.orar.Backend.Orar.exception.ProfesorAlreadyExistsException;
 import com.orar.Backend.Orar.exception.ProfesorDoesNotExistException;
 import com.orar.Backend.Orar.exception.ProfesorNotFoundException;
@@ -13,7 +17,11 @@ import com.orar.Backend.Orar.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -81,6 +89,35 @@ public class ProfesorService {
         var profesor = profesorRepository.findByNumeAndPrenume(numeProfesor, prenumeProfesor)
                 .orElseThrow(() -> new ProfesorDoesNotExistException("Profesor not found"));
         profesorRepository.delete(profesor);
+    }
+
+    public List<ImportResultDTO> importFromCsv(MultipartFile file) {
+        List<ImportResultDTO> results = new ArrayList<>();
+        try (CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream()))) {
+            String[] header = reader.readNext(); // cod,nume,prenume,an,grupa,specializare,username,password,email
+            String[] line;
+            int row = 1;
+            while ((line = reader.readNext()) != null) {
+                row++;
+                try {
+                    ProfesorDTO dto = new ProfesorDTO();
+                    dto.setNume(line[0]);
+                    dto.setPrenume(line[1]);
+                    dto.setUsername(line[2]);
+                    dto.setPassword(line[3]);
+                    dto.setEmail(line[4]);
+                    this.add(dto);
+                    results.add(new ImportResultDTO(row, true, "OK"));
+                } catch (Exception ex) {
+                    results.add(new ImportResultDTO(row, false, ex.getMessage()));
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Nu am putut citi fișierul: " + e.getMessage());
+        } catch (CsvValidationException e) {
+            throw new RuntimeException(e);
+        }
+        return results;
     }
 
 }
