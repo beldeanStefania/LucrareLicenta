@@ -5,7 +5,7 @@ import axios from "axios";
 import NavigationHeader from "./NavigationHeader";
 import "./StudentPage.css";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080";
+const API_BASE = "http://54.155.59.152:30081";
 
 export default function ContractSelectionPage({ onLogout }) {
   const [searchParams] = useSearchParams();
