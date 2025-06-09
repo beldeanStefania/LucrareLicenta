@@ -2,11 +2,29 @@ import React, { useEffect, useState } from "react";
 import { request } from "../helpers/axios-helper";
 import NavigationHeader from "./NavigationHeader"; 
 import "./AdminPage.css";
+<<<<<<< Updated upstream
+=======
+import axios from "axios";
+import ChatWidget from "./ChatWidget";
+import "../styles/pages.css";
+>>>>>>> Stashed changes
 
-export default function AdminPage({ onLogout, currentUserName }) {
+
+export default function AdminPage({ onLogout }) {
+
+  const [adminUser, setAdminUser] = useState(null);
+  const [todos, setTodos]       = useState([]);
+  const [newTitle, setNewTitle] = useState("");
+  const [newDescription, setNewDescription] = useState("");
+  const [newDeadline, setNewDeadline]       = useState("");
+  const [loadingTodos, setLoadingTodos]     = useState(false);
 
   const [specializations, setSpecializations] = useState([]);
+<<<<<<< Updated upstream
   
+=======
+  const [studentImportReport, setStudentImportReport] = useState([]);
+>>>>>>> Stashed changes
 
   // ---------------------------
   // STUDENT LOGIC
@@ -23,6 +41,7 @@ export default function AdminPage({ onLogout, currentUserName }) {
   const [viewModeProf, setViewModeProf] = useState("list"); 
   const [professorToEdit, setProfessorToEdit] = useState(null);
   const [professorEmail, setProfessorEmail] = useState(""); // Pentru email-ul profesorului
+  const [professorImportReport, setProfessorImportReport] = useState([]);
 
   // ---------------------------
   // SUBJECT/REPARTIZARE LOGIC
@@ -36,6 +55,65 @@ export default function AdminPage({ onLogout, currentUserName }) {
   // ---------------------------
   const [viewModeSubject, setViewModeSubject] = useState("list");
   const [subjectToEdit, setSubjectToEdit] = useState(null);
+  const [subjectImportReport, setSubjectImportReport] = useState([]);
+
+  useEffect(() => {
+    request("GET", "/api/auth/userInfo")
+      .then(res => {
+        setAdminUser(res.data.username);
+        fetchTodos(res.data.username);
+      })
+      .catch(err => console.error("Nu am userInfo:", err));
+  }, []);
+
+   const fetchTodos = (username) => {
+    setLoadingTodos(true);
+    request("GET", `/api/todo/user/${username}`)
+      .then(res => setTodos(res.data || []))
+      .catch(err => {
+        console.error("Eroare la fetchTodos:", err);
+        setTodos([]);
+      })
+      .finally(() => setLoadingTodos(false));
+  };
+
+  const handleAddTodo = () => {
+    if (!newTitle || !newDeadline || !adminUser) return;
+    request("POST", "/api/todo/create", {
+      username:    adminUser,
+      title:       newTitle,
+      description: newDescription,
+      deadline:    newDeadline
+    })
+    .then(() => {
+      setNewTitle(""); setNewDescription(""); setNewDeadline("");
+      fetchTodos(adminUser);
+    })
+    .catch(err => {
+      console.error("Eroare la crearea todo:", err);
+      alert("Nu am putut crea To-Do.");
+    });
+  };
+
+   const handleMarkDone = (id) => {
+    request("PUT", `/api/todo/update/${id}`, { done: true })
+      .then(() => fetchTodos(adminUser))
+      .catch(console.error);
+  };
+
+  const handleDeleteTodo = (id) => {
+    request("DELETE", `/api/todo/delete/${id}`)
+      .then(() => fetchTodos(adminUser))
+      .catch(console.error);
+  };
+
+  // Apelez la inițializare
+  useEffect(() => {
+    if (adminUser) {
+      fetchTodos(adminUser);
+    }
+  }, [adminUser]);
+
 
   useEffect(() => {
     fetchStudents();
@@ -399,12 +477,39 @@ const renderStudentList = () => (
     }
   };
 
+  const handleImportProfessors = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const formData = new FormData();
+  formData.append("file", file);
+
+  // folosește wrapper-ul care deja pune Authorization
+  request("POST", "/api/profesor/import", formData)
+    .then(res => {
+      setProfessorImportReport(res.data);
+      fetchProfessors();
+    })
+    .catch(err => {
+      console.error("Import error", err);
+      alert("Eroare la import. Verifică console pentru detalii.");
+    });
+};
+
   const renderProfessorList = () => (
     <div className="list-container">
       <h2>Professors List</h2>
       <button className="btn add-btn" onClick={handleAddProfessor}>
-        Add Professor
+        Add Profesor
       </button>
+      <>
+  <label className="btn import-btn">
+    Import CSV
+    <input type="file" accept=".csv"
+      onChange={handleImportProfessors}
+      style={{ display: 'none' }}
+    />
+  </label>
+      </>
       {professors.length > 0 ? (
         <div className="scroll-container">
           <table className="students-table">
@@ -593,6 +698,24 @@ const renderStudentList = () => (
     }
   };
 
+  const handleImportSubjects = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const formData = new FormData();
+  formData.append("file", file);
+
+  request("POST", "/api/materie/import", formData)
+    .then(res => {
+      setSubjectImportReport(res.data);
+      fetchAllSubjects();   // reîncarcă lista
+    })
+    .catch(err => {
+      console.error("Import error materii", err);
+      alert("Eroare la import materii. Verifică console pentru detalii.");
+    });
+};
+
+
   const renderAssignSubjectForm = () => {
     if (!subjectFormVisible || !selectedProfForSubject) return null;
 
@@ -738,6 +861,28 @@ const renderStudentList = () => (
       <button className="btn add-btn" onClick={handleAddSubject}>
         Add Subject
       </button>
+      <>
+  <label className="btn import-btn">
+    Import CSV
+    <input type="file" accept=".csv"
+      onChange={handleImportSubjects}
+      style={{ display: 'none' }}
+    />
+  </label>
+  {subjectImportReport.length > 0 && (
+    <div className="import-report">
+      <h3>Raport import:</h3>
+      <ul>
+        {subjectImportReport.map(r =>
+          <li key={r.row} style={{ color: r.success ? 'green' : 'red' }}>
+            Linie {r.row}: {r.success ? 'OK' : r.message}
+          </li>
+        )}
+      </ul>
+    </div>
+  )}
+</>
+
       {allSubjects.length > 0 ? (
         <div className="scroll-container">
           <table className="students-table">
@@ -844,32 +989,121 @@ const renderStudentList = () => (
   );
 
   return (
-    <div className="admin-page">
-      <NavigationHeader 
-        userRole="ROLE_ADMIN" 
-        userName={currentUserName}
-        onLogout={onLogout}
+    <>
+      <div className="admin-page">
+        <NavigationHeader 
+          userRole="ROLE_ADMIN" 
+          userName={adminUser || ""}
+          onLogout={onLogout}
+        />
+
+        <div className="admin-content">
+          <hr />
+          <h1>Students Management</h1>
+          {viewMode === "list" && renderStudentList()}
+          {(viewMode === "add" || viewMode === "update") && renderStudentForm()}
+
+          <hr />
+          <h1>Professors Management</h1>
+          {viewModeProf === "list" && renderProfessorList()}
+          {(viewModeProf === "add" || viewModeProf === "update") &&
+            renderProfessorForm()}
+            
+          <hr />
+          <h1>Subjects Management</h1>
+          {viewModeSubject === "list" && renderSubjectList()}
+          {(viewModeSubject === "add" || viewModeSubject === "update") && renderSubjectForm(a)}
+
+          {renderAssignSubjectForm()}
+           <hr />
+        {/* To-Do Management */}
+<div id="todo" className="section-container">
+  <div className="section-header">
+    <h2>To-Do List</h2>
+  </div>
+
+  <div className="section-content">
+    {/* Formular pentru adăugare To-Do */}
+    <div className="todo-form">
+      <input
+        type="text"
+        placeholder="Titlu"
+        value={newTitle}
+        onChange={e => setNewTitle(e.target.value)}
       />
-
-      <div className="admin-content">
-        <hr />
-        <h1>Students Management</h1>
-        {viewMode === "list" && renderStudentList()}
-        {(viewMode === "add" || viewMode === "update") && renderStudentForm()}
-
-        <hr />
-        <h1>Professors Management</h1>
-        {viewModeProf === "list" && renderProfessorList()}
-        {(viewModeProf === "add" || viewModeProf === "update") &&
-          renderProfessorForm()}
-          
-        <hr />
-        <h1>Subjects Management</h1>
-        {viewModeSubject === "list" && renderSubjectList()}
-        {(viewModeSubject === "add" || viewModeSubject === "update") && renderSubjectForm()}
-
-        {renderAssignSubjectForm()}
-      </div>
+      <input
+        type="text"
+        placeholder="Descriere (opțional)"
+        value={newDescription}
+        onChange={e => setNewDescription(e.target.value)}
+      />
+      <input
+        type="date"
+        value={newDeadline}
+        onChange={e => setNewDeadline(e.target.value)}
+      />
+      <button className="save-btn" onClick={handleAddTodo}>
+        Adaugă
+      </button>
     </div>
+
+    {/* Lista To-Do sau mesaj de încărcare */}
+    {loadingTodos ? (
+      <div className="loading-container">
+        <div className="loading-spinner" />
+        <p>Se încarcă To-Do-urile...</p>
+      </div>
+    ) : Array.isArray(todos) ? (
+      todos.length > 0 ? (
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Titlu</th>
+              <th>Descriere</th>
+              <th>Deadline</th>
+              <th>Status</th>
+              <th>Acțiuni</th>
+            </tr>
+          </thead>
+          <tbody>
+            {todos.map((todo, idx) => (
+              <tr key={idx}>
+                <td>{todo.title}</td>
+                <td>{todo.description || "—"}</td>
+                <td>{todo.deadline}</td>
+                <td>{todo.done ? "Finalizat" : "Nefinalizat"}</td>
+                <td>
+                  {!todo.done && (
+                    <button
+                      className="save-btn"
+                      onClick={() => handleMarkDone(todo.id)}
+                      style={{ marginRight: "8px" }}
+                    >
+                      Marchează ca done
+                    </button>
+                  )}
+                  <button
+                    className="save-btn"
+                    onClick={() => handleDeleteTodo(todo.id)}
+                  >
+                    Șterge
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p>Nu există niciun To-Do momentan.</p>
+      )
+    ) : (
+      <p style={{ color: "red" }}>Eroare: lista de To-Do-uri nu este validă.</p>
+    )}
+  </div>
+</div>
+        <ChatWidget />
+        </div>
+      </div>
+    </>
   );
 }

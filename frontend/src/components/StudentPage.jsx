@@ -1,4 +1,4 @@
-// Updated StudentPage with schedule reintegrated
+
 import React, { useEffect, useState } from "react";
 import { request } from "../helpers/axios-helper";
 import { useNavigate, useLocation } from "react-router-dom";
