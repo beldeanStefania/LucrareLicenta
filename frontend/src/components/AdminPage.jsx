@@ -2,12 +2,9 @@ import React, { useEffect, useState } from "react";
 import { request } from "../helpers/axios-helper";
 import NavigationHeader from "./NavigationHeader"; 
 import "./AdminPage.css";
-<<<<<<< Updated upstream
-=======
 import axios from "axios";
 import ChatWidget from "./ChatWidget";
 import "../styles/pages.css";
->>>>>>> Stashed changes
 
 
 export default function AdminPage({ onLogout }) {
@@ -20,11 +17,7 @@ export default function AdminPage({ onLogout }) {
   const [loadingTodos, setLoadingTodos]     = useState(false);
 
   const [specializations, setSpecializations] = useState([]);
-<<<<<<< Updated upstream
-  
-=======
   const [studentImportReport, setStudentImportReport] = useState([]);
->>>>>>> Stashed changes
 
   // ---------------------------
   // STUDENT LOGIC
