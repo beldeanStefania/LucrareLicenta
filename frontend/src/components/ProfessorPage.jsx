@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { request } from "../helpers/axios-helper";
 import NavigationHeader from "./NavigationHeader";
-//import "../styles/pages.css";
-import "./ProfessorPage.css"; // Assuming you have a CSS file for styling
+import "../styles/pages.css";
 import ChatWidget from "./ChatWidget"; // Importing the ChatWidget component
 
 export default function ProfessorPage({ onLogout }) {
@@ -504,65 +503,82 @@ useEffect(() => {
             <p>Nicio oră planificată pentru acest profesor.</p>
           )}
         </section>
-        <section id="todo">
-  <h2>To-Do List</h2>
-
-  <div className="todo-form">
-    <input
-      type="text"
-      placeholder="Titlu"
-      value={newTitle}
-      onChange={(e) => setNewTitle(e.target.value)}
-    />
-    <input
-      type="text"
-      placeholder="Descriere (opțional)"
-      value={newDescription}
-      onChange={(e) => setNewDescription(e.target.value)}
-    />
-    <input
-      type="date"
-      value={newDeadline}
-      onChange={(e) => setNewDeadline(e.target.value)}
-    />
-    <button onClick={handleAddTodo}>Adaugă</button>
+       {/* To-Do List Section */}
+<div id="todo" className="section-container">
+  <div className="section-header">
+    <h2>To-Do List</h2>
   </div>
+  <div className="section-content">
+    {/* Formular pentru adăugare To-Do */}
+    <div className="todo-form">
+      <input
+        type="text"
+        placeholder="Titlu"
+        value={newTitle}
+        onChange={e => setNewTitle(e.target.value)}
+      />
+      <input
+        type="text"
+        placeholder="Descriere (opțional)"
+        value={newDescription}
+        onChange={e => setNewDescription(e.target.value)}
+      />
+      <input
+        type="date"
+        value={newDeadline}
+        onChange={e => setNewDeadline(e.target.value)}
+      />
+      <button onClick={handleAddTodo}>Adaugă</button>
+    </div>
 
-  {loadingTodos ? (
-    <p>Se încarcă To-Do-urile...</p>
-  ) : todos.length > 0 ? (
-    <table className="data-table">
-      <thead>
-        <tr>
-          <th>Titlu</th>
-          <th>Descriere</th>
-          <th>Deadline</th>
-          <th>Status</th>
-          <th>Acțiuni</th>
-        </tr>
-      </thead>
-      <tbody>
-        {todos.map((todo) => (
-          <tr key={todo.id}>
-            <td>{todo.title}</td>
-            <td>{todo.description || "—"}</td>
-            <td>{todo.deadline}</td>
-            <td>{todo.done ? "Finalizat" : "Nefinalizat"}</td>
-            <td>
-              {!todo.done && (
-                <button onClick={() => handleMarkDone(todo.id)}> Done</button>
-              )}
-              <button onClick={() => handleDeleteTodo(todo.id)}>Sterge </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  ) : (
-    <p>Nu ai niciun To-Do momentan.</p>
-  )}
-</section>
-
+    {/* Lista To-Do sau mesaj de încărcare */}
+    {loadingTodos ? (
+      <div className="loading-container">
+        <div className="loading-spinner" />
+        <p>Se încarcă To-Do-urile...</p>
+      </div>
+    ) : Array.isArray(todos) ? (
+      todos.length > 0 ? (
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Titlu</th>
+              <th>Descriere</th>
+              <th>Deadline</th>
+              <th>Status</th>
+              <th>Acțiuni</th>
+            </tr>
+          </thead>
+          <tbody>
+            {todos.map((todo, idx) => (
+              <tr key={idx}>
+                <td>{todo.title}</td>
+                <td>{todo.description || "—"}</td>
+                <td>{todo.deadline}</td>
+                <td>{todo.done ? "Finalizat" : "Nefinalizat"}</td>
+                <td>
+                  {!todo.done && (
+                    <button
+                      onClick={() => handleMarkDone(todo.id)}
+                      style={{ marginRight: "8px" }}
+                    >
+                      Marchează ca done
+                    </button>
+                  )}
+                  <button onClick={() => handleDeleteTodo(todo.id)}>Șterge</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p>Nu există niciun To-Do momentan.</p>
+      )
+    ) : (
+      <p style={{ color: "red" }}>Eroare: lista de To-Do-uri nu este validă.</p>
+    )}
+  </div>
+</div>
       </div>
     </div>
   );
