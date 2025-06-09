@@ -28,7 +28,7 @@ public class Student {
     @JsonManagedReference
     private List<CatalogStudentMaterie> catalogStudentMaterie;
 
-    @OneToOne
+    @OneToOne(cascade = ALL, orphanRemoval = true)
     @JoinColumn(name = "user_id", nullable = false)
     @JsonManagedReference
     private User user;

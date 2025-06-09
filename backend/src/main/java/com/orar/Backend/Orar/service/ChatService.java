@@ -12,6 +12,7 @@ import com.orar.Backend.Orar.repository.CladireRepository;
 import com.orar.Backend.Orar.repository.MaterieRepository;
 import com.orar.Backend.Orar.repository.OrarRepository;
 import com.orar.Backend.Orar.repository.ProfesorRepository;
+import com.orar.Backend.Orar.repository.RepartizareProfRepository;
 import com.orar.Backend.Orar.repository.StudentRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,11 +42,13 @@ public class ChatService {
     private final OrarRepository orarRepo;
     private final ProfesorRepository profesorRepo;
     private final CladireRepository cladireRepo;
+
+    private final RepartizareProfRepository repartizareProfRepo;
     private final WebClient client;
     private final String model;
 
     public ChatService(
-            MaterieRepository materieRepo, StudentRepository studentRepo, CatalogStudentMaterieRepository catalogRepo, OrarRepository orarRepo, ProfesorRepository profesorRepo, CladireRepository cladireRepo,
+            MaterieRepository materieRepo, StudentRepository studentRepo, CatalogStudentMaterieRepository catalogRepo, OrarRepository orarRepo, ProfesorRepository profesorRepo, CladireRepository cladireRepo, RepartizareProfRepository repartizareProfRepo,
             WebClient.Builder webClientBuilder,
             @Value("${openai.api.key}") String apiKey,
             @Value("${openai.model:gpt-3.5-turbo}") String model
@@ -56,6 +59,7 @@ public class ChatService {
         this.orarRepo = orarRepo;
         this.profesorRepo = profesorRepo;
         this.cladireRepo = cladireRepo;
+        this.repartizareProfRepo = repartizareProfRepo;
         this.model = model;
         this.client = webClientBuilder
                 .baseUrl("https://api.openai.com/v1")
@@ -91,7 +95,7 @@ public class ChatService {
                 .collect(Collectors.joining("\n"));
         String orarInfo = orar.stream()
                 .map(o -> String.format("%s: %s %s (%s), sala %s, prof. %s",
-                        o.getZi(), o.getRepartizareProf().getMaterie().getNume(), o.getRepartizareProf().getTip(), o.getOraInceput()+ ":00-"  + o.getOraSfarsit() + ":00",
+                        o.getZi(), o.getRepartizareProf().getMaterie().getNume(), o.getRepartizareProf().getTip(), o.getOraInceput() + ":00-" + o.getOraSfarsit() + ":00",
                         o.getSala(), o.getRepartizareProf().getProfesor().getNume()))
                 .collect(Collectors.joining("\n"));
         String contractStatus = hasContract
@@ -104,7 +108,6 @@ public class ChatService {
                         c.getMaterie().getSemestru(),
                         c.getMaterie().getCredite()))
                 .collect(Collectors.joining("\n"));
-
 
 
         // 3. Prompt de sistem extins
@@ -122,7 +125,7 @@ public class ChatService {
 
                 Orar săptămânal:
                 %s
-                
+                                
                 Contractul curent:
                 %s
 
@@ -371,5 +374,80 @@ public class ChatService {
         public long getRetryAfterSeconds() {
             return retryAfterSeconds;
         }
+    }
+
+    public String chatForAdmin(String userMessage, String username) {
+        long totalStudents   = studentRepo.count();
+        long totalProfessors = profesorRepo.count();
+        long totalMaterii    = materieRepo.count();
+
+        Map<Integer, Long> studentsByYear = studentRepo.findAll().stream()
+                .collect(Collectors.groupingBy(Student::getAn, Collectors.counting()));
+
+        Map<String, List<String>> teachMap = repartizareProfRepo.findAll().stream()
+                .collect(Collectors.groupingBy(
+                        rp -> rp.getMaterie().getNume(),
+                        Collectors.mapping(
+                                rp -> rp.getProfesor().getNume() + " " + rp.getProfesor().getPrenume(),
+                                Collectors.toList()
+                        )
+                ));
+
+        String mappingText = teachMap.entrySet().stream()
+                .map(e -> e.getKey() + " → " + String.join(", ", e.getValue()))
+                .collect(Collectors.joining("\n"));
+
+        String systemPrompt = String.format("""
+      Ești asistentul virtual al administratorului.
+      Username-ul tău este: %s
+
+      În sistem avem:
+       • Studenți în total: %d
+       • Distribuție pe ani: %s
+       • Profesori în total: %d
+       • Materii în total: %d
+
+      Lista materii → profesori:
+      %s
+
+      Folosește aceste date pentru a răspunde la întrebări de tip:
+       – “Câți studenți sunt în anul 2?”
+       – “Cine predă materia Algebra?”
+       – orice statistică despre studenți, profesori, materii.
+      Răspunde concis și clar.
+      """,
+                username,
+                totalStudents,
+                studentsByYear.entrySet().stream()
+                        .map(en -> "an " + en.getKey() + ": " + en.getValue())
+                        .collect(Collectors.joining(", ")),
+                totalProfessors,
+                totalMaterii,
+                mappingText
+        );
+
+        Map<String, Object> body = Map.of(
+                "model", model,
+                "messages", List.of(
+                        Map.of("role","system","content", systemPrompt),
+                        Map.of("role","user","content", userMessage)
+                )
+        );
+        @SuppressWarnings("unchecked")
+        Map<String,Object> resp = client.post()
+                .uri("/chat/completions")
+                .bodyValue(body)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<Map<String,Object>>() {})
+                .block();
+
+        @SuppressWarnings("unchecked")
+        List<Map<String,Object>> choices = (List<Map<String,Object>>) resp.get("choices");
+        if (choices == null || choices.isEmpty()) {
+            return "Îmi pare rău, nu am obținut răspuns.";
+        }
+        @SuppressWarnings("unchecked")
+        Map<String,Object> message = (Map<String,Object>) choices.get(0).get("message");
+        return (String) message.get("content");
     }
 }

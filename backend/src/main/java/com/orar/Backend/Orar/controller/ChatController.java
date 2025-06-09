@@ -30,21 +30,27 @@ public class ChatController {
     @PostMapping
     public Map<String,String> chatGeneric(@RequestBody Map<String,String> payload, Principal principal) {
         String message = payload.get("message");
-        String username = principal.getName();
-
-        // Obținem rolurile autentificatei din context
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isProf = auth.getAuthorities().stream()
+
+        boolean isAdmin = auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(r -> r.equals("ROLE_ADMIN"));
+        boolean isProf  = auth.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .anyMatch(r -> r.equals("ROLE_PROFESOR"));
 
         String reply;
-        if (isProf) {
+        if (isAdmin) {
+            String username = principal.getName();
+            reply = chatService.chatForAdmin(message, username);
+        } else if (isProf) {
+            String username = principal.getName();
             reply = chatService.chatForProfessor(message, username);
         } else {
+            String username = principal.getName();
             reply = chatService.chat(message, username);
         }
-
         return Map.of("reply", reply);
     }
+
 }
