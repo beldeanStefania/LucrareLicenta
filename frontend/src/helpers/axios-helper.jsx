@@ -44,30 +44,27 @@ export const setAuthHeader = (token) => {
 };
 
 axios.defaults.baseURL = "http://54.155.59.152:30081";
-axios.defaults.headers.post["Content-Type"] = "application/json";
 
 export function request(method, url, data = null) {
   const token = window.localStorage.getItem("auth_token");
-  const headers = {
-    ...(token ? { Authorization: `Bearer ${token}` } : {})
-  };
+  // porneşti de la headers cu doar Authorization
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-  const config = {
-    method,
-    url: url,
-    data,
-    headers
-  };
-
-  if (data != null) {
-    config.data = data;
-    // Dacă nu este FormData, setăm JSON
-    if (!(data instanceof FormData)) {
-      headers["Content-Type"] = "application/json";
-    }
+  // dacă data e FormData, NU adăuga Content-Type
+  if (data instanceof FormData) {
+    // lasă axios să pună boundary-ul corect
+  } else if (data != null) {
+    // doar pentru JSON
+    headers["Content-Type"] = "application/json";
   }
 
-  return axios(config);
+  return axios({
+    method,
+    url,                     // foloseşti defaults.baseURL deja setat la 30081
+    data,
+    headers,
+    withCredentials: true    // dacă ai cookies
+  });
 }
 
 // Request pentru blob-uri (fișiere, PDF-uri etc.)
