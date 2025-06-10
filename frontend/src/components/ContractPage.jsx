@@ -137,7 +137,7 @@ export default function ContractSelectionPage({ onLogout }) {
         document.body.removeChild(a);
       }
 
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
     } catch (err) {
       console.error("Eroare la generare:", err);
       alert("Eroare la generarea contractului.");
