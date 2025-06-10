@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { request, requestBlob } from "../helpers/axios-helper";
 import { useSearchParams } from "react-router-dom";
-import axios from "axios";
 import NavigationHeader from "./NavigationHeader";
 import "./StudentPage.css";
-
-const API_BASE = "http://54.155.59.152:30081";
 
 export default function ContractSelectionPage({ onLogout }) {
   const [searchParams] = useSearchParams();

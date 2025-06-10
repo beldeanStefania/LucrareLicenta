@@ -1,6 +1,9 @@
 import axios from "axios";
 import jwt_decode from "jwt-decode";
 
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://54.155.59.152:30081";
+axios.defaults.baseURL = API_BASE_URL;
+
 // Obține tokenul din localStorage
 export const getAuthToken = () => {
   const token = window.localStorage.getItem("auth_token");
@@ -43,31 +46,25 @@ export const setAuthHeader = (token) => {
   }
 };
 
-axios.defaults.baseURL = "http://54.155.59.152:30081";
-
 export function request(method, url, data = null) {
   const token = window.localStorage.getItem("auth_token");
-  // porneşti de la headers cu doar Authorization
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-  // dacă data e FormData, NU adăuga Content-Type
   if (data instanceof FormData) {
-    // lasă axios să pună boundary-ul corect
   } else if (data != null) {
-    // doar pentru JSON
     headers["Content-Type"] = "application/json";
   }
 
   return axios({
     method,
-    url,                     // foloseşti defaults.baseURL deja setat la 30081
+    url,                     
     data,
     headers,
-    withCredentials: true    // dacă ai cookies
+    withCredentials: true    
   });
 }
 
-// Request pentru blob-uri (fișiere, PDF-uri etc.)
+
 export function requestBlob(method, url, data = null) {
   const token = window.localStorage.getItem("auth_token");
   const headers = {
@@ -76,7 +73,7 @@ export function requestBlob(method, url, data = null) {
 
   return axios({
     method,
-    url: API_BASE_URL + url,
+    url,
     data,
     headers,
     responseType: "blob"
