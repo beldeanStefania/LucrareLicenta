@@ -18,7 +18,6 @@ export default function AdminPage({ onLogout }) {
 
   const [specializations, setSpecializations] = useState([]);
   const [studentImportReport, setStudentImportReport] = useState([]);
-
   // ---------------------------
   // STUDENT LOGIC
   // ---------------------------

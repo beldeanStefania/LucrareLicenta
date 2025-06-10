@@ -1,16 +1,17 @@
 import axios from "axios";
 import jwt_decode from "jwt-decode";
 
+// Obține tokenul din localStorage
 export const getAuthToken = () => {
   const token = window.localStorage.getItem("auth_token");
   if (token && token.trim() === "") {
-    // Remove empty tokens
     window.localStorage.removeItem("auth_token");
     return null;
   }
   return token;
 };
 
+// Decode JWT
 export const decodeToken = (token) => {
   if (!token) return null;
 
@@ -19,12 +20,10 @@ export const decodeToken = (token) => {
     console.error("Invalid token format - must have header, payload, and signature parts");
     return null;
   }
-
   try {
-    console.log("Token to decode:", token); // Debug log to see the token
-    // Use jwt_decode directly (v3 syntax)
+    console.log("Token to decode:", token);
     const decoded = jwt_decode(token);
-    console.log("Decoded token:", decoded); // Debug log to see the decoded token
+    console.log("Decoded token:", decoded);
     return decoded;
   } catch (e) {
     console.error("Failed to decode token", e);
@@ -33,6 +32,7 @@ export const decodeToken = (token) => {
   }
 };
 
+// Setează header-ul de autorizare pentru toate cererile
 export const setAuthHeader = (token) => {
   if (token) {
     window.localStorage.setItem("auth_token", token);
@@ -40,10 +40,8 @@ export const setAuthHeader = (token) => {
   } else {
     delete axios.defaults.headers.common["Authorization"];
     window.localStorage.removeItem("auth_token");
-
   }
 };
-
 
 axios.defaults.baseURL = "http://54.155.59.152:30081";
 axios.defaults.headers.post["Content-Type"] = "application/json";
@@ -51,23 +49,34 @@ axios.defaults.headers.post["Content-Type"] = "application/json";
 export function request(method, url, data = null) {
   const token = window.localStorage.getItem("auth_token");
   const headers = {
-    "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {})
   };
-  return axios({
+
+  const config = {
     method,
     url: url,
     data,
     headers
-  });
+  };
+
+  if (data != null) {
+    config.data = data;
+    // Dacă nu este FormData, setăm JSON
+    if (!(data instanceof FormData)) {
+      headers["Content-Type"] = "application/json";
+    }
+  }
+
+  return axios(config);
 }
 
+// Request pentru blob-uri (fișiere, PDF-uri etc.)
 export function requestBlob(method, url, data = null) {
   const token = window.localStorage.getItem("auth_token");
   const headers = {
-    "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {})
   };
+
   return axios({
     method,
     url: API_BASE_URL + url,
