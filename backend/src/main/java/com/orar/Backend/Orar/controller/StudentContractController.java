@@ -19,7 +19,6 @@ import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
-@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/studentContract")
 public class StudentContractController {
