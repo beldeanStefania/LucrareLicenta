@@ -16,7 +16,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowCredentials(true);
 
         registry.addMapping("/api/todo/**")
-                .allowedOrigins("http://localhost:3000", "http://localhost:8080")
+                .allowedOrigins("http://localhost:3000", "http://localhost:8080", "http://54.155.59.152:30080")
                 .allowedMethods("GET","POST","PUT","DELETE","OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
