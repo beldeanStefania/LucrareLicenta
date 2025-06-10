@@ -14,6 +14,8 @@ export const getAuthToken = () => {
 // Decode JWT
 export const decodeToken = (token) => {
   if (!token) return null;
+
+  // Check if token has a valid format (at least has two dots for three parts)
   if (!token.includes('.') || token.split('.').length !== 3) {
     console.error("Invalid token format - must have header, payload, and signature parts");
     return null;
@@ -41,11 +43,9 @@ export const setAuthHeader = (token) => {
   }
 };
 
-// Baza URL-ului pentru API
-axios.defaults.baseURL = "http://localhost:8080";
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+axios.defaults.baseURL = "http://54.155.59.152:30081";
+axios.defaults.headers.post["Content-Type"] = "application/json";
 
-// Funcție generică de request
 export function request(method, url, data = null) {
   const token = window.localStorage.getItem("auth_token");
   const headers = {
@@ -54,7 +54,8 @@ export function request(method, url, data = null) {
 
   const config = {
     method,
-    url: API_BASE_URL + url,
+    url: url,
+    data,
     headers
   };
 

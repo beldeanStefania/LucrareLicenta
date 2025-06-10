@@ -9,9 +9,9 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class MaterieDTO {
-    private String nume;
-    private Integer semestru;
-    private String cod;
-    private Integer credite;
+public class ImportResultDTO {
+    private int row;
+    private boolean success;
+    private String message;
 }
+

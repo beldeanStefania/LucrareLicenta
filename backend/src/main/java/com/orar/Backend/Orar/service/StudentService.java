@@ -1,5 +1,6 @@
 package com.orar.Backend.Orar.service;
 
+import com.opencsv.exceptions.CsvValidationException;
 import com.orar.Backend.Orar.dto.StudentDTO;
 import com.orar.Backend.Orar.exception.StudentAlreadyExistsException;
 import com.orar.Backend.Orar.exception.StudentNotFoundException;
@@ -16,8 +17,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import com.opencsv.CSVReader;
+import com.orar.Backend.Orar.dto.ImportResultDTO;
+import org.springframework.web.multipart.MultipartFile;
 @Service
 public class StudentService {
 
@@ -124,4 +132,58 @@ public class StudentService {
     public List<Student> getByGrupa(String grupa) throws StudentNotFoundException {
         return studentRepository.findByGrupa(grupa);
     }
+
+    public List<ImportResultDTO> importFromCsv(MultipartFile file) {
+        List<ImportResultDTO> results = new ArrayList<>();
+        try (CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream()))) {
+            // skip header
+            reader.readNext();
+            String[] line;
+            int row = 1;
+
+            while ((line = reader.readNext()) != null) {
+                row++;
+                try {
+                    // build DTO
+                    StudentDTO dto = new StudentDTO();
+                    dto.setCod(line[0]);
+                    dto.setNume(line[1]);
+                    dto.setPrenume(line[2]);
+                    dto.setAn(Integer.parseInt(line[3]));
+                    dto.setGrupa(line[4]);
+                    dto.setSpecializare(line[5]);
+                    dto.setUsername(line[6]);
+                    dto.setPassword(line[7]);
+                    dto.setEmail(line[8]);
+
+                    // lookup by cod
+                    Optional<Student> opt = studentRepository.findByCod(dto.getCod());
+                    if (opt.isPresent()) {
+                        // update existing
+                        Student existing = opt.get();
+                        existing.setAn(dto.getAn());
+                        existing.setGrupa(dto.getGrupa());
+                        // re-resolve specializare
+                        Specializare spec = specializareRepository
+                                .findBySpecializare(dto.getSpecializare());
+                        existing.setSpecializare(spec);
+                        studentRepository.save(existing);
+                        results.add(new ImportResultDTO(row, true, "Updated existing student"));
+                    } else {
+                        // create new
+                        this.add(dto);
+                        results.add(new ImportResultDTO(row, true, "Created new student"));
+                    }
+
+                } catch (Exception ex) {
+                    results.add(new ImportResultDTO(row, false, ex.getMessage()));
+                }
+            }
+
+        } catch (IOException | CsvValidationException e) {
+            throw new RuntimeException("Could not read CSV file: " + e.getMessage(), e);
+        }
+        return results;
+    }
+
 }

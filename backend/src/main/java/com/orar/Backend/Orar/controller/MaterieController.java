@@ -1,13 +1,16 @@
 package com.orar.Backend.Orar.controller;
 
+import com.orar.Backend.Orar.dto.ImportResultDTO;
 import com.orar.Backend.Orar.dto.MaterieDTO;
 import com.orar.Backend.Orar.model.Materie;
 import com.orar.Backend.Orar.repository.MaterieRepository;
 import com.orar.Backend.Orar.service.MaterieService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -73,5 +76,12 @@ public class MaterieController {
         } catch (Exception e) {
             return badRequest().build();
         }
+    }
+
+    @Operation(summary = "Importă profesori din CSV")
+    @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<List<ImportResultDTO>> importStudents(@RequestParam("file") MultipartFile file) {
+        List<ImportResultDTO> report = materieService.importFromCsv(file);
+        return ResponseEntity.ok(report);
     }
 }

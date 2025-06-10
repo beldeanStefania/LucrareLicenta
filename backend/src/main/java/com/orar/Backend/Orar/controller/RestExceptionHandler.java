@@ -12,10 +12,9 @@ public class RestExceptionHandler {
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Map<String,String>> handleStatus(ResponseStatusException ex) {
-        Map<String,String> body = Map.of("error", ex.getReason());
-        return ResponseEntity
-                .status(ex.getStatusCode())
-                .body(body);
+        String mesaj = ex.getReason() != null ? ex.getReason() : "";
+        Map<String, String> body = Map.of("error", mesaj);
+        return ResponseEntity.status(ex.getStatusCode()).body(body);
     }
 }
 

@@ -1,20 +1,19 @@
-import React, { useState, useEffect } from 'react';          // <-- Am adăugat useEffect aici
-import { request } from '../helpers/axios-helper';            // <-- Am adăugat importul pentru request
-import { FaUserCircle, FaBars, FaTimes, FaUniversity } from 'react-icons/fa';
-import { NavLink, useNavigate } from 'react-router-dom';
-import PasswordChangeModal from './PasswordChangeModal';
-import './NavigationHeader.css';
-
+import React, { useState, useEffect } from "react"; // <-- Am adăugat useEffect aici
+import { request } from "../helpers/axios-helper"; // <-- Am adăugat importul pentru request
+import { FaUserCircle, FaBars, FaTimes, FaUniversity } from "react-icons/fa";
+import { NavLink, useNavigate } from "react-router-dom";
+import PasswordChangeModal from "./PasswordChangeModal";
+import "./NavigationHeader.css";
 
 export default function NavigationHeader({ userRole, userName, onLogout }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showChangePwd, setShowChangePwd] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [fetchedUsername, setFetchedUsername] = useState('');
+  const [fetchedUsername, setFetchedUsername] = useState("");
 
   const navigate = useNavigate();
 
-  const toggleMenu = () => setMenuOpen(open => !open);
+  const toggleMenu = () => setMenuOpen((open) => !open);
 
   const handleNavigate = (to) => {
     navigate(to);
@@ -22,25 +21,27 @@ export default function NavigationHeader({ userRole, userName, onLogout }) {
   };
 
   const getRoleName = (role) => {
-    switch(role) {
-      case 'ROLE_ADMIN':     return 'Administrator';
-      case 'ROLE_STUDENT':   return 'Student';
-      case 'ROLE_PROFESOR':  return 'Professor';
-      default:               return 'User';
+    switch (role) {
+      case "ROLE_ADMIN":
+        return "Administrator";
+      case "ROLE_STUDENT":
+        return "Student";
+      case "ROLE_PROFESOR":
+        return "Professor";
+      default:
+        return "User";
     }
   };
 
-
-   useEffect(() => {
-    request('GET', '/api/auth/userInfo')
-      .then(res => {
+  useEffect(() => {
+    request("GET", "/api/auth/userInfo")
+      .then((res) => {
         setFetchedUsername(res.data.username);
       })
-      .catch(err => {
-        console.error('Nu am putut obține username-ul:', err);
+      .catch((err) => {
+        console.error("Nu am putut obține username-ul:", err);
       });
   }, []);
-
 
   return (
     <header className="app-header">
@@ -51,30 +52,41 @@ export default function NavigationHeader({ userRole, userName, onLogout }) {
         </div>
 
         <button className="mobile-menu-toggle" onClick={toggleMenu}>
-          {menuOpen ? <FaTimes size={24}/> : <FaBars size={24}/>}
+          {menuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
         </button>
 
-        <nav className={`main-nav ${menuOpen ? 'open' : ''}`}>
+        <nav className={`main-nav ${menuOpen ? "open" : ""}`}>
           <ul className="nav-links">
             {/* Dashboard */}
             <li className="nav-item">
               <NavLink
                 to="/student"
-                className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
-                onClick={() => handleNavigate('/student')}
+                className={({ isActive }) =>
+                  isActive ? "nav-link active" : "nav-link"
+                }
+                onClick={() => handleNavigate("/student")}
               >
                 Dashboard
               </NavLink>
             </li>
 
-            {userRole === 'ROLE_STUDENT' && (
+            {userRole === "ROLE_STUDENT" && (
               <>
                 {/* Schedule */}
                 <li className="nav-item">
                   <NavLink
-                    to={{ pathname: '/student', hash: '#schedule' }}
-                    className={({ isActive }) => window.location.hash === '#schedule' ? 'nav-link active' : 'nav-link'}
-                    onClick={() => handleNavigate({ pathname: '/student', hash: '#schedule' })}
+                    to={{ pathname: "/student", hash: "#schedule" }}
+                    className={({ isActive }) =>
+                      window.location.hash === "#schedule"
+                        ? "nav-link active"
+                        : "nav-link"
+                    }
+                    onClick={() =>
+                      handleNavigate({
+                        pathname: "/student",
+                        hash: "#schedule",
+                      })
+                    }
                   >
                     Schedule
                   </NavLink>
@@ -82,9 +94,15 @@ export default function NavigationHeader({ userRole, userName, onLogout }) {
                 {/* Grades */}
                 <li className="nav-item">
                   <NavLink
-                    to={{ pathname: '/student', hash: '#grades' }}
-                    className={({ isActive }) => window.location.hash === '#grades' ? 'nav-link active' : 'nav-link'}
-                    onClick={() => handleNavigate({ pathname: '/student', hash: '#grades' })}
+                    to={{ pathname: "/student", hash: "#grades" }}
+                    className={({ isActive }) =>
+                      window.location.hash === "#grades"
+                        ? "nav-link active"
+                        : "nav-link"
+                    }
+                    onClick={() =>
+                      handleNavigate({ pathname: "/student", hash: "#grades" })
+                    }
                   >
                     Grades
                   </NavLink>
@@ -92,13 +110,13 @@ export default function NavigationHeader({ userRole, userName, onLogout }) {
               </>
             )}
 
-            {userRole === 'ROLE_ADMIN' && (
+            {userRole === "ROLE_ADMIN" && (
               <>
                 <li className="nav-item">
                   <NavLink
                     to="/admin/students"
                     className="nav-link"
-                    onClick={() => handleNavigate('/admin/students')}
+                    onClick={() => handleNavigate("/admin/students")}
                   >
                     Students
                   </NavLink>
@@ -107,7 +125,7 @@ export default function NavigationHeader({ userRole, userName, onLogout }) {
                   <NavLink
                     to="/admin/professors"
                     className="nav-link"
-                    onClick={() => handleNavigate('/admin/professors')}
+                    onClick={() => handleNavigate("/admin/professors")}
                   >
                     Professors
                   </NavLink>
@@ -115,22 +133,29 @@ export default function NavigationHeader({ userRole, userName, onLogout }) {
               </>
             )}
 
-            {userRole === 'ROLE_PROFESOR' && (
+            {userRole === "ROLE_PROFESOR" && (
               <>
                 <li className="nav-item">
                   <NavLink
-                    to={{ pathname: '/student', hash: '#schedule' }}
+                    to={{ pathname: "/student", hash: "#schedule" }}
                     className="nav-link"
-                    onClick={() => handleNavigate({ pathname: '/student', hash: '#schedule' })}
+                    onClick={() =>
+                      handleNavigate({
+                        pathname: "/student",
+                        hash: "#schedule",
+                      })
+                    }
                   >
                     My Schedule
                   </NavLink>
                 </li>
                 <li className="nav-item">
                   <NavLink
-                    to={{ pathname: '/student', hash: '#grades' }}
+                    to={{ pathname: "/student", hash: "#grades" }}
                     className="nav-link"
-                    onClick={() => handleNavigate({ pathname: '/student', hash: '#grades' })}
+                    onClick={() =>
+                      handleNavigate({ pathname: "/student", hash: "#grades" })
+                    }
                   >
                     Manage Grades
                   </NavLink>
@@ -139,7 +164,7 @@ export default function NavigationHeader({ userRole, userName, onLogout }) {
                   <NavLink
                     to="/professor/rooms"
                     className="nav-link"
-                    onClick={() => handleNavigate('/professor/rooms')}
+                    onClick={() => handleNavigate("/professor/rooms")}
                   >
                     Reserve Rooms
                   </NavLink>
@@ -148,12 +173,17 @@ export default function NavigationHeader({ userRole, userName, onLogout }) {
             )}
           </ul>
 
-           <div className="user-section">
-            <div className="user-info" onClick={() => setShowDropdown(d => !d)}>
+          <div className="user-section">
+            <div
+              className="user-info"
+              onClick={() => setShowDropdown((d) => !d)}
+            >
               <FaUserCircle size={24} />
               <div className="user-details">
                 {/* Dacă fetchedUsername a fost încărcat, îl afișăm; altfel arătăm prop-ul userName */}
-                <span className="user-name">{fetchedUsername || userName || 'User'}</span>
+                <span className="user-name">
+                  {fetchedUsername || userName || "User"}
+                </span>
                 <span className="user-role">{getRoleName(userRole)}</span>
               </div>
             </div>

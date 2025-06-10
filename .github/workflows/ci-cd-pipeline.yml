@@ -1,0 +1,88 @@
+name: New CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+  BACKEND_REPO: app-backend
+  FRONTEND_REPO: app-frontend
+  EKS_CLUSTER_NAME: unitrack
+  K8S_NAMESPACE: default
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4.2.1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ${{ env.AWS_REGION }} \
+            | docker login --username AWS \
+                --password-stdin ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+
+      - name: Build & push backend image
+        run: |
+          docker build -t $BACKEND_REPO:latest ./backend
+          docker tag $BACKEND_REPO:latest \
+            $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$BACKEND_REPO:latest
+          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$BACKEND_REPO:latest
+
+      - name: Build & push frontend image
+        run: |
+          docker build -t $FRONTEND_REPO:latest ./frontend
+          docker tag $FRONTEND_REPO:latest \
+            $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$FRONTEND_REPO:latest
+          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$FRONTEND_REPO:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH and deploy to k3s node
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ vars.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+
+            mkdir -p ~/.kube
+            sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+            sudo chown $(id -u):$(id -g) ~/.kube/config
+            export KUBECONFIG=~/.kube/config
+
+            export AWS_REGION="${{ env.AWS_REGION }}"
+            export AWS_ACCOUNT_ID="${{ env.AWS_ACCOUNT_ID }}"
+            PASSWORD=$(aws ecr get-login-password --region $AWS_REGION)
+
+            kubectl create secret docker-registry ecr-creds \
+              --docker-server=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com \
+              --docker-username=AWS \
+              --docker-password="$PASSWORD" \
+              --dry-run=client -o yaml | kubectl apply -f -
+
+            kubectl patch serviceaccount default \
+              -p '{"imagePullSecrets":[{"name":"ecr-creds"}]}' || true
+
+            kubectl rollout restart deployment/app-backend
+            kubectl rollout restart deployment/app-frontend

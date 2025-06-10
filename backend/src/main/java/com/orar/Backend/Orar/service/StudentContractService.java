@@ -1,5 +1,5 @@
 package com.orar.Backend.Orar.service;
-
+import com.orar.Backend.Orar.model.MateriiOptionale;
 import com.lowagie.text.Document;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfPTable;
@@ -17,13 +17,16 @@ import com.orar.Backend.Orar.repository.CatalogStudentMaterieRepository;
 import com.orar.Backend.Orar.repository.ContractRepository;
 import com.orar.Backend.Orar.repository.CurriculumEntryRepository;
 import com.orar.Backend.Orar.repository.MaterieRepository;
+import com.orar.Backend.Orar.repository.MateriiOptionaleRepository;
 import com.orar.Backend.Orar.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,6 +36,7 @@ import java.util.stream.Collectors;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @Service
+@Transactional
 public class StudentContractService {
 
     @Autowired
@@ -49,6 +53,9 @@ public class StudentContractService {
 
     @Autowired
     private ContractRepository contractRepository;
+
+    @Autowired
+    private MateriiOptionaleRepository optionaleRepo;
 
     public List<ContractDTO> getAvailableCoursesForContract(
             String studentCod,
@@ -70,6 +77,14 @@ public class StudentContractService {
 
         // 1) Calculăm semestrul absolut (1,2 → an1; 3,4 → an2; 5,6 → an3 etc)
         int semestruAbsolut = (anContract - 1) * 2 + semestruRel;
+
+        List<CatalogStudentMaterie> istoricul = catalogRepo.findByStudentCod(studentCod);
+        istoricul.stream()
+                .filter(c -> c.getStatus() == MaterieStatus.ACTIV && c.getSemestru() < semestruAbsolut)
+                .forEach(c -> {
+                    c.setStatus(MaterieStatus.FINALIZATA);
+                    catalogRepo.save(c);
+                });
 
         // 2) Materialele obligatorii/opționale/facultative pentru anul & semestrul curent
         List<CurriculumEntry> ownEntriesThisSem = curriculumEntryRepository
@@ -376,6 +391,38 @@ public class StudentContractService {
                             + String.join(", ", interzise)
             );
         }
+
+        Map<Integer, List<String>> chosenByPackage = new HashMap<>();
+        for (Materie m : materii) {
+            // find the curriculum entry for this student’s specialization
+            CurriculumEntry entry = curriculumEntryRepository
+                    .findBySpecializareIdAndMaterieId(studentSpecId, m.getId())
+                    .orElse(null);
+            if (entry != null && entry.getOptionale() != null) {
+                Integer pkgId = entry.getOptionale().getId();
+                chosenByPackage
+                        .computeIfAbsent(pkgId, k -> new ArrayList<>())
+                        .add(m.getCod());
+            }
+        }
+// now see if any package has >1 chosen
+        // after you’ve built `chosenByPackage: Map<Integer,List<String>>`
+        for (var kv : chosenByPackage.entrySet()) {
+            Integer pkgId = kv.getKey();
+            List<String> selectedCodes = kv.getValue();
+            if (selectedCodes.size() > 1) {
+                // look up the *entity* by its ID, then call .getNume() on it:
+                String pkgName = optionaleRepo.findById(pkgId)
+                        .map(MateriiOptionale::getNume)
+                        .orElse("acest pachet");
+
+                throw new ValidationException(
+                        "Poți alege un singur optional din pachetul „" + pkgName +
+                                "”, ai selectat: " + String.join(", ", selectedCodes)
+                );
+            }
+        }
+
 
         // ────────────────────────────────────────────────────
 

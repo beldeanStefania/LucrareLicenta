@@ -26,7 +26,7 @@ public class Profesor {
     @JsonManagedReference
     private List<RepartizareProf> repartizareProfs;
 
-    @OneToOne
+    @OneToOne(cascade = ALL, orphanRemoval = true)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 }

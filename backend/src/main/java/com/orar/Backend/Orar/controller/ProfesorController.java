@@ -1,5 +1,6 @@
 package com.orar.Backend.Orar.controller;
 
+import com.orar.Backend.Orar.dto.ImportResultDTO;
 import com.orar.Backend.Orar.dto.ProfesorDTO;
 import com.orar.Backend.Orar.exception.ProfesorAlreadyExistsException;
 import com.orar.Backend.Orar.exception.ProfesorDoesNotExistException;
@@ -8,8 +9,10 @@ import com.orar.Backend.Orar.model.Profesor;
 import com.orar.Backend.Orar.service.ProfesorService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -54,6 +57,13 @@ public class ProfesorController {
         } catch (ProfesorDoesNotExistException | ProfesorAlreadyExistsException e) {
             return badRequest().build();
         }
+    }
+
+    @Operation(summary = "Importă profesori din CSV")
+    @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<List<ImportResultDTO>> importStudents(@RequestParam("file") MultipartFile file) {
+        List<ImportResultDTO> report = profesorService.importFromCsv(file);
+        return ResponseEntity.ok(report);
     }
 
 }
