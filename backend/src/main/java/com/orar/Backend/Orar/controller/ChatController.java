@@ -32,17 +32,17 @@ public class ChatController {
 
     @PostMapping
     public Map<String,String> chatGeneric(@RequestBody Map<String,String> payload, Principal principal) {
-        logger.debug("▶️ Enter chatGeneric(); payload = {}, principal = {}", payload, principal);
+        System.out.println("Received payload: " + payload);
         String message = payload.get("message");
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
 
         if (principal == null) {
-            logger.warn("⚠️ Principal is null – user not authenticated");
+            System.out.println("⚠️ Principal is null – user not authenticated");
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nu ești autentificat");
         }
 
-        logger.debug("Received message: {}", message);
+        System.out.println("Received message: {}"+ message);
 
         boolean isAdmin = auth.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
