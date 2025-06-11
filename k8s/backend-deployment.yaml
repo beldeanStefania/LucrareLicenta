@@ -34,6 +34,11 @@ spec:
                 secretKeyRef:
                   name: openai-api-key
                   key: openai.api.key
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gmail-secret
+                  key: MAIL_PASSWORD
 ---
 apiVersion: v1
 kind: Service

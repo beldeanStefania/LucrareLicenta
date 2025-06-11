@@ -61,6 +61,7 @@ jobs:
         uses: appleboy/ssh-action@v1.2.2
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          MAIL_PASSWORD:      ${{ secrets.MAIL_PASSWORD }}
         with:
           host: ${{ vars.EC2_HOST }}
           username: ec2-user
@@ -85,6 +86,10 @@ jobs:
 
             kubectl create secret generic openai-api-key \
               --from-literal=openai.api.key="${{ secrets.OPENAI_API_KEY }}" \
+              --dry-run=client -o yaml | kubectl apply -f -
+
+            kubectl create secret generic gmail-secret \
+              --from-literal=MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}" \
               --dry-run=client -o yaml | kubectl apply -f -
 
             kubectl rollout restart deployment/app-backend
