@@ -134,7 +134,7 @@ public class ChatService {
 
                 Orar săptămânal:
                 %s
-                                
+
                 Contractul curent:
                 %s
 
@@ -319,7 +319,7 @@ public class ChatService {
                 Ești un asistent virtual dedicat profesorilor din platforma universitară.
                 Profesor: %s %s
                 Discipline predate: %s
-                                  
+
                 Orarul profesorului (orele deja programate):
                 %s
 
