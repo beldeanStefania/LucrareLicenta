@@ -59,8 +59,6 @@ jobs:
     steps:
       - name: SSH and deploy to k3s node
         uses: appleboy/ssh-action@v1.2.2
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         with:
           host: ${{ vars.EC2_HOST }}
           username: ec2-user
