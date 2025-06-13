@@ -140,9 +140,9 @@
   }
 
   .filter-bar {
+  width: max-content;         /* să aibă lăţimea minimă cât conţinutul – sau pune exact aceeaşi lăţime ca tabelul */
+  margin: var(--spacing-md) auto 0;  /* auto pe stânga/dreapta pentru centru */
   display: flex;
-  justify-content: center;
   gap: var(--spacing-md);
-  width: fit-content;
-  margin: var(--spacing-md) auto; /* auto pe stânga/dreapta */
+
 }
