@@ -139,7 +139,7 @@
     width: 100%;
   }
 
-  .filter-bar {
+  .student-page .filter-bar {
   width: max-content;         /* să aibă lăţimea minimă cât conţinutul – sau pune exact aceeaşi lăţime ca tabelul */
   margin: var(--spacing-md) auto 0;  /* auto pe stânga/dreapta pentru centru */
   display: flex;
