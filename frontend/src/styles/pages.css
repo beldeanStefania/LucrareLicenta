@@ -138,3 +138,11 @@
   .professor-page .schedule-form input {
     width: 100%;
   }
+
+  .filter-bar {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-md);
+  width: fit-content;
+  margin: var(--spacing-md) auto; /* auto pe stânga/dreapta */
+}
