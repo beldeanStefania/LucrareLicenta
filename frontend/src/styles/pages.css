@@ -139,23 +139,17 @@
     width: 100%;
   }
 
-  .student-page .filter-bar select {
-  width: auto;           /* nu 100%, ci cât este conţinutul */
-  min-width: 120px;      /* sau cât vrei tu */
-  margin-top: 4px;       /* spaţiu între label şi select */
-}
-
-.student-page .filter-bar label {
+.filter-bar {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  gap: 1rem;
+  align-items: center;
+  margin: 0 0 0.5rem 25px; 
 }
 
-.student-page .filter-bar {
-  display: flex;                /* flexbox activ */
-  justify-content: center;      /* centrează orizontal */
-  gap: var(--spacing-md);
-  width: max-content;           /* doar cât conţinutul */
-  margin: var(--spacing-md) auto 0; /* centrat pe orizontală */
+
+.filter-bar label {
+  display: flex;
+  flex-direction: column; 
+  font-weight: 500;
 }
 

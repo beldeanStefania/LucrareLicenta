@@ -14,7 +14,7 @@ export default function StudentPage({ onLogout }) {
   const [todos, setTodos] = useState([]);
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
-  const [newDeadline, setNewDeadline] = useState("");  // în format "YYYY-MM-DD"
+  const [newDeadline, setNewDeadline] = useState("");  
   const [loadingTodos, setLoadingTodos] = useState(true);
 
 
@@ -46,7 +46,7 @@ const fetchTodos = (username) => {
   setLoadingTodos(true);
   request("GET", `/api/todo/user/${username}`)
     .then(res => {
-      console.log("TODO response:", res.data); // 👈 Adaugă asta
+      console.log("TODO response:", res.data); 
       setTodos(res.data || []);
     })
     .catch(err => {
@@ -67,7 +67,7 @@ const handleAddTodo = () => {
   if (!newTitle || !newDeadline) return;
 
   const payload = {
-    username: userData.username,  // schimbare aici
+    username: userData.username,  
     title: newTitle,
     description: newDescription,
     deadline: newDeadline
@@ -78,15 +78,13 @@ const handleAddTodo = () => {
       setNewTitle("");
       setNewDescription("");
       setNewDeadline("");
-      fetchTodos(userData.username);  // schimbare aici
+      fetchTodos(userData.username);  
     })
     .catch(err => {
       console.error("Eroare la adăugare todo:", err);
       alert("Eroare la crearea To-Do-ului!");
     });
 };
-
-
 
   const handleMarkDone = (todoId) => {
   const todo = todos.find(t => t.id === todoId);
@@ -100,16 +98,14 @@ const handleAddTodo = () => {
   };
 
   request("PUT", `/api/todo/update/${todoId}`, updatedTodo)
-    .then(() => fetchTodos(userData.username))  // schimbare aici
+    .then(() => fetchTodos(userData.username)) 
     .catch(err => console.error("Eroare la marcare todo ca done:", err));
 };
 
-
-  // 4. Funcția șterge un todo
   const handleDeleteTodo = (todoId) => {
     request("DELETE", `/api/todo/delete/${todoId}`)
       .then(res => {
-        fetchTodos(userData.username);  // schimbare aici
+        fetchTodos(userData.username);  
       })
       .catch(err => console.error(err));
   };
@@ -117,7 +113,7 @@ const handleAddTodo = () => {
 
  useEffect(() => {
   if (userData?.username) {
-    fetchTodos(userData.username);  // ✔️ corect
+    fetchTodos(userData.username);  
   }
 }, [userData]);
 
@@ -153,7 +149,6 @@ const handleAddTodo = () => {
   };
 
   const getAverageGrade = () => {
-  // dacă nu e niciun filtru, returnăm 0
   if (!selectedYear && !selectedSem) return 0;
 
   const valid = filteredGrades.filter(g => g.nota != null);
@@ -164,7 +159,6 @@ const handleAddTodo = () => {
 };
 
 const getFilteredCoursesCount = () => {
-  // dacă nu e niciun filtru, returnăm 0
   if (!selectedYear && !selectedSem) return 0;
   return filteredGrades.length;
 };

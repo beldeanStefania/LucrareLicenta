@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { request } from "../helpers/axios-helper";
 import NavigationHeader from "./NavigationHeader";
 import "../styles/pages.css";
-import ChatWidget from "./ChatWidget"; // Importing the ChatWidget component
+import ChatWidget from "./ChatWidget"; 
 
 export default function ProfessorPage({ onLogout }) {
 const [todos, setTodos] = useState([]);
