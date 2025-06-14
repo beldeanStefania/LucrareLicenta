@@ -38,7 +38,7 @@ public class ChatController {
 
 
         if (principal == null) {
-            System.out.println("⚠️ Principal is null – user not authenticated");
+            System.out.println("Principal is null – user not authenticated");
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nu ești autentificat");
         }
 
