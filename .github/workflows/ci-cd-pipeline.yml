@@ -84,6 +84,7 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           MAIL_PASSWORD:      ${{ secrets.MAIL_PASSWORD }}
+
         with:
           host: ${{ vars.EC2_HOST }}
           username: ec2-user
@@ -113,6 +114,9 @@ jobs:
             kubectl create secret generic gmail-secret \
               --from-literal=MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}" \
               --dry-run=client -o yaml | kubectl apply -f -
+              
+            kubectl patch serviceaccount default \
+              -p '{"imagePullSecrets":[{"name":"ecr-creds"}]}' || true
 
             kubectl rollout restart deployment/app-backend
             kubectl rollout restart deployment/app-frontend
