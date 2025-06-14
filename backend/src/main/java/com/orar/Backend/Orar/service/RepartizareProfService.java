@@ -102,10 +102,8 @@ public class RepartizareProfService {
                 .orElseThrow(() -> new ProfesorNotFoundException("Profesor not found"));
 
         return repartizareProfRepository.findByProfesor(profesor).stream()
-                .map(repartizare -> repartizare.getMaterie().getNume()) 
-                .distinct() 
+                .map(repartizare -> repartizare.getMaterie().getNume())
+                .distinct()
                 .collect(Collectors.toList());
     }
-
-
 }

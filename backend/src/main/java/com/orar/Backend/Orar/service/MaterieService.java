@@ -38,7 +38,7 @@ public class MaterieService {
         return createMaterie(materieDTO);
     }
 
-    private void checkMaterieExists(final MaterieDTO materieDTO) throws MaterieAlreadyExistsException {
+    void checkMaterieExists(final MaterieDTO materieDTO) throws MaterieAlreadyExistsException {
         if (materieRepository.findByCod(materieDTO.getCod()).isPresent()) {
             throw new MaterieAlreadyExistsException("Materie already exists");
         }
