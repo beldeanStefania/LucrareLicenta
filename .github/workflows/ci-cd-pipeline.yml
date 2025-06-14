@@ -73,7 +73,7 @@ jobs:
           -Dsonar.projectKey=beldeanStefania_LucrareLicenta \
           -Dsonar.organization=beldeanstefania \
           -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+          -Dsonar.token=${{ secrets.SONAR_TOKEN }}
 
   deploy:
     needs: build-and-push
