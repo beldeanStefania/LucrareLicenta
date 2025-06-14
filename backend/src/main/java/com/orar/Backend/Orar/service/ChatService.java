@@ -176,6 +176,10 @@ public class ChatService {
                         .exchangeToMono(this::handleResponse)  // vezi metoda handleResponse din exemplu anterior
                         .block();
 
+                if (resp == null || !resp.containsKey("choices")) {
+                    return "Îmi pare rău, nu am putut genera un răspuns.";
+                }
+
                 @SuppressWarnings("unchecked")
                 List<Map<String, Object>> choices =
                         (List<Map<String, Object>>) resp.get("choices");
@@ -223,7 +227,7 @@ public class ChatService {
             List<CurriculumEntry> curriculum
     ) {
         // regex care prinde două nume separate prin "și" sau "si"
-        Pattern p = Pattern.compile("alege\\s+(.+?)\\s+(?:și|si)\\s+(.+?)\\b", Pattern.CASE_INSENSITIVE);
+        Pattern p = Pattern.compile("alege\\s+(.+?)\\s+(?:și|si)\\s+(.+?)\\b", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
         Matcher m = p.matcher(userMessage);
         if (!m.find()) return null;
 
@@ -360,6 +364,10 @@ public class ChatService {
                         .bodyValue(body)
                         .exchangeToMono(this::handleResponse)
                         .block();
+
+                if (resp == null || !resp.containsKey("choices")) {
+                    return "Îmi pare rău, nu am putut genera un răspuns.";
+                }
 
                 @SuppressWarnings("unchecked")
                 List<Map<String, Object>> choices =
@@ -505,6 +513,10 @@ public class ChatService {
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<Map<String,Object>>() {})
                 .block();
+
+        if (resp == null || !resp.containsKey("choices")) {
+            return "Îmi pare rău, nu am putut genera un răspuns.";
+        }
 
         @SuppressWarnings("unchecked")
         List<Map<String,Object>> choices = (List<Map<String,Object>>) resp.get("choices");
