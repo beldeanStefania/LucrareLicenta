@@ -155,12 +155,11 @@
   font-weight: 500;
 }
 
-/* pe StudentPage */
 .student-page .todo-form {
   display: flex;
   align-items: center;
-  gap: 0.75rem;       /* spaţiu între input-uri şi buton */
-  margin-bottom: 1.5rem;  /* spaţiu sub formular, dacă vrei */
+  gap: 0.75rem;      
+  margin-bottom: 1.5rem;  
 }
 
 /* dacă vrei ca input-urile să crească uniform */
@@ -177,17 +176,15 @@
 .professor-page .todo-form {
   display: flex;
   align-items: center;
-  gap: 0.75rem;       /* spaţiu între input-uri şi buton */
-  margin-bottom: 1.5rem;  /* spaţiu sub formular, dacă vrei */
+  gap: 0.75rem;      
+  margin-bottom: 1.5rem;  
 }
 
-/* dacă vrei ca input-urile să crească uniform */
 .professor-page .todo-form input {
   flex: 1;
-  min-width: 0; /* ca să nu depăşească containerul */
+  min-width: 0; 
 }
 
-/* dacă vrei ceva mai „înalt” butonul */
 .professor-page .todo-form button {
   padding: 0.5rem 1rem;
 }
