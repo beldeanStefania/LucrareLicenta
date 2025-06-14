@@ -150,7 +150,7 @@
 				<configuration>
 					<url>jdbc:mysql://localhost:3306/orar</url>
 					<user>root</user>
-					<password>3676</password>
+					<password>${mysql.password}</password>
 					<cleanDisabled>false</cleanDisabled>
 				</configuration>
 			</plugin>
