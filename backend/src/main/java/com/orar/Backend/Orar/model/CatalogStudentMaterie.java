@@ -3,6 +3,7 @@ package com.orar.Backend.Orar.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.orar.Backend.Orar.enums.MaterieStatus;
 import jakarta.persistence.*;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,10 +13,13 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @Entity
 @Getter
 @Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+
 public class CatalogStudentMaterie {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
+    @EqualsAndHashCode.Include
     private Integer id;
     private Double nota;
     private Integer semestru;

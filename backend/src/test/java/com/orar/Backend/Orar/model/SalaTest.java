@@ -2,65 +2,76 @@ package com.orar.Backend.Orar.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class SalaTest {
 
     private Sala sala;
     private Cladire cladire;
-    private List<Orar> orar;
+    private Orar orar1;
+    private Orar orar2;
 
     @BeforeEach
     void setUp() {
         sala = new Sala();
         sala.setId(1);
         sala.setNume("Sala 101");
-        sala.setCapacitate(50);
+        sala.setCapacitate(30);
 
-        cladire = Mockito.mock(Cladire.class);
+        cladire = mock(Cladire.class);
         sala.setCladire(cladire);
 
-        orar = new ArrayList<>();
-        sala.setOrar(orar);
+        orar1 = mock(Orar.class);
+        orar2 = mock(Orar.class);
+
+        sala.setOrar(List.of(orar1, orar2));
     }
 
     @Test
     void testGettersAndSetters() {
         assertEquals(1, sala.getId());
         assertEquals("Sala 101", sala.getNume());
-        assertEquals(50, sala.getCapacitate());
+        assertEquals(30, sala.getCapacitate());
         assertEquals(cladire, sala.getCladire());
-        assertEquals(orar, sala.getOrar());
+
+        assertNotNull(sala.getOrar());
+        assertEquals(2, sala.getOrar().size());
+        assertTrue(sala.getOrar().contains(orar1));
     }
 
     @Test
-    void testSetNume() {
-        sala.setNume("Sala 202");
-        assertEquals("Sala 202", sala.getNume());
+    void testUpdateSalaFields() {
+        sala.setNume("Sala 305");
+        sala.setCapacitate(45);
+
+        assertEquals("Sala 305", sala.getNume());
+        assertEquals(45, sala.getCapacitate());
     }
 
     @Test
-    void testSetCapacitate() {
-        sala.setCapacitate(100);
-        assertEquals(100, sala.getCapacitate());
+    void testEqualsAndHashCode() {
+        Sala s1 = new Sala();
+        s1.setId(10);
+
+        Sala s2 = new Sala();
+        s2.setId(10);
+
+        assertEquals(s1, s2);
+        assertEquals(s1.hashCode(), s2.hashCode());
     }
 
     @Test
-    void testSetCladire() {
-        Cladire newCladire = Mockito.mock(Cladire.class);
-        sala.setCladire(newCladire);
-        assertEquals(newCladire, sala.getCladire());
-    }
+    void testNullFields() {
+        Sala s = new Sala();
 
-    @Test
-    void testSetOrar() {
-        List<Orar> newOrar = new ArrayList<>();
-        sala.setOrar(newOrar);
-        assertEquals(newOrar, sala.getOrar());
+        assertNull(s.getId());
+        assertNull(s.getNume());
+        assertNull(s.getCapacitate());
+        assertNull(s.getCladire());
+        assertNull(s.getOrar());
     }
 }

@@ -1,41 +1,31 @@
 package com.orar.Backend.Orar.model;
 
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
-import java.util.ArrayList;
-import java.util.List;
+import static org.junit.jupiter.api.Assertions.*;
 
-class MaterieTest {
-
-    private Materie materie;
-    private List<CatalogStudentMaterie> catalogStudentMaterie;
-    private List<RepartizareProf> repartizareProfs;
-
-    @BeforeEach
-    void setUp() {
-        materie = new Materie();
-        materie.setId(1);
-        materie.setNume("Matematica");
-        materie.setSemestru(1);
-        materie.setCod("MATH101");
-
-        catalogStudentMaterie = new ArrayList<>();
-        materie.setCatalogStudentMaterie(catalogStudentMaterie);
-
-        repartizareProfs = new ArrayList<>();
-        materie.setRepartizareProfs(repartizareProfs);
-    }
+public class MaterieTest {
 
     @Test
-    void testGettersAndSetters() {
-        assertEquals(1, materie.getId());
-        assertEquals("Matematica", materie.getNume());
-        assertEquals(1, materie.getSemestru());
-        assertEquals("MATH101", materie.getCod());
-        assertEquals(catalogStudentMaterie, materie.getCatalogStudentMaterie());
-        assertEquals(repartizareProfs, materie.getRepartizareProfs());
+    void testEqualsAndHashCode() {
+        Materie m1 = new Materie();
+        m1.setId(1);
+        m1.setCod("M001");
+
+        Materie m2 = new Materie();
+        m2.setId(1);
+        m2.setCod("M002"); // cod diferit, dar id egal
+
+        Materie m3 = new Materie();
+        m3.setId(2);
+        m3.setCod("M001");
+
+        // Compară după id → m1 și m2 sunt egale
+        assertEquals(m1, m2);
+        assertEquals(m1.hashCode(), m2.hashCode());
+
+        // id diferit → nu sunt egale
+        assertNotEquals(m1, m3);
+        assertNotEquals(m1.hashCode(), m3.hashCode());
     }
 }

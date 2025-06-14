@@ -2,87 +2,90 @@ package com.orar.Backend.Orar.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-import org.mockito.Mockito;
+
 import java.util.List;
-import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class StudentTest {
 
     private Student student;
-    private User user;
-    private List<CatalogStudentMaterie> catalog;
+    private User mockUser;
+    private Specializare mockSpecializare;
+    private CatalogStudentMaterie catalog1;
+    private CatalogStudentMaterie catalog2;
 
     @BeforeEach
     void setUp() {
+        mockUser = mock(User.class);
+        mockSpecializare = mock(Specializare.class);
+
+        catalog1 = mock(CatalogStudentMaterie.class);
+        catalog2 = mock(CatalogStudentMaterie.class);
+
         student = new Student();
         student.setId(1);
-        student.setCod("S12345");
+        student.setCod("S123");
         student.setNume("Popescu");
         student.setPrenume("Ion");
         student.setAn(2);
-        student.setGrupa("A3");
-
-        user = Mockito.mock(User.class);
-        student.setUser(user);
-
-        catalog = new ArrayList<>();
-        student.setCatalogStudentMaterie(catalog);
+        student.setGrupa("214A");
+        student.setUser(mockUser);
+        student.setSpecializare(mockSpecializare);
+        student.setCatalogStudentMaterie(List.of(catalog1, catalog2));
     }
 
     @Test
     void testGettersAndSetters() {
         assertEquals(1, student.getId());
-        assertEquals("S12345", student.getCod());
+        assertEquals("S123", student.getCod());
         assertEquals("Popescu", student.getNume());
         assertEquals("Ion", student.getPrenume());
         assertEquals(2, student.getAn());
-        assertEquals("A3", student.getGrupa());
-        assertEquals(user, student.getUser());
-        assertEquals(catalog, student.getCatalogStudentMaterie());
+        assertEquals("214A", student.getGrupa());
+        assertEquals(mockUser, student.getUser());
+        assertEquals(mockSpecializare, student.getSpecializare());
+        assertEquals(2, student.getCatalogStudentMaterie().size());
+        assertTrue(student.getCatalogStudentMaterie().contains(catalog1));
     }
 
     @Test
-    void testSetCod() {
-        student.setCod("S67890");
-        assertEquals("S67890", student.getCod());
-    }
-
-    @Test
-    void testSetNume() {
+    void testChangeFields() {
+        student.setCod("S456");
         student.setNume("Ionescu");
-        assertEquals("Ionescu", student.getNume());
-    }
-
-    @Test
-    void testSetPrenume() {
-        student.setPrenume("Mihai");
-        assertEquals("Mihai", student.getPrenume());
-    }
-
-    @Test
-    void testSetAn() {
+        student.setPrenume("Andrei");
         student.setAn(3);
+        student.setGrupa("215B");
+
+        assertEquals("S456", student.getCod());
+        assertEquals("Ionescu", student.getNume());
+        assertEquals("Andrei", student.getPrenume());
         assertEquals(3, student.getAn());
+        assertEquals("215B", student.getGrupa());
     }
 
     @Test
-    void testSetGrupa() {
-        student.setGrupa("B4");
-        assertEquals("B4", student.getGrupa());
+    void testEqualsAndHashCode() {
+        Student s1 = new Student();
+        s1.setId(10);
+
+        Student s2 = new Student();
+        s2.setId(10);
+
+        assertEquals(s1, s2);
+        assertEquals(s1.hashCode(), s2.hashCode());
     }
 
     @Test
-    void testSetUser() {
-        User newUser = Mockito.mock(User.class);
-        student.setUser(newUser);
-        assertEquals(newUser, student.getUser());
-    }
+    void testEmptyCatalogAndNullRelations() {
+        Student s = new Student();
+        s.setCatalogStudentMaterie(null);
+        s.setUser(null);
+        s.setSpecializare(null);
 
-    @Test
-    void testSetCatalogStudentMaterie() {
-        List<CatalogStudentMaterie> newCatalog = new ArrayList<>();
-        student.setCatalogStudentMaterie(newCatalog);
-        assertEquals(newCatalog, student.getCatalogStudentMaterie());
+        assertNull(s.getUser());
+        assertNull(s.getSpecializare());
+        assertNull(s.getCatalogStudentMaterie());
     }
 }
