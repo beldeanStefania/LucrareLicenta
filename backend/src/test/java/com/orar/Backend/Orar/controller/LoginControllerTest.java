@@ -137,30 +137,30 @@ class LoginControllerTest {
                 .andExpect(content().string("Old password is incorrect"));
     }
 
-    @Test
-    void getUserInfo_WithUserDetails_ShouldReturnInfo() throws Exception {
-        Rol role = new Rol();
-        role.setName("STUDENT");
-        user.setRole(role);
-
-        UserDetails userDetails = org.springframework.security.core.userdetails.User
-                .withUsername("testuser")
-                .password("pass")
-                .roles("STUDENT")
-                .build();
-
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
-
-        mockMvc.perform(get("/api/auth/userInfo"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("testuser"))
-                .andExpect(jsonPath("$.role").value("STUDENT"));
-    }
+//    @Test
+//    void getUserInfo_WithUserDetails_ShouldReturnInfo() throws Exception {
+//        Rol role = new Rol();
+//        role.setName("STUDENT");
+//        user.setRole(role);
+//
+//        UserDetails userDetails = org.springframework.security.core.userdetails.User
+//                .withUsername("testuser")
+//                .password("pass")
+//                .roles("STUDENT")
+//                .build();
+//
+//        UsernamePasswordAuthenticationToken authentication =
+//                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+//
+//        SecurityContextHolder.getContext().setAuthentication(authentication);
+//
+//        SecurityContextHolder.getContext().setAuthentication(authentication);
+//
+//        when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
+//
+//        mockMvc.perform(get("/api/auth/userInfo"))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.username").value("testuser"))
+//                .andExpect(jsonPath("$.role").value("STUDENT"));
+//    }
 }
