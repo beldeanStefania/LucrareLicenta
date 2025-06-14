@@ -227,7 +227,7 @@ public class ChatService {
             List<CurriculumEntry> curriculum
     ) {
         // regex care prinde două nume separate prin "și" sau "si"
-        Pattern p = Pattern.compile("alege\\s+(.+?)\\s+(?:și|si)\\s+(.+?)\\b", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+        Pattern p = Pattern.compile("alege\\s+([\\p{L}0-9 ]{1,50})\\s+(?:și|si)\\s+([\\p{L}0-9 ]{1,50})", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
         Matcher m = p.matcher(userMessage);
         if (!m.find()) return null;
 

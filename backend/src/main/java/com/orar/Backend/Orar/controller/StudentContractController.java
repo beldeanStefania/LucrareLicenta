@@ -61,7 +61,6 @@ public class StudentContractController {
         } catch (IllegalArgumentException | ValidationException e) {
             return ResponseEntity.badRequest().body(e.getMessage().getBytes());
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Eroare la generare.".getBytes());
         }
     }
