@@ -56,7 +56,7 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
-          java-version: '17'  # Schimbă dacă ai alt JDK
+          java-version: '17'  
           distribution: 'temurin'
 
       - name: Cache SonarCloud packages
@@ -67,12 +67,13 @@ jobs:
           restore-keys: ${{ runner.os }}-sonar
 
       - name: Build and analyze with Maven
-        run: mvn verify sonar:sonar -DskipTests=true \
+        run: |
+          cd backend
+          mvn verify sonar:sonar -DskipTests=true \
           -Dsonar.projectKey=beldeanStefania_LucrareLicenta \
           -Dsonar.organization=beldeanstefania \
           -Dsonar.host.url=https://sonarcloud.io \
           -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
