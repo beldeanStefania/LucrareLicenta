@@ -7,7 +7,6 @@ import {
   FaGraduationCap, FaBook, FaCalendarAlt, 
   FaRegFileAlt, FaClock, FaMapMarkerAlt, FaChalkboardTeacher 
 } from "react-icons/fa";
-//import "./StudentPage.css";
 import "../styles/pages.css";
 
 export default function StudentPage({ onLogout }) {
