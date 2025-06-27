@@ -87,6 +87,10 @@ jobs:
       #     -Dsonar.tests=src/test/java,../frontend/src \
       #     -Dsonar.javascript.lcov.reportPaths=../frontend/coverage/lcov.info
 
+      - name: Build Java backend
+        working-directory: backend
+        run: mvn clean package -DskipTests
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2.1.1
         env:
@@ -100,6 +104,7 @@ jobs:
             -Dsonar.sources=backend/src/main/java,frontend/src
             -Dsonar.tests=backend/src/test/java
             -Dsonar.javascript.lcov.reportPaths=frontend/coverage/lcov.info
+            -Dsonar.java.binaries=backend/target/classes
 
   deploy:
     needs: build-and-push
