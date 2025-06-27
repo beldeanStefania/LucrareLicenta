@@ -2,6 +2,7 @@ package com.orar.Backend.Orar.service;
 
 import com.orar.Backend.Orar.dto.OrarDTO;
 import com.orar.Backend.Orar.dto.OrarDetailsDTO;
+import com.orar.Backend.Orar.exception.GrupaNotFoundException;
 import com.orar.Backend.Orar.exception.OrarAlreadyExistsException;
 import com.orar.Backend.Orar.exception.OrarNotFoundException;
 import com.orar.Backend.Orar.model.Materie;
@@ -233,5 +234,261 @@ class OrarServiceTest {
         var result = service.updateOrar(10, dto);
         assertSame(orar1, result);
         verify(orarRepo, times(2)).save(any(Orar.class));
+    }
+
+    @Test
+    @DisplayName("getAll should return all orar entries")
+    void testGetAll() {
+        when(orarRepo.findAll()).thenReturn(List.of(orar1, orar2));
+
+        var result = service.getAll();
+        assertEquals(2, result.size());
+        assertTrue(result.contains(orar1));
+        assertTrue(result.contains(orar2));
+        verify(orarRepo).findAll();
+    }
+
+    @Test
+    @DisplayName("getOrarById should return orar when found")
+    void testGetOrarByIdFound() {
+        when(orarRepo.findById(10)).thenReturn(Optional.of(orar1));
+
+        var result = service.getOrarById(10);
+        assertEquals(Optional.of(orar1), result); // Service returns Optional
+        verify(orarRepo).findById(10);
+    }
+
+    @Test
+    @DisplayName("getOrarById should return empty when not found")
+    void testGetOrarByIdNotFound() {
+        when(orarRepo.findById(99)).thenReturn(Optional.empty());
+
+        var result = service.getOrarById(99);
+        assertEquals(Optional.empty(), result); // Service returns Optional.empty(), doesn't throw
+        verify(orarRepo).findById(99);
+    }
+
+    @Test
+    @DisplayName("compareDays should sort days correctly")
+    void testCompareDays() {
+        // This tests the private method indirectly through sorting
+        when(orarRepo.findByGrupa("G1")).thenReturn(List.of(orar1, orar2)); // Marti, Luni
+
+        var details = service.getOrarDetailsByGrupa("G1");
+        // Should be sorted: Luni before Marti
+        assertEquals("Luni", details.get(0).getZi());
+        assertEquals("Marti", details.get(1).getZi());
+    }
+
+    @Test
+    @DisplayName("determineFormatia should handle different scenarios with repartizare types")
+    void testDetermineFormatia() throws Exception {
+        // Create different repartizare objects with different tips
+        RepartizareProf laboratorRep = new RepartizareProf();
+        laboratorRep.setId(10);
+        laboratorRep.setProfesor(rep.getProfesor());
+        laboratorRep.setMaterie(rep.getMaterie());
+        laboratorRep.setTip("Laborator");
+
+        RepartizareProf seminarRep = new RepartizareProf();
+        seminarRep.setId(11);
+        seminarRep.setProfesor(rep.getProfesor());
+        seminarRep.setMaterie(rep.getMaterie());
+        seminarRep.setTip("Seminar");
+
+        when(salaRepo.findById(4)).thenReturn(Optional.of(sala));
+        when(orarRepo.findOverlappingOrar(anyInt(), any(), anyInt(), anyInt())).thenReturn(List.of());
+        when(orarRepo.save(any(Orar.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // Test with Laborator repartizare tip and semigrupa "1"
+        when(repartRepo.findById(10)).thenReturn(Optional.of(laboratorRep));
+        var dto = new OrarDTO();
+        dto.setGrupa("214");
+        dto.setZi("Luni");
+        dto.setSemigrupa("1");
+        dto.setRepartizareProfId(10);
+        dto.setSalaId(4);
+
+        var result = service.add(dto);
+        assertEquals("214/1", result.getFormatia()); // Laborator + semigrupa "1"
+
+        // Test with Seminar repartizare tip
+        when(repartRepo.findById(11)).thenReturn(Optional.of(seminarRep));
+        dto.setRepartizareProfId(11);
+        result = service.add(dto);
+        assertEquals("214", result.getFormatia()); // Seminar uses grupa only
+
+        // Test with Curs repartizare tip (original rep)
+        when(repartRepo.findById(3)).thenReturn(Optional.of(rep));
+        dto.setRepartizareProfId(3);
+        result = service.add(dto);
+        assertEquals("MIR", result.getFormatia()); // Curs -> "MIR"
+    }
+
+    @Test
+    @DisplayName("determineFormatia edge cases")
+    void testDetermineFormatiaEdgeCases() throws Exception {
+        // Since rep has tip "Curs", all tests will result in "MIR"
+        var dto = new OrarDTO();
+        dto.setGrupa("214");
+        dto.setZi("Luni"); // Add required field
+        dto.setSemigrupa("unknown");
+        dto.setTip("Laborator");
+        dto.setRepartizareProfId(3);
+        dto.setSalaId(4);
+
+        when(repartRepo.findById(3)).thenReturn(Optional.of(rep));
+        when(salaRepo.findById(4)).thenReturn(Optional.of(sala));
+        when(orarRepo.findOverlappingOrar(anyInt(), any(), anyInt(), anyInt())).thenReturn(List.of());
+        when(orarRepo.save(any(Orar.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // Test with unknown semigrupa - rep tip is "Curs" so result is "MIR"
+        var result = service.add(dto);
+        assertEquals("MIR", result.getFormatia()); // Curs -> "MIR"
+
+        // Test with null semigrupa - rep tip is still "Curs"
+        dto.setSemigrupa(null);
+        result = service.add(dto);
+        assertEquals("MIR", result.getFormatia()); // Curs -> "MIR"
+
+        // Test with laborator repartizare tip
+        RepartizareProf laboratorRep = new RepartizareProf();
+        laboratorRep.setId(12);
+        laboratorRep.setProfesor(rep.getProfesor());
+        laboratorRep.setMaterie(rep.getMaterie());
+        laboratorRep.setTip("Laborator");
+
+        when(repartRepo.findById(12)).thenReturn(Optional.of(laboratorRep));
+        dto.setRepartizareProfId(12);
+        dto.setSemigrupa("unknown");
+
+        result = service.add(dto);
+        assertEquals("214/unknown", result.getFormatia()); // Laborator with unknown semigrupa -> grupa/semigrupa
+    }
+
+    @Test
+    @DisplayName("createRepartizareProfIfNotExists flow - test with profesorId and materie")
+    void testCreateRepartizareProfIfNotExistsFlow() throws Exception {
+        var dto = new OrarDTO();
+        dto.setGrupa("214");
+        dto.setZi("Luni");
+        dto.setOraInceput(8);
+        dto.setOraSfarsit(10);
+        dto.setSalaId(4);
+        dto.setProfesorId(1); // Use existing field
+        dto.setMaterie("Matematica"); // Use existing field
+        dto.setTip("Curs"); // Use existing field
+
+        when(profesorRepo.findById(1)).thenReturn(Optional.of(rep.getProfesor()));
+        when(materieRepo.findByNume("Matematica")).thenReturn(Optional.of(rep.getMaterie()));
+        when(repartRepo.findByProfesorAndMaterieAndTip(any(), any(), any())).thenReturn(Optional.of(rep));
+
+        when(salaRepo.findById(4)).thenReturn(Optional.of(sala));
+        when(orarRepo.findOverlappingOrar(anyInt(), any(), anyInt(), anyInt())).thenReturn(List.of());
+        when(orarRepo.save(any(Orar.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        var result = service.add(dto);
+
+        assertNotNull(result);
+        assertEquals("MIR", result.getFormatia()); // Curs -> MIR
+    }
+
+    @Test
+    @DisplayName("checkOrarExists should detect overlap correctly")
+    void testCheckOrarExistsDetectsOverlap() {
+        var dto = new OrarDTO();
+        dto.setGrupa("214");
+        dto.setZi("Luni");
+        dto.setOraInceput(8);
+        dto.setOraSfarsit(10);
+        dto.setSalaId(4);
+        dto.setRepartizareProfId(3);
+
+        // Mock overlapping schedule
+        Orar overlapping = new Orar();
+        when(orarRepo.findOverlappingOrar(4, "Luni", 8, 10)).thenReturn(List.of(overlapping));
+
+        assertThrows(OrarAlreadyExistsException.class, () -> service.add(dto));
+    }
+
+    @Test
+    @DisplayName("add should handle missing sala gracefully")
+    void testAddWithMissingSala() {
+        var dto = new OrarDTO();
+        dto.setGrupa("214");
+        dto.setZi("Luni");
+        dto.setOraInceput(8);
+        dto.setOraSfarsit(10);
+        dto.setRepartizareProfId(3);
+        dto.setSalaId(999);
+
+        when(orarRepo.findOverlappingOrar(anyInt(), any(), anyInt(), anyInt())).thenReturn(List.of());
+        when(repartRepo.findById(3)).thenReturn(Optional.of(rep));
+        when(salaRepo.findById(999)).thenReturn(Optional.empty());
+
+        assertThrows(NoSuchElementException.class, () -> service.add(dto));
+    }
+
+    @Test
+    @DisplayName("buildOrar should correctly build orar from DTO")
+    void testBuildOrar() throws Exception {
+        // Create a repartizare with Seminar tip for this test
+        RepartizareProf seminarRep = new RepartizareProf();
+        seminarRep.setId(5);
+        seminarRep.setProfesor(rep.getProfesor());
+        seminarRep.setMaterie(rep.getMaterie());
+        seminarRep.setTip("Seminar");
+
+        var dto = new OrarDTO();
+        dto.setGrupa("214");
+        dto.setZi("Miercuri");
+        dto.setOraInceput(14);
+        dto.setOraSfarsit(16);
+        dto.setRepartizareProfId(5);
+        dto.setSalaId(4);
+        dto.setFrecventa("Saptamanal");
+        dto.setTip("Seminar");
+        dto.setSemigrupa("1");
+
+        when(orarRepo.findOverlappingOrar(anyInt(), any(), anyInt(), anyInt())).thenReturn(List.of());
+        when(repartRepo.findById(5)).thenReturn(Optional.of(seminarRep));
+        when(salaRepo.findById(4)).thenReturn(Optional.of(sala));
+        when(orarRepo.save(any(Orar.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        var result = service.add(dto);
+
+        assertEquals("214", result.getGrupa());
+        assertEquals("Miercuri", result.getZi());
+        assertEquals(14, result.getOraInceput());
+        assertEquals(16, result.getOraSfarsit());
+        assertEquals(seminarRep, result.getRepartizareProf());
+        assertEquals(sala, result.getSala());
+        assertEquals("Saptamanal", result.getFrecventa());
+        assertEquals("214", result.getFormatia()); // Seminar -> grupa only
+    }
+
+    @Test
+    @DisplayName("test various day sorting scenarios")
+    void testComplexDaySorting() {
+        // Create orar entries for different days
+        Orar orarVineri = new Orar();
+        orarVineri.setZi("Vineri");
+        orarVineri.setOraInceput(8);
+        orarVineri.setRepartizareProf(rep);
+        orarVineri.setSala(sala);
+
+        Orar orarMiercuri = new Orar();
+        orarMiercuri.setZi("Miercuri");
+        orarMiercuri.setOraInceput(10);
+        orarMiercuri.setRepartizareProf(rep);
+        orarMiercuri.setSala(sala);
+
+        when(orarRepo.findByGrupa("TestGroup")).thenReturn(List.of(orarVineri, orarMiercuri, orar1, orar2));
+
+        var details = service.getOrarDetailsByGrupa("TestGroup");
+
+        // Should be sorted by day order: Luni, Marti, Miercuri, Vineri
+        var days = details.stream().map(OrarDetailsDTO::getZi).toList();
+        assertEquals(List.of("Luni", "Marti", "Miercuri", "Vineri"), days);
     }
 }

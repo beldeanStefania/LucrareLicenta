@@ -19,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -211,6 +212,206 @@ class StudentServiceTest {
 
         assertEquals(2, results.size());
         assertTrue(results.get(0).isSuccess());
+    }
+
+    @Test
+    void testImportFromCsv_UpdateExistingStudent() throws Exception {
+        String csvContent = "cod,nume,prenume,an,grupa,specializare,username,password,email\n" +
+                "001,Popescu,Ion,2,214,CTI,ipopescu,pass123,ion@upb.ro";
+        MockMultipartFile file = new MockMultipartFile("file", "students.csv", "text/csv", csvContent.getBytes());
+
+        Student existingStudent = new Student();
+        existingStudent.setCod("001");
+        existingStudent.setAn(1);
+
+        when(studentRepository.findByCod("001")).thenReturn(Optional.of(existingStudent));
+        when(specializareRepository.findBySpecializare("CTI")).thenReturn(new Specializare());
+        when(studentRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        List<ImportResultDTO> results = studentService.importFromCsv(file);
+
+        assertEquals(1, results.size());
+        assertTrue(results.get(0).isSuccess());
+        assertEquals("Updated existing student", results.get(0).getMessage());
+        verify(studentRepository).save(existingStudent);
+    }
+
+    @Test
+    void testImportFromCsv_IOException() throws Exception {
+        MockMultipartFile file = mock(MockMultipartFile.class);
+        when(file.getInputStream()).thenThrow(new IOException("IO Error"));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            studentService.importFromCsv(file);
+        });
+
+        assertTrue(exception.getMessage().contains("Could not read CSV file"));
+    }
+
+    @Test
+    void testCreateStudent_RoleNotFound() {
+        when(studentRepository.findByCod("123")).thenReturn(Optional.empty());
+        when(studentRepository.findByNumeAndPrenume("Popescu", "Ion")).thenReturn(Optional.empty());
+        when(rolRepository.findByName("STUDENT")).thenReturn(Optional.empty());
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            studentService.add(studentDTO);
+        });
+
+        assertTrue(exception.getMessage().contains("Rolul STUDENT nu există în baza de date"));
+    }
+
+    @Test
+    void testImportFromCsv_ExceptionInCreation() throws Exception {
+        String csvContent = "cod,nume,prenume,an,grupa,specializare,username,password,email\n" +
+                "001,Popescu,Ion,2,214,CTI,ipopescu,pass123,ion@upb.ro";
+        MockMultipartFile file = new MockMultipartFile("file", "students.csv", "text/csv", csvContent.getBytes());
+
+        when(studentRepository.findByCod("001")).thenReturn(Optional.empty());
+        when(studentRepository.findByNumeAndPrenume("Popescu", "Ion")).thenReturn(Optional.empty());
+        when(rolRepository.findByName("STUDENT")).thenThrow(new RuntimeException("Database error"));
+
+        List<ImportResultDTO> results = studentService.importFromCsv(file);
+
+        assertEquals(1, results.size());
+        assertFalse(results.get(0).isSuccess());
+        assertTrue(results.get(0).getMessage().contains("Database error"));
+    }
+
+    @Test
+    void testImportFromCsv_EmptyFile() throws Exception {
+        String csvContent = "cod,nume,prenume,an,grupa,specializare,username,password,email\n";
+        MockMultipartFile file = new MockMultipartFile("file", "students.csv", "text/csv", csvContent.getBytes());
+
+        List<ImportResultDTO> results = studentService.importFromCsv(file);
+
+        assertEquals(0, results.size());
+    }
+
+    @Test
+    void testImportFromCsv_MalformedCsv() throws Exception {
+        String csvContent = "cod,nume,prenume,an,grupa,specializare,username,password,email\n" +
+                "001,Popescu"; // Missing columns
+        MockMultipartFile file = new MockMultipartFile("file", "students.csv", "text/csv", csvContent.getBytes());
+
+        List<ImportResultDTO> results = studentService.importFromCsv(file);
+
+        assertEquals(1, results.size());
+        assertFalse(results.get(0).isSuccess());
+    }
+
+    @Test
+    void testAdd_CompleteFlow_ValidStudent() throws Exception {
+        Rol studentRole = new Rol();
+        Specializare specializare = new Specializare();
+        User savedUser = new User();
+        savedUser.setUsername("ipopescu");
+
+        when(studentRepository.findByCod("123")).thenReturn(Optional.empty());
+        when(studentRepository.findByNumeAndPrenume("Popescu", "Ion")).thenReturn(Optional.empty());
+        when(rolRepository.findByName("STUDENT")).thenReturn(Optional.of(studentRole));
+        when(passwordEncoder.encode("pass123")).thenReturn("encodedPassword");
+        when(specializareRepository.findBySpecializare("CTI")).thenReturn(specializare);
+        when(userRepository.save(any(User.class))).thenReturn(savedUser);
+        when(studentRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        Student result = studentService.add(studentDTO);
+
+        assertNotNull(result);
+        assertEquals("Popescu", result.getNume());
+        assertEquals("Ion", result.getPrenume());
+        assertEquals(2, result.getAn());
+        assertEquals("214", result.getGrupa());
+        assertEquals("123", result.getCod());
+        assertEquals(specializare, result.getSpecializare());
+        assertEquals(savedUser, result.getUser());
+
+        verify(userRepository).save(any(User.class));
+        verify(studentRepository).save(any(Student.class));
+    }
+
+    @Test
+    void testAdd_PasswordEncryption() throws Exception {
+        when(studentRepository.findByCod("123")).thenReturn(Optional.empty());
+        when(studentRepository.findByNumeAndPrenume("Popescu", "Ion")).thenReturn(Optional.empty());
+        when(rolRepository.findByName("STUDENT")).thenReturn(Optional.of(new Rol()));
+        when(passwordEncoder.encode("pass123")).thenReturn("secureEncodedPassword");
+        when(specializareRepository.findBySpecializare("CTI")).thenReturn(new Specializare());
+        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+        when(studentRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        studentService.add(studentDTO);
+
+        verify(passwordEncoder).encode("pass123");
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(userCaptor.capture());
+        assertEquals("secureEncodedPassword", userCaptor.getValue().getPassword());
+    }
+
+    @Test
+    void testUpdate_ValidUpdateFlow() throws Exception {
+        Student existingStudent = new Student();
+        existingStudent.setCod("123");
+        existingStudent.setNume("Old Name");
+        existingStudent.setPrenume("Old Prenume");
+        existingStudent.setAn(1);
+        existingStudent.setGrupa("111");
+
+        when(studentRepository.findByCod("123")).thenReturn(Optional.of(existingStudent));
+        when(studentRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        Student result = studentService.update("123", studentDTO);
+
+        assertEquals("Popescu", result.getNume());
+        assertEquals("Ion", result.getPrenume());
+        assertEquals(2, result.getAn());
+        assertEquals("214", result.getGrupa());
+        assertEquals("123", result.getCod()); // Cod should remain unchanged
+    }
+
+    @Test
+    void testImportFromCsv_StudentAlreadyExistsDuringCreation() throws Exception {
+        String csvContent = "cod,nume,prenume,an,grupa,specializare,username,password,email\n" +
+                "001,Popescu,Ion,2,214,CTI,ipopescu,pass123,ion@upb.ro";
+        MockMultipartFile file = new MockMultipartFile("file", "students.csv", "text/csv", csvContent.getBytes());
+
+        when(studentRepository.findByCod("001")).thenReturn(Optional.empty())
+                .thenReturn(Optional.of(new Student())); // First call empty, second call returns student (when checking in add method)
+        when(studentRepository.findByNumeAndPrenume("Popescu", "Ion")).thenReturn(Optional.empty());
+
+        List<ImportResultDTO> results = studentService.importFromCsv(file);
+
+        assertEquals(1, results.size());
+        assertFalse(results.get(0).isSuccess());
+    }
+
+    @Test
+    void testServiceConstructor() {
+        StudentService service = new StudentService();
+        assertNotNull(service);
+    }
+
+    @Test
+    void testImportFromCsv_LongContent() throws Exception {
+        StringBuilder csvBuilder = new StringBuilder("cod,nume,prenume,an,grupa,specializare,username,password,email\n");
+        for (int i = 1; i <= 5; i++) {
+            csvBuilder.append(String.format("00%d,Student%d,Test%d,%d,21%d,CTI,user%d,pass%d,test%d@email.com\n",
+                    i, i, i, 2, i, i, i, i));
+        }
+
+        MockMultipartFile file = new MockMultipartFile("file", "students.csv", "text/csv", csvBuilder.toString().getBytes());
+
+        when(studentRepository.findByCod(any())).thenReturn(Optional.empty());
+        when(studentRepository.findByNumeAndPrenume(any(), any())).thenReturn(Optional.empty());
+        when(rolRepository.findByName("STUDENT")).thenReturn(Optional.of(new Rol()));
+        when(passwordEncoder.encode(any())).thenReturn("encoded");
+        when(specializareRepository.findBySpecializare(any())).thenReturn(new Specializare());
+        when(studentRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        List<ImportResultDTO> results = studentService.importFromCsv(file);
+
+        assertEquals(5, results.size());
+        assertTrue(results.stream().allMatch(ImportResultDTO::isSuccess));
     }
 
     @Test

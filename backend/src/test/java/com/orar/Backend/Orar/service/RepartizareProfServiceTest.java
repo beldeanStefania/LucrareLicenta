@@ -22,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -75,6 +76,135 @@ class RepartizareProfServiceTest {
         assertEquals(1, result.size());
         assertSame(rp, result.get(0));
         verify(repartizareProfRepo).findAll();
+    }
+
+    @Nested
+    @DisplayName("add method tests")
+    class AddTests {
+        @Test
+        @DisplayName("Successfully adds new repartizare")
+        void testAddSuccess() throws Exception {
+            when(materieRepo.findByNume("Matematica")).thenReturn(Optional.of(sampleMaterie));
+            when(profesorRepo.findByNumeAndPrenume("Popescu", "Ion")).thenReturn(Optional.of(sampleProfesor));
+            when(repartizareProfRepo.findByProfesorAndMaterieAndTip(sampleProfesor, sampleMaterie, "Curs"))
+                    .thenReturn(Optional.empty());
+
+            RepartizareProf savedRepartizare = new RepartizareProf();
+            savedRepartizare.setId(1);
+            when(repartizareProfRepo.save(any(RepartizareProf.class))).thenReturn(savedRepartizare);
+
+            RepartizareProf result = service.add(dto);
+
+            assertNotNull(result);
+            assertEquals(1, result.getId());
+            verify(repartizareProfRepo).save(any(RepartizareProf.class));
+        }
+
+        @Test
+        @DisplayName("Throws NoSuchElementException when materie not found in check phase")
+        void testAddMaterieNotFound() {
+            when(profesorRepo.findByNumeAndPrenume("Popescu", "Ion")).thenReturn(Optional.of(sampleProfesor));
+            when(materieRepo.findByNume("Matematica")).thenReturn(Optional.empty());
+
+            assertThrows(NoSuchElementException.class, () -> service.add(dto));
+            verify(repartizareProfRepo, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Throws NoSuchElementException when profesor not found in check phase")
+        void testAddProfesorNotFound() {
+            when(profesorRepo.findByNumeAndPrenume("Popescu", "Ion")).thenReturn(Optional.empty());
+
+            assertThrows(NoSuchElementException.class, () -> service.add(dto));
+            verify(repartizareProfRepo, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Throws MaterieDoesNotExistException when materie not found in create phase")
+        void testAddMaterieNotFoundInCreatePhase() {
+            // First calls succeed for check, but fail in create
+            when(profesorRepo.findByNumeAndPrenume("Popescu", "Ion")).thenReturn(Optional.of(sampleProfesor));
+            when(materieRepo.findByNume("Matematica"))
+                    .thenReturn(Optional.of(sampleMaterie))  // For check phase
+                    .thenReturn(Optional.empty());           // For create phase
+            when(repartizareProfRepo.findByProfesorAndMaterieAndTip(sampleProfesor, sampleMaterie, "Curs"))
+                    .thenReturn(Optional.empty());
+
+            assertThrows(MaterieDoesNotExistException.class, () -> service.add(dto));
+            verify(repartizareProfRepo, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Throws ProfesorNotFoundException when profesor not found in create phase")
+        void testAddProfesorNotFoundInCreatePhase() {
+            // First calls succeed for check, but fail in create
+            when(profesorRepo.findByNumeAndPrenume("Popescu", "Ion"))
+                    .thenReturn(Optional.of(sampleProfesor))  // For check phase
+                    .thenReturn(Optional.empty());            // For create phase
+            when(materieRepo.findByNume("Matematica")).thenReturn(Optional.of(sampleMaterie));
+            when(repartizareProfRepo.findByProfesorAndMaterieAndTip(sampleProfesor, sampleMaterie, "Curs"))
+                    .thenReturn(Optional.empty());
+
+            assertThrows(ProfesorNotFoundException.class, () -> service.add(dto));
+            verify(repartizareProfRepo, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Throws RepartizareProfAlreadyExistsException when repartizare already exists")
+        void testAddRepartizareAlreadyExists() {
+            when(materieRepo.findByNume("Matematica")).thenReturn(Optional.of(sampleMaterie));
+            when(profesorRepo.findByNumeAndPrenume("Popescu", "Ion")).thenReturn(Optional.of(sampleProfesor));
+
+            RepartizareProf existingRepartizare = new RepartizareProf();
+            when(repartizareProfRepo.findByProfesorAndMaterieAndTip(sampleProfesor, sampleMaterie, "Curs"))
+                    .thenReturn(Optional.of(existingRepartizare));
+
+            assertThrows(RepartizareProfAlreadyExistsException.class, () -> service.add(dto));
+            verify(repartizareProfRepo, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Validates complete buildRepartizareProf flow")
+        void testAddCompleteFlow() throws Exception {
+            when(materieRepo.findByNume("Matematica")).thenReturn(Optional.of(sampleMaterie));
+            when(profesorRepo.findByNumeAndPrenume("Popescu", "Ion")).thenReturn(Optional.of(sampleProfesor));
+            when(repartizareProfRepo.findByProfesorAndMaterieAndTip(sampleProfesor, sampleMaterie, "Curs"))
+                    .thenReturn(Optional.empty());
+            when(repartizareProfRepo.save(any(RepartizareProf.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            RepartizareProf result = service.add(dto);
+
+            ArgumentCaptor<RepartizareProf> captor = ArgumentCaptor.forClass(RepartizareProf.class);
+            verify(repartizareProfRepo).save(captor.capture());
+            RepartizareProf saved = captor.getValue();
+
+            assertEquals(sampleMaterie, saved.getMaterie());
+            assertEquals(sampleProfesor, saved.getProfesor());
+            assertEquals("Curs", saved.getTip());
+        }
+    }
+
+    @Nested
+    @DisplayName("checkRepartizareProfExists edge cases")
+    class CheckExistsTests {
+        @Test
+        @DisplayName("Handles missing profesor in check")
+        void testCheckRepartizareExistsProfesorMissing() {
+            when(profesorRepo.findByNumeAndPrenume("Popescu", "Ion")).thenReturn(Optional.empty());
+
+            // This should cause a RuntimeException due to .get() on empty Optional
+            assertThrows(Exception.class, () -> service.add(dto));
+        }
+
+        @Test
+        @DisplayName("Handles missing materie in check")
+        void testCheckRepartizareExistsMaterieMissing() {
+            when(profesorRepo.findByNumeAndPrenume("Popescu", "Ion")).thenReturn(Optional.of(sampleProfesor));
+            when(materieRepo.findByNume("Matematica")).thenReturn(Optional.empty());
+
+            // This should cause a RuntimeException due to .get() on empty Optional in checkRepartizareProfExists
+            assertThrows(Exception.class, () -> service.add(dto));
+        }
     }
 
 
