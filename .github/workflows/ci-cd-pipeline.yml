@@ -66,6 +66,12 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
+      - name: Install dependencies and run frontend tests with coverage
+        run: |
+          cd frontend
+          npm ci
+          npm run test -- --coverage
+
       - name: Build and analyze with Maven
         run: |
           cd backend
