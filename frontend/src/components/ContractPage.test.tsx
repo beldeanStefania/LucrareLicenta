@@ -55,8 +55,14 @@ describe('ContractSelectionPage', () => {
       expect(screen.getByText('TestUser')).toBeInTheDocument()
     })
 
-    // loading spinner iniţial
-    expect(screen.getByText(/Se încarcă cursurile/i)).toBeInTheDocument()
+    // loading spinner iniţial – apare imediat după render
+expect(screen.getByText(/Se încarcă cursurile/i)).toBeInTheDocument()
+
+// aşteaptă să apară user-ul
+await waitFor(() => {
+  expect(screen.getByText('TestUser')).toBeInTheDocument()
+})
+
 
     // după ce se rezolvă cererile, apar rândurile de tabel
     await waitFor(() => {
