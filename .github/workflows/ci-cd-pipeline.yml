@@ -70,8 +70,8 @@ jobs:
         run: |
           cd frontend
           npm ci
-          npm run test -- --coverage
-
+          npm run test
+          
       - name: Build and analyze with Maven
         run: |
           cd backend
