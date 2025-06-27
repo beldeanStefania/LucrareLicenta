@@ -89,7 +89,7 @@ jobs:
 
       - name: Build Java backend
         working-directory: backend
-        run: mvn clean package -DskipTests
+        run: mvn clean test
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2.1.1
