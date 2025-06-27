@@ -62,7 +62,10 @@ describe('ContractSelectionPage', () => {
     })
 
     // loading spinner inițial – verifică că apare la început
-    expect(screen.queryByText(/Se încarcă cursurile/i)).toBeInTheDocument()
+    // loading spinner inițial – așteaptă să apară
+ expect(
+   await screen.findByText(/Se încarcă cursurile/i)
+ ).toBeInTheDocument()
 
     // după ce se rezolvă cererile, apar rândurile de tabel
     await waitFor(() => {
