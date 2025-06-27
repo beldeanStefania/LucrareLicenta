@@ -32,7 +32,8 @@ const [todos, setTodos] = useState([]);
   const [selectedMaterieForSchedule, setSelectedMaterieForSchedule] = useState("");
   const [selectedTip, setSelectedTip] = useState("");
   const [selectedFrecventa, setSelectedFrecventa] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [gradeErrorMessage, setGradeErrorMessage] = useState("");
+  const [scheduleErrorMessage, setScheduleErrorMessage] = useState("");
   const [scheduleData, setScheduleData] = useState({
     grupa: "",
     oraInceput: "",
@@ -243,11 +244,11 @@ useEffect(() => {
   
   const handleReserveRoom = () => {
     if (!selectedMaterieForSchedule || !selectedTip || !selectedCladire || !selectedRoom || !scheduleData.zi || !scheduleData.oraInceput || !scheduleData.oraSfarsit) {
-      setErrorMessage("Toate câmpurile trebuie completate pentru a rezerva sala!");
+      setScheduleErrorMessage("Toate câmpurile trebuie completate pentru a rezerva sala!");
       return;
     }
   
-    setErrorMessage(""); 
+    setScheduleErrorMessage(""); 
   
     const payload = {
       grupa: scheduleData.grupa,
@@ -334,7 +335,7 @@ useEffect(() => {
           </div>
 
 
-          {errorMessage && <p className="error-message">{errorMessage}</p>}
+          {gradeErrorMessage && <p className="error-message">{gradeErrorMessage}</p>}
           <button onClick={handleAddGrades}>Adaugă Note</button>
         </section>
 
@@ -348,7 +349,7 @@ useEffect(() => {
               value={selectedMaterieForSchedule}
             >
               <option value="">Selectează materie</option>
-              {materiiUnice.map((materie, index) => (
+              {materiiUnice.map((materie) => (
                 <option key={materie.denumire} value={materie.denumire}>
                   {materie.denumire}
                 </option>
@@ -465,7 +466,7 @@ useEffect(() => {
               <option value="Vineri">Vineri</option>
             </select>
           </div>
-          {errorMessage && <p className="error-message">{errorMessage}</p>}
+          {scheduleErrorMessage && <p className="error-message">{scheduleErrorMessage}</p>}
           <button onClick={handleReserveRoom}>Rezervă Sală</button>
         </section>
 
