@@ -98,7 +98,7 @@ jobs:
             -Dsonar.projectKey=beldeanStefania_LucrareLicenta
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.sources=backend/src/main/java,frontend/src
-            -Dsonar.tests=backend/src/test/java,frontend/src
+            -Dsonar.tests=backend/src/test/java
             -Dsonar.javascript.lcov.reportPaths=frontend/coverage/lcov.info
 
   deploy:
