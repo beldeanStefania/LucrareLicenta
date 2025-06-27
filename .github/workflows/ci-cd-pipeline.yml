@@ -73,19 +73,38 @@ jobs:
           npm run test
           cd ..
 
-      - name: Build and analyze with Maven
-        run: |
-          cd backend
-          mvn verify sonar:sonar \
-          -Dmysql.user=root \
-          -Dmysql.password=${{ secrets.MYSQL_ROOT_PASSWORD }} \
-          -Dsonar.projectKey=beldeanStefania_LucrareLicenta \
-          -Dsonar.organization=beldeanstefania \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
-          -Dsonar.sources=src/main/java,../frontend/src \
-          -Dsonar.tests=src/test/java,../frontend/src \
-          -Dsonar.javascript.lcov.reportPaths=../frontend/coverage/lcov.info
+      # - name: Build and analyze with Maven
+      #   run: |
+      #     cd backend
+      #     mvn verify sonar:sonar \
+      #     -Dmysql.user=root \
+      #     -Dmysql.password=${{ secrets.MYSQL_ROOT_PASSWORD }} \
+      #     -Dsonar.projectKey=beldeanStefania_LucrareLicenta \
+      #     -Dsonar.organization=beldeanstefania \
+      #     -Dsonar.host.url=https://sonarcloud.io \
+      #     -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
+      #     -Dsonar.sources=src/main/java,../frontend/src \
+      #     -Dsonar.tests=src/test/java,../frontend/src \
+      #     -Dsonar.javascript.lcov.reportPaths=../frontend/coverage/lcov.info
+
+      - name: Run SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v1
+        with:
+          organization: beldeanstefania
+          token:          ${{ secrets.SONAR_TOKEN }}
+          projectKey:     beldeanStefania_LucrareLicenta
+          extraProperties: |
+            # unde sunt codul şi testele Java
+            sonar.sources=backend/src/main/java
+            sonar.tests=backend/src/test/java
+
+            # includem frontend-ul ca “JS”  
+            sonar.sources+=,frontend/src
+            sonar.tests+=,frontend/src
+
+            # raportul LCOV generat de Vitest
+            sonar.javascript.lcov.reportPaths=frontend/coverage/lcov.info
+
 
   deploy:
     needs: build-and-push
