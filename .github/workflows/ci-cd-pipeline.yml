@@ -71,7 +71,8 @@ jobs:
           cd frontend
           npm ci
           npm run test
-          
+          cd ..
+
       - name: Build and analyze with Maven
         run: |
           cd backend
@@ -81,7 +82,10 @@ jobs:
           -Dsonar.projectKey=beldeanStefania_LucrareLicenta \
           -Dsonar.organization=beldeanstefania \
           -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+          -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
+          -Dsonar.sources=src/main/java,../frontend/src \
+          -Dsonar.tests=src/test/java,../frontend/src \
+          -Dsonar.javascript.lcov.reportPaths=../frontend/coverage/lcov.info
 
   deploy:
     needs: build-and-push
