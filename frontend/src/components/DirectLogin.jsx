@@ -16,11 +16,9 @@ export default function DirectLogin() {
     setError("");
 
     try {
-      // Clear previous auth state
       localStorage.removeItem("auth_token");
       sessionStorage.clear();
 
-      // Call your backend via axios helper (which uses baseURL)
       const { data } = await request("post", "/api/auth/login", {
         username,
         password
@@ -33,20 +31,15 @@ export default function DirectLogin() {
         throw new Error("No token received from server");
       }
 
-      // Store token & set default header
       localStorage.setItem("auth_token", token);
-      // axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      // (already handled by your helper if you set it up)
 
       setSuccess(true);
 
-      // Choose redirect path
       let dashboardUrl = "/dashboard";
       if (role === "ROLE_ADMIN")      dashboardUrl = "/admin";
       else if (role === "ROLE_STUDENT") dashboardUrl = "/student";
       else if (role === "ROLE_PROFESOR") dashboardUrl = "/profesor";
 
-      // Clear caches, then redirect
       sessionStorage.clear();
       if (window.caches) {
         caches.keys().then(names => names.forEach(name => caches.delete(name)));

@@ -1,4 +1,3 @@
-// src/components/PasswordChangeModal.jsx
 import React, { useState } from "react";
 import { request } from "../helpers/axios-helper";
 import "./PasswordChangeModal.css";
@@ -37,15 +36,12 @@ export default function PasswordChangeModal({ username, onClose }) {
         newPassword
       };
       const response = await request("POST", "/api/auth/changePassword", payload);
-      // Dacă backend-ul returnează un mesaj de succes:
       setSuccessMsg("Parola a fost schimbată cu succes.");
-      // Opțional: după câteva secunde, închide automat modalul
       setTimeout(() => {
         onClose();
       }, 1500);
     } catch (err) {
       console.error("Eroare la schimbarea parolei:", err);
-      // Dacă backend-ul returnează status 403 cu mesaj „Old password is incorrect”, îl afișăm
       const msg = err.response?.data || "A apărut o eroare. Încearcă din nou.";
       setErrorMsg(msg);
     } finally {

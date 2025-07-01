@@ -26,7 +26,7 @@ export default function App() {
         try {
           const decoded = decodeToken(token);
           setUserRole(decoded.role || null);
-          setUsername(decoded.sub || null);  // JWT-ul tău probabil folosește `sub` pentru username
+          setUsername(decoded.sub || null);  
           setIsLoggedIn(true);
         } catch (err) {
           localStorage.removeItem("auth_token");
@@ -85,7 +85,6 @@ export default function App() {
     }
   };
 
-  // Create a more resilient login handler
   const redirectToLoginOrDashboard = () => {
     if (isLoggedIn) {
       return (
@@ -107,7 +106,7 @@ export default function App() {
       <Router>
         <Routes>
           <Route path="/" element={<WelcomePage />} />
-          {/* Use the DirectLogin component instead of the token-dependent login flow */}
+          {}
           <Route path="/login" element={<DirectLogin />} />
           <Route
             path="/admin"

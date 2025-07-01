@@ -24,7 +24,6 @@ export default function ContractSelectionPage({ onLogout }) {
       .catch(() => setUserData({ username: "User" }));
   }, []);
 
-  // Autocomplete
   useEffect(() => {
     if (filter.length < 2) {
       setSuggestions([]);
@@ -35,7 +34,6 @@ export default function ContractSelectionPage({ onLogout }) {
       .catch(() => setSuggestions([]));
   }, [filter]);
 
-  // Verificăm existența contractului
   useEffect(() => {
     const studentCod = searchParams.get("cod");
     const studentAn = parseInt(searchParams.get("an"), 10);
@@ -47,7 +45,7 @@ export default function ContractSelectionPage({ onLogout }) {
           alert(
             "Ai deja contract generat pentru acest an. Nu poți genera pentru anul următor."
           );
-          setAn(null); // sau setăm la studentAn, dar dezactivăm butonul
+          setAn(null); 
         } else {
           setAn(studentAn);
         }
@@ -55,7 +53,6 @@ export default function ContractSelectionPage({ onLogout }) {
       .catch(() => setAn(studentAn));
   }, [searchParams]);
 
-  // Fetch cursuri și preselect obligatorii
   useEffect(() => {
     if (!cod || an == null) return;
     setLoading(true);
@@ -83,7 +80,6 @@ export default function ContractSelectionPage({ onLogout }) {
       .finally(() => setLoading(false));
   }, [cod, an]);
 
-  // Toggle selectare
   const toggle = (codMaterie) => {
     const course = sem1Courses
       .concat(sem2Courses)
@@ -94,7 +90,6 @@ export default function ContractSelectionPage({ onLogout }) {
     setSelectedSet(ns);
   };
 
-  // Generare / previzualizare PDF prin axios
   const handleSubmit = async (preview) => {
     if (selectedSet.size === 0) {
       alert("Trebuie să ai cel puțin o materie selectată.");

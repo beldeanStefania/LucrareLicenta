@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react"; // <-- Am adăugat useEffect aici
-import { request } from "../helpers/axios-helper"; // <-- Am adăugat importul pentru request
+import React, { useState, useEffect } from "react"; 
+import { request } from "../helpers/axios-helper"; 
 import { FaUserCircle, FaBars, FaTimes, FaUniversity } from "react-icons/fa";
 import { NavLink, useNavigate } from "react-router-dom";
 import PasswordChangeModal from "./PasswordChangeModal";
@@ -180,7 +180,7 @@ export default function NavigationHeader({ userRole, userName, onLogout }) {
             >
               <FaUserCircle size={24} />
               <div className="user-details">
-                {/* Dacă fetchedUsername a fost încărcat, îl afișăm; altfel arătăm prop-ul userName */}
+                {}
                 <span className="user-name">
                   {fetchedUsername || userName || "User"}
                 </span>

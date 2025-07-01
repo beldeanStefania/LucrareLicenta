@@ -3,13 +3,11 @@ import { render, screen, waitFor, fireEvent, within } from '@testing-library/rea
 import { MemoryRouter } from 'react-router-dom'
 import { vi } from 'vitest'
 
-// mock axios-helper
 vi.mock('../helpers/axios-helper', () => ({
   request: vi.fn(),
 }))
 import { request } from '../helpers/axios-helper'
 
-// mock react-router hooks
 const mockNavigate = vi.fn()
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom')
@@ -20,7 +18,6 @@ vi.mock('react-router-dom', async () => {
   }
 })
 
-// mock componente copil
 vi.mock('./NavigationHeader', () => ({
   default: () => <div data-testid="nav-header" />,  
 }))
@@ -114,15 +111,12 @@ describe('StudentPage', () => {
       expect(screen.queryByText('Loading student data...')).not.toBeInTheDocument()
     )
 
-    // Verificăm de două ori pentru numeMaterie și codMaterie
     expect(screen.getAllByText('M1')).toHaveLength(2)
     expect(screen.getAllByText('M2')).toHaveLength(2)
 
-    // Găsim tabelul de note și verificăm nota și status pentru M1
     const gradesTable = screen.getByRole('table')
     const tableRows = within(gradesTable).getAllByRole('row')
     
-    // Căutăm rândul cu M1 și verificăm că are nota 6 și status Passed
     const m1Row = tableRows.find(row => 
       row.textContent.includes('M1') && row.textContent.includes('6')
     )
@@ -130,7 +124,6 @@ describe('StudentPage', () => {
     expect(within(m1Row).getByText('6')).toBeInTheDocument()
     expect(within(m1Row).getByText('Passed')).toBeInTheDocument()
 
-    // Materia fără notă nu afișează status
     const m2Row = tableRows.find(row => 
       row.textContent.includes('M2') && !row.textContent.includes('M1')
     )
@@ -148,22 +141,17 @@ describe('StudentPage', () => {
       expect(screen.queryByText('Loading student data...')).not.toBeInTheDocument()
     )
 
-    // Filtrăm pentru anul 1
     fireEvent.change(screen.getByLabelText(/An:/i), { target: { value: '1' } })
 
-    // Verificăm media în card-ul Average Grade
     const avgCard = screen.getByText('Average Grade').closest('.stat-card')
     expect(within(avgCard).getByText('6.00')).toBeInTheDocument()
 
-    // Verificăm numărul de cursuri în card-ul Filtered Courses
     const filteredCard = screen.getByText('Filtered Courses').closest('.stat-card')
     expect(within(filteredCard).getByText('2')).toBeInTheDocument()
   })
 
   it('afișează lista To-Do și permite acțiuni de marcare și ștergere', async () => {
-    // Setup mock pentru acest test specific
     request.mockImplementation((method, url, payload) => {
-      // Păstrăm mock-urile default pentru alte API-uri
       if (method === 'GET' && url === '/api/auth/userInfo') {
         return Promise.resolve({
           data: {
@@ -186,7 +174,6 @@ describe('StudentPage', () => {
       if (method === 'GET' && url.startsWith('/api/orare/getAll')) {
         return Promise.resolve({ data: [] })
       }
-      // Mock specific pentru To-Do
       if (method === 'GET' && url === '/api/todo/user/user1') {
         return Promise.resolve({
           data: [
@@ -209,12 +196,10 @@ describe('StudentPage', () => {
       </MemoryRouter>
     )
 
-    // Așteptăm ca toate datele să se încarce
     await waitFor(() =>
       expect(screen.queryByText('Loading student data...')).not.toBeInTheDocument()
     )
 
-    // Așteptăm să apară to-do-ul
     await waitFor(() => {
       expect(screen.getByText('Test ToDo')).toBeInTheDocument()
     })
@@ -241,9 +226,7 @@ describe('StudentPage', () => {
   })
 
   it('afișează orarul când există date disponibile', async () => {
-    // Setup mock pentru acest test specific
     request.mockImplementation((method, url, payload) => {
-      // Păstrăm mock-urile default pentru alte API-uri
       if (method === 'GET' && url === '/api/auth/userInfo') {
         return Promise.resolve({
           data: {
@@ -263,7 +246,6 @@ describe('StudentPage', () => {
           ],
         })
       }
-      // Mock specific pentru orar
       if (method === 'GET' && url.startsWith('/api/orare/getAll')) {
         return Promise.resolve({
           data: [
@@ -292,12 +274,10 @@ describe('StudentPage', () => {
       </MemoryRouter>
     )
     
-    // Așteptăm ca toate datele să se încarce
     await waitFor(() =>
       expect(screen.queryByText('Loading student data...')).not.toBeInTheDocument()
     )
 
-    // Așteptăm să apară datele din orar
     await waitFor(() => {
       expect(screen.getByText('Matematica')).toBeInTheDocument()
     })

@@ -18,33 +18,25 @@ export default function AdminPage({ onLogout }) {
 
   const [specializations, setSpecializations] = useState([]);
   const [studentImportReport, setStudentImportReport] = useState([]);
-  // ---------------------------
-  // STUDENT LOGIC
-  // ---------------------------
+
   const [students, setStudents] = useState([]);
   const [viewMode, setViewMode] = useState("list"); 
   const [studentToEdit, setStudentToEdit] = useState(null);
   const [email, setEmail] = useState(""); 
 
-  // ---------------------------
-  // PROFESSOR LOGIC
-  // ---------------------------
+
   const [professors, setProfessors] = useState([]);
   const [viewModeProf, setViewModeProf] = useState("list"); 
   const [professorToEdit, setProfessorToEdit] = useState(null);
-  const [professorEmail, setProfessorEmail] = useState(""); // Pentru email-ul profesorului
+  const [professorEmail, setProfessorEmail] = useState(""); 
   const [professorImportReport, setProfessorImportReport] = useState([]);
 
-  // ---------------------------
-  // SUBJECT/REPARTIZARE LOGIC
-  // ---------------------------
+
   const [subjectFormVisible, setSubjectFormVisible] = useState(false);
   const [selectedProfForSubject, setSelectedProfForSubject] = useState(null);
   const [allSubjects, setAllSubjects] = useState([]);
   
-  // ---------------------------
-  // DIRECT SUBJECT MANAGEMENT
-  // ---------------------------
+
   const [viewModeSubject, setViewModeSubject] = useState("list");
   const [subjectToEdit, setSubjectToEdit] = useState(null);
   const [subjectImportReport, setSubjectImportReport] = useState([]);
@@ -99,7 +91,6 @@ export default function AdminPage({ onLogout }) {
       .catch(console.error);
   };
 
-  // Apelez la inițializare
   useEffect(() => {
     if (adminUser) {
       fetchTodos(adminUser);
@@ -114,7 +105,6 @@ export default function AdminPage({ onLogout }) {
     fetchSpecializations();
   }, []);
 
-  // ========== STUDENTS ==========
   const fetchStudents = () => {
     request("GET", "/api/student/getAllStudents")
       .then((response) => {
@@ -187,18 +177,14 @@ const handleSaveStudent = (formValues) => {
         }
       });
   } else {
-    // Update student existent
-    // studentToEdit conține obiectul complet cu proprietatea `cod`
+
     if (!studentToEdit || !studentToEdit.cod) {
       alert("Nu a fost selectat un student valid pentru update.");
       return;
     }
     const codPentruUrl = studentToEdit.cod;
-    // Construcția endpoint-ului folosind `cod` din studentToEdit
     const endpoint = `/api/student/update/${codPentruUrl}`;
 
-    // Payload-ul chiar trebuie să conțină numai câmpurile editabile
-    // pe care backend-ul le așteaptă în StudentDTO (nume, prenume, an, grupă, specializare).
     const payload = {
       nume: formValues.nume,
       prenume: formValues.prenume,
@@ -242,7 +228,6 @@ const handleImportStudents = (e) => {
   const formData = new FormData();
   formData.append("file", file);
 
-  // folosește wrapper-ul care deja pune Authorization
   request("POST", "/api/student/import", formData)
     .then(res => {
       setStudentImportReport(res.data);
@@ -439,7 +424,6 @@ const renderStudentList = () => (
   </div>
 );
 
-  // ========== PROFESSORS ==========
 
   const fetchProfessors = () => {
     request("GET", "/api/profesor/getAll")
@@ -512,7 +496,6 @@ const renderStudentList = () => (
   const formData = new FormData();
   formData.append("file", file);
 
-  // folosește wrapper-ul care deja pune Authorization
   request("POST", "/api/profesor/import", formData)
     .then(res => {
       setProfessorImportReport(res.data);
@@ -735,7 +718,7 @@ const renderStudentList = () => (
   request("POST", "/api/materie/import", formData)
     .then(res => {
       setSubjectImportReport(res.data);
-      fetchAllSubjects();   // reîncarcă lista
+      fetchAllSubjects();   
     })
     .catch(err => {
       console.error("Import error materii", err);
@@ -842,7 +825,6 @@ const renderStudentList = () => (
     );
   };
 
-  // ========== SUBJECTS ==========
   const handleAddSubject = () => {
     setViewModeSubject("add");
     setSubjectToEdit(null);
@@ -953,7 +935,6 @@ const renderStudentList = () => (
           e.preventDefault();
           const formData = new FormData(e.target);
           const subject = Object.fromEntries(formData.entries());
-          // Convert string values to numbers where needed
           subject.semestru = parseInt(subject.semestru, 10);
           subject.credite = parseInt(subject.credite, 10);
           handleSaveSubject(subject);
@@ -1044,14 +1025,14 @@ const renderStudentList = () => (
 
           {renderAssignSubjectForm()}
            <hr />
-        {/* To-Do Management */}
+        {}
 <div id="todo" className="section-container">
   <div className="section-header">
     <h2>To-Do List</h2>
   </div>
 
   <div className="section-content">
-    {/* Formular pentru adăugare To-Do */}
+    {}
     <div className="todo-form">
       <input
         type="text"
@@ -1075,7 +1056,7 @@ const renderStudentList = () => (
       </button>
     </div>
 
-    {/* Lista To-Do sau mesaj de încărcare */}
+    {}
     {loadingTodos ? (
       <div className="loading-container">
         <div className="loading-spinner" />

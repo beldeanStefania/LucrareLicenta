@@ -111,7 +111,6 @@
   transition: background-color 0.2s ease, opacity 0.2s ease;
 }
 
-/* Hover effect pentru zona cu numele user-ului */
 .user-info:hover {
   background-color: rgba(255, 255, 255, 0.1);
   opacity: 1;

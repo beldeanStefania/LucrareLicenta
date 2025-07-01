@@ -1,4 +1,3 @@
-// components/TodoSection.jsx
 import React, { useEffect, useState } from "react";
 import { request } from "../helpers/axios-helper";
 

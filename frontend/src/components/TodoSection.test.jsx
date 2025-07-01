@@ -4,7 +4,6 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { vi } from 'vitest'
 
-// mock al helper-ului axios-helper
 vi.mock('../helpers/axios-helper', () => ({
   request: vi.fn(),
 }))
@@ -17,12 +16,12 @@ describe('TodoSection', () => {
   })
 
   it('afișează loading și apoi mesajul de listă goală când nu sunt To-Do-uri', async () => {
-    // primul apel (GET) → lista goală
+    
     request.mockResolvedValueOnce({ data: [] })
 
     render(<TodoSection username="testuser" />)
 
-    // după GET, dispar loading-ul și apare mesajul de empty state
+    
     await waitFor(() => {
       expect(
         screen.queryByText(/Se încarcă To-Do-urile/i)
@@ -32,7 +31,7 @@ describe('TodoSection', () => {
       screen.getByText(/Nu există niciun To-Do momentan/i)
     ).toBeInTheDocument()
 
-    // request ar fi fost apelat o singură dată
+    
     expect(request).toHaveBeenCalledTimes(1)
     expect(request).toHaveBeenCalledWith(
       'GET',
@@ -62,7 +61,7 @@ describe('TodoSection', () => {
 
     render(<TodoSection username="jsmith" />)
 
-    // așteaptă lista
+    
     await waitFor(() => screen.getByText('Task 1'))
 
     // tabel
@@ -71,7 +70,7 @@ describe('TodoSection', () => {
     // header + 2 rânduri de date
     expect(rows).toHaveLength(3)
 
-    // verificăm primul To-Do
+    
     const row1 = screen.getByText('Task 1').closest('tr')
     expect(within(row1).getByText('Desc 1')).toBeInTheDocument()
     expect(within(row1).getByText('2025-07-01')).toBeInTheDocument()
@@ -101,9 +100,7 @@ describe('TodoSection', () => {
       { id: 3, title: 'New Task', description: 'Desc', deadline: '2025-08-01', done: false }
     ]
 
-    // 1) GET inițial → []
-    // 2) POST create → {}
-    // 3) GET după adăugare → newTodos
+    
     request
       .mockResolvedValueOnce({ data: [] })         // initial GET
       .mockResolvedValueOnce({ data: {} })         // POST create
@@ -111,12 +108,10 @@ describe('TodoSection', () => {
 
     render(<TodoSection username="alex" />)
 
-    // așteaptă empty state
     await waitFor(() =>
       expect(screen.getByText(/Nu există niciun To-Do momentan/i)).toBeInTheDocument()
     )
 
-    // completăm formularul
     fireEvent.change(screen.getByPlaceholderText('Titlu'), {
       target: { value: 'New Task' },
     })
@@ -127,13 +122,11 @@ describe('TodoSection', () => {
       target: { value: '2025-08-01' },
     })
 
-    // click pe “Adaugă”
     fireEvent.click(screen.getByRole('button', { name: /Adaugă/i }))
 
-    // așteaptă re-fetch și apariția noului rând
+    
     await waitFor(() => screen.getByText('New Task'))
 
-    // verificăm că a fost apelat POST-ul corect
     expect(request).toHaveBeenCalledWith(
       'POST',
       '/api/todo/create',

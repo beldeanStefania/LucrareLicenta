@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { request, setAuthHeader } from "../helpers/axios-helper";
 import { FaUser, FaLock, FaSignInAlt, FaUniversity } from "react-icons/fa";
 
-// Simple login form without token decoding
 export default function LoginFallback({ onLogin }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -28,7 +27,6 @@ export default function LoginFallback({ onLogin }) {
         setAuthHeader(token);
         localStorage.setItem("auth_token", token);
         
-        // Here we don't try to decode the token
         navigate("/dashboard");
         if (onLogin) onLogin();
       })
