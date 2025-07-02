@@ -16,7 +16,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
 import java.util.Map;
-// …
 
 @RestController
 @RequestMapping("/api/chat")

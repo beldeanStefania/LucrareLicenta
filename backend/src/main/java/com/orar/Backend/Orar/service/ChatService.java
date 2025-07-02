@@ -73,7 +73,6 @@ public class ChatService {
     }
 
     public String chat(String userMessage, String username) {
-        // 1. Încarcă contextul din DB
         Student stud = studentRepo.findByUserUsername(username)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         Specializare spec = stud.getSpecializare();
@@ -86,9 +85,14 @@ public class ChatService {
             return conflictReply;
         }
 
+        String futureOblReply = buildFutureObligatoryReply(userMessage, stud.getAn(), curriculum);
+        if (futureOblReply != null) {
+            return futureOblReply;
+        }
+
+
         boolean hasContract = !istoricul.isEmpty();
 
-        // 2. Construiește secțiunea de profil
         String noteProfil = istoricul.stream()
                 .map(c -> String.format("%s – %s: nota %.1f",
                         c.getMaterie().getCod(),
@@ -119,7 +123,6 @@ public class ChatService {
                 .collect(Collectors.joining("\n"));
 
 
-        // 3. Prompt de sistem extins
         String systemPrompt = """
                 Ești un asistent virtual pentru platforma universitară.
                 Student: %s
@@ -156,7 +159,6 @@ public class ChatService {
         );
 
 
-        // 4. Pregătim body-ul și apelăm OpenAI așa cum ai deja…
         Map<String, Object> body = new HashMap<>();
         body.put("model", model);
         body.put("messages", List.of(
@@ -169,7 +171,6 @@ public class ChatService {
 
         while (true) {
             try {
-                // apelul către OpenAI
                 Map<String, Object> resp = client.post()
                         .uri("/chat/completions")
                         .bodyValue(body)
@@ -199,7 +200,6 @@ public class ChatService {
                             "Limita de cereri atinsă. Reîncearcă mai târziu."
                     );
                 }
-                // așteptăm conform Retry-After
                 try {
                     Thread.sleep(tre.getRetryAfterSeconds() * 1000);
                 } catch (InterruptedException ie) {
@@ -209,7 +209,6 @@ public class ChatService {
                             "Retry întrerupt"
                     );
                 }
-                // retry automat
             } catch (ResponseStatusException rse) {
                 throw rse;
             } catch (Exception e) {
@@ -226,7 +225,6 @@ public class ChatService {
             int anContract,
             List<CurriculumEntry> curriculum
     ) {
-        // regex care prinde două nume separate prin "și" sau "si"
         Pattern p = Pattern.compile("alege\\s+([\\p{L}0-9 ]{1,50})\\s+(?:și|si)\\s+([\\p{L}0-9 ]{1,50})", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
         Matcher m = p.matcher(userMessage);
         if (!m.find()) return null;
@@ -249,7 +247,6 @@ public class ChatService {
                 && e1.getOptionale().getId().equals(e2.getOptionale().getId()))
         {
             MateriiOptionale pack = e1.getOptionale();
-            // grupăm curriculum‐ul pentru acel an pe pachete opționale
             Map<MateriiOptionale, List<String>> byPack = curriculum.stream()
                     .filter(e -> e.getAn() == anContract && e.getTip() == Tip.OPTIONALA && e.getOptionale() != null)
                     .collect(Collectors.groupingBy(
@@ -277,13 +274,45 @@ public class ChatService {
         return null;
     }
 
+    private String buildFutureObligatoryReply(
+            String userMessage,
+            int currentYear,
+            List<CurriculumEntry> curriculum
+    ) {
+        Pattern p = Pattern.compile(
+                "de ce nu pot adaug(?:a|ă) (?:materie )?(.+?)(?: în contract)?\\??",
+                Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
+        );
+        Matcher m = p.matcher(userMessage);
+        if (!m.find()) return null;
+
+        String materiaNume = m.group(1).trim();
+
+        // Găsim în curriculum o materie cu același nume, tip OBLIGATORIE și an > currentYear
+        CurriculumEntry futureObl = curriculum.stream()
+                .filter(e -> e.getMaterie().getNume().equalsIgnoreCase(materiaNume))
+                .filter(e -> e.getTip() == Tip.OBLIGATORIE)
+                .filter(e -> e.getAn() > currentYear)
+                .findFirst()
+                .orElse(null);
+
+        if (futureObl != null) {
+            return String.format(
+                    "Nu poți adăuga în contract materia „%s” deoarece este o materie obligatorie programată pentru anul %d, iar tu ești în anul %d. " +
+                            "În contracte de studii includem doar materiile obligatorii și opționale aferente anului curent sau celor deja parcurse.",
+                    materiaNume, futureObl.getAn(), currentYear
+            );
+        }
+
+        return null;
+    }
+
+
     public String chatForProfessor(String userMessage, String username) {
-        // 1. Încarcă prof după username
         Profesor prof = profesorRepo.findByUserUsername(username)
                 .orElseThrow(() ->
                         new ResponseStatusException(HttpStatus.NOT_FOUND, "Profesorul nu a fost găsit"));
 
-        // 2. Colectează orarul profesorului (listă Orar)
         List<Orar> profSchedule = orarRepo.findByRepartizareProf_Profesor_Id(prof.getId());
         String orarInfo = profSchedule.stream()
                 .map(o -> String.format("%s: %02d:00-%02d:00, grupa %s, sala %s, tip %s",
@@ -299,9 +328,6 @@ public class ChatService {
             orarInfo = "Profesorul nu are ore programate momentan.";
         }
 
-        // 3. Colectează lista de clădiri + săli
-        //   - presupunem că Cladire are o metodă findAll()
-        //   - fiecare Cladire conține mai multe entități Sala asociate
         StringBuilder cladiriSaliInfo = new StringBuilder();
         cladireRepo.findAll().forEach(cladire -> {
             String numeCladire = cladire.getNume();
@@ -318,7 +344,6 @@ public class ChatService {
             cladiriSaliInfo.append("Nu există săli înregistrate în sistem.");
         }
 
-        // 4. Construiește prompt-ul de sistem pentru profesor
         String systemPrompt = """
                 Ești un asistent virtual dedicat profesorilor din platforma universitară.
                 Profesor: %s %s
@@ -346,7 +371,6 @@ public class ChatService {
                 cladiriSaliInfo.toString()
         );
 
-        // 5. Pregătim body-ul de apel OpenAI
         Map<String, Object> body = new HashMap<>();
         body.put("model", model);
         body.put("messages", List.of(
@@ -354,7 +378,6 @@ public class ChatService {
                 Map.of("role", "user", "content", userMessage)
         ));
 
-        // 6. Apelăm OpenAI cu retry logic ca mai sus
         int maxRetries = 3;
         int attempt = 0;
         while (true) {
@@ -435,7 +458,6 @@ public class ChatService {
     }
 
 
-    // excepţie custom pentru retry
     private static class TooManyRequestsException extends RuntimeException {
         private final long retryAfterSeconds;
 

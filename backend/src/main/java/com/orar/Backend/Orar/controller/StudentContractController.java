@@ -3,7 +3,6 @@ package com.orar.Backend.Orar.controller;
 import com.orar.Backend.Orar.dto.ContractDTO;
 import com.orar.Backend.Orar.exception.ValidationException;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import com.orar.Backend.Orar.service.StudentContractService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,6 @@ import com.orar.Backend.Orar.dto.ContractYearRequest;
 import java.io.IOException;
 import java.util.List;
 
-import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 

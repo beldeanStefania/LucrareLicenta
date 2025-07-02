@@ -16,8 +16,6 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
-
-    // Multiple possible paths for finding the key file
     private static final String[] KEY_FILE_PATHS = {
         "/app/jwtSecretKey.key",
         "jwtSecretKey.key",
@@ -38,7 +36,6 @@ public class JwtUtil {
     }
 
     private SecretKey loadOrGenerateKey() {
-        // Try to find the key file in any of the potential locations
         for (String path : KEY_FILE_PATHS) {
             try {
                 File keyFile = new File(path);
@@ -49,16 +46,13 @@ public class JwtUtil {
                 }
             } catch (IOException e) {
                 System.out.println("Could not load key from: " + path);
-                // Continue to the next path
             }
         }
-        
-        // If we couldn't find a key file, generate a new one
+
         try {
             System.out.println("Generating new JWT key");
             SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
-            
-            // Try to save the key to one of the paths
+
             for (String path : KEY_FILE_PATHS) {
                 try {
                     File keyFile = new File(path);

@@ -22,21 +22,12 @@ public class TodoItemController {
     @Autowired
     private final TodoItemService todoItemService;
 
-    /**
-     * GET /api/todo/student/{cod}
-     * Returnează toate to-do-urile pentru studentul cu codul specificat.
-     */
     @GetMapping("/user/{username}")
     public ResponseEntity<List<TodoDTO>> getTodosForUser(@PathVariable String username) {
         List<TodoDTO> dtos = todoItemService.getTodosForUser(username);
         return ResponseEntity.ok(dtos);
     }
 
-    /**
-     * POST /api/todo/create
-     * Așteaptă în body JSON:
-     * { "studentCod": "...", "title": "...", "description": "...", "deadline": "YYYY-MM-DD" }
-     */
     @PostMapping("/create")
     public ResponseEntity<?> createTodo(@RequestBody TodoDTO todoDTO) {
         try {
@@ -63,11 +54,6 @@ public class TodoItemController {
         }
     }
 
-    /**
-     * PUT /api/todo/update/{todoId}
-     * Poate actualiza title, description, deadline și done.
-     * Exemplu body: { "title": "...", "description":"...", "deadline":"2025-06-20", "done":true }
-     */
     @PutMapping("/update/{todoId}")
     public ResponseEntity<?> updateTodo(@PathVariable Integer todoId, @RequestBody TodoDTO todoDTO) {
         try {
@@ -100,9 +86,6 @@ public class TodoItemController {
         }
     }
 
-    /**
-     * DELETE /api/todo/delete/{todoId}
-     */
     @DeleteMapping("/delete/{todoId}")
     public ResponseEntity<?> deleteTodo(@PathVariable Integer todoId) {
         try {
