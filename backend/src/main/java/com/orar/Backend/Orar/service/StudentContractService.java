@@ -454,12 +454,12 @@ public class StudentContractService {
                 .toList();
         int crediteSem1 = sem1.stream().mapToInt(Materie::getCredite).sum();
         int crediteSem2 = sem2.stream().mapToInt(Materie::getCredite).sum();
-        if (crediteSem1 < 30) {
-            throw new ValidationException(
-                    "Nu poți genera contractul: în semestrul I ai doar "
-                            + crediteSem1 + " credite, trebuie minim 30."
-            );
-        }
+//        if (crediteSem1 < 30) {
+//            throw new ValidationException(
+//                    "Nu poți genera contractul: în semestrul I ai doar "
+//                            + crediteSem1 + " credite, trebuie minim 30."
+//            );
+//        }
         if (crediteSem2 < 30) {
             throw new ValidationException(
                     "Nu poți genera contractul: în semestrul II ai doar "
