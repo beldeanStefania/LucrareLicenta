@@ -76,6 +76,7 @@ export function requestBlob(method, url, data = null) {
     url,
     data,
     headers,
-    responseType: "blob"
+    responseType: "blob",
+    validateStatus: () => true
   });
 }
