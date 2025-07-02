@@ -22,9 +22,7 @@ public class TodoItemService {
     @Autowired
     private UserRepository userRepository;
 
-    /**
-     * Creează un nou To-Do și îl salvează în BD
-     */
+
     public TodoItem createTodo(String username, String title, String description, LocalDate deadline) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Userul cu username " + username + " nu există"));
@@ -60,9 +58,6 @@ public class TodoItemService {
                 .toList();
     }
 
-    /**
-     * Actualizează un To-Do existent
-     */
     public TodoItem updateTodo(Integer todoId,
                                String newTitle,
                                String newDescription,
@@ -79,9 +74,6 @@ public class TodoItemService {
         return todoItemRepository.save(todo);
     }
 
-    /**
-     * Șterge un To-Do după id
-     */
     public void deleteTodo(Integer todoId) {
         if (!todoItemRepository.existsById(todoId)) {
             throw new TodoItemNotFoundException("TodoItem cu id " + todoId + " nu există");

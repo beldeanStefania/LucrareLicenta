@@ -20,15 +20,11 @@ public class EmailService {
     @Value("${spring.mail.password}")
     private String mailPassword;
 
-    /**
-     * Trimite un email simplu (text/plain).
-     */
     public void sendSimpleEmail(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject(subject);
         message.setText(text);
-        // poți seta și: setFrom(...) dacă vrei o adresă diferită
         try {
             mailSender.send(message);
             log.info("Email trimis către {}", to);
@@ -37,9 +33,6 @@ public class EmailService {
         }
     }
 
-    /**
-     * Dacă vrei să trimiți HTML, poți folosi MimeMessage și MimeMessageHelper.
-     */
     public void sendHtmlEmail(String to, String subject, String htmlBody) {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();

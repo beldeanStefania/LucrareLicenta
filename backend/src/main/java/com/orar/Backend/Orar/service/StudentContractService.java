@@ -60,9 +60,8 @@ public class StudentContractService {
     public List<ContractDTO> getAvailableCoursesForContract(
             String studentCod,
             int anContract,
-            int semestruRel  // 1 sau 2
+            int semestruRel
     ) {
-        // 0) Încărcăm studentul și validăm
         Student student = studentRepository.findByCod(studentCod)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
         int specIdCurent = student.getSpecializare().getId();
@@ -75,7 +74,6 @@ public class StudentContractService {
             );
         }
 
-        // 1) Calculăm semestrul absolut (1,2 → an1; 3,4 → an2; 5,6 → an3 etc)
         int semestruAbsolut = (anContract - 1) * 2 + semestruRel;
 
         List<CatalogStudentMaterie> istoricul = catalogRepo.findByStudentCod(studentCod);
@@ -86,18 +84,15 @@ public class StudentContractService {
                     catalogRepo.save(c);
                 });
 
-        // 2) Materialele obligatorii/opționale/facultative pentru anul & semestrul curent
         List<CurriculumEntry> ownEntriesThisSem = curriculumEntryRepository
                 .findBySpecializareIdAndAnAndSemestru(specIdCurent, anContract, semestruAbsolut);
 
-        // 3) Materialele obligatorii din alte specializări (pentru același an & semestru)
         List<CurriculumEntry> externalObligatoryEntries = curriculumEntryRepository
                 .findByAnAndSemestruAndTip(anContract, semestruAbsolut, Tip.OBLIGATORIE)
                 .stream()
                 .filter(e -> e.getSpecializare().getId() != specIdCurent)
                 .toList();
 
-        // 4) Statusurile (ACTIV/FINALIZATĂ) din catalogul studentului
         Map<String, MaterieStatus> statusMap = catalogRepo
                 .findByStudentCod(studentCod)
                 .stream()
@@ -107,7 +102,6 @@ public class StudentContractService {
                         (first, second) -> first
                 ));
 
-        // 5) Mapare proprie SPECIALIZARE → ContractDTO (cu materiiOptionaleId, dacă există)
         List<ContractDTO> ownDTOs = ownEntriesThisSem.stream()
                 .map(e -> {
                     Materie m = e.getMaterie();
@@ -120,20 +114,17 @@ public class StudentContractService {
                             m.getCod(),
                             m.getNume(),
                             m.getCredite(),
-                            semestruRel,        // relativ (1 sau 2)
-                            e.getTip(),         // OBLIGATORIE / OPTIONALA / FACULTATIVA
+                            semestruRel,
+                            e.getTip(),
                             esteObligatorie,
                             materiiOptionaleId
                     );
                 })
                 .toList();
 
-        // 6) Mapare „opționale externe” din alte specializări (le afișăm la fel ca OPTIONALA, fără pachet)
         List<ContractDTO> externalDTOs = externalObligatoryEntries.stream()
                 .map(e -> {
                     Materie m = e.getMaterie();
-                    // chiar dacă în DB e OBLIGATORIE pentru cealaltă specializare,
-                    // noi o afișăm ca TIP=OPTIONALA (pentru a permite înscrierea).
                     Integer materiiOptionaleId = null;
                     if (e.getOptionale() != null) {
                         materiiOptionaleId = e.getOptionale().getId();
@@ -142,20 +133,18 @@ public class StudentContractService {
                             m.getCod(),
                             m.getNume(),
                             m.getCredite(),
-                            semestruRel,     // tot ca semestru relativ
-                            Tip.OPTIONALA,   // forțăm să apară OPTIONALA
-                            false,           // nu e obligatorie pentru acest student
+                            semestruRel,
+                            Tip.OPTIONALA,
+                            false,
                             materiiOptionaleId
                     );
                 })
                 .toList();
 
-        // 7) Combinăm DOAR ownDTOs + externalDTOs (fără futureDTOs!)
         List<ContractDTO> combined = new ArrayList<>();
         combined.addAll(ownDTOs);
         combined.addAll(externalDTOs);
 
-        // 8) Filtrăm status (nu le afișăm pe cele cu status ACTIV sau FINALIZATĂ)
         List<ContractDTO> filtered = combined.stream()
                 .filter(dto -> {
                     MaterieStatus st = statusMap.get(dto.getCod());
@@ -163,7 +152,6 @@ public class StudentContractService {
                 })
                 .toList();
 
-        // 9) Din cele rămase, păstrăm doar cursurile cu semestruRel == parametrul intrat
         List<ContractDTO> result = filtered.stream()
                 .filter(dto -> dto.getSemestru() == semestruRel)
                 .toList();
@@ -190,13 +178,13 @@ public class StudentContractService {
                     Integer pachetId = null;
                     if (entry.getOptionale() != null) pachetId = entry.getOptionale().getId();
                     return new ContractDTO(
-                            m.getCod(),         // codul real al materiei
-                            m.getNume(),        // denumirea materiei
-                            m.getCredite(),     // credite
-                            entry.getSemestru(),// semestru
+                            m.getCod(),
+                            m.getNume(),
+                            m.getCredite(),
+                            entry.getSemestru(),
                             entry.getTip(),
                             obligatorie,
-                            pachetId            // ID-ul pachetului de opționale, dacă există
+                            pachetId
                     );
                 })
                 .toList();
@@ -204,20 +192,16 @@ public class StudentContractService {
 
     private void recordActiveCourses(Student student, String studentCod, List<Materie> materii) {
         for (Materie m : materii) {
-            // 1) Caută entry‐ul din catalog pentru (studentCod, m.getCod())
             Optional<CatalogStudentMaterie> maybeEntry =
                     catalogRepo.findByStudentCodAndMaterieCod(studentCod, m.getCod());
 
             if (maybeEntry.isEmpty()) {
-                // –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
-                // Dacă nu există deloc, creează rând NOU cu status = ACTIV
-                // –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+
                 CatalogStudentMaterie newEntry = new CatalogStudentMaterie();
                 newEntry.setStudent(student);
                 newEntry.setMaterie(m);
                 newEntry.setSemestru(m.getSemestru());
                 newEntry.setStatus(MaterieStatus.ACTIV);
-                // (opțional: newEntry.setNota(null); dacă nu ai deja setat default-ul în entitate)
                 catalogRepo.save(newEntry);
 
             } else {
@@ -225,15 +209,10 @@ public class StudentContractService {
                 MaterieStatus st = existing.getStatus();
 
                 if (st == MaterieStatus.PICATA) {
-                    // –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
-                    // Dacă a fost picată anterior, atunci o pot re‐inscrie → actualizez la ACTIV
-                    // (opțional: resetez nota, în caz că acolo era 4 sau 2, înainte de reînscriere)
-                    // –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
                     existing.setStatus(MaterieStatus.ACTIV);
-                    existing.setNota(null); // sau 0, dacă vrei să golești câmpul
+                    existing.setNota(null);
                     catalogRepo.save(existing);
                 }
-                // Dacă st == ACTIV sau st == FINALIZATA, nu facem nimic: materia deja e în contract
             }
         }
     }
@@ -244,17 +223,14 @@ public class StudentContractService {
             int anContract,
             List<String> coduriMaterii
     ) throws Exception {
-        // 1) Fetch studentul
         Student student = studentRepository.findByCod(studentCod)
                 .orElseThrow(() -> new Exception("Studentul nu a fost găsit!"));
 
-        // 2) Încarcă lista de Materie pentru codurile trimise
         List<Materie> materii = materieRepository.findAllByCodIn(coduriMaterii);
         if (materii.isEmpty()) {
             throw new Exception("Nu au fost găsite materiile selectate.");
         }
 
-        // ───── Validare „nu poți alege obligatorii din anul următor” (rămâne neschimbat) ─────
         int studentCurrentYear = student.getAn();
         int studentSpecId    = student.getSpecializare().getId();
         for (Materie m : materii) {
@@ -274,7 +250,6 @@ public class StudentContractService {
         }
 
         validateMinCreditsPerSemester(materii);
-        // ────────────────────────────────────────────────────────────────────
 
         List<Materie> sem1 = materii.stream()
                 .filter(m -> (m.getSemestru() % 2) == 1)
@@ -352,9 +327,6 @@ public class StudentContractService {
                 }
             }
         }
-        // ────────────────────────────────────────────────────────────────────
-
-        // ───── Verificare materii deja active ─────
         List<String> dejaActive = materii.stream()
                 .filter(m -> catalogRepo
                         .findByStudentCodAndMaterieCod(studentCod, m.getCod())
@@ -389,7 +361,6 @@ public class StudentContractService {
 
         Map<Integer, List<String>> chosenByPackage = new HashMap<>();
         for (Materie m : materii) {
-            // find the curriculum entry for this student’s specialization
             CurriculumEntry entry = curriculumEntryRepository
                     .findBySpecializareIdAndMaterieId(studentSpecId, m.getId())
                     .orElse(null);
@@ -400,13 +371,11 @@ public class StudentContractService {
                         .add(m.getCod());
             }
         }
-// now see if any package has >1 chosen
-        // after you’ve built `chosenByPackage: Map<Integer,List<String>>`
+
         for (var kv : chosenByPackage.entrySet()) {
             Integer pkgId = kv.getKey();
             List<String> selectedCodes = kv.getValue();
             if (selectedCodes.size() > 1) {
-                // look up the *entity* by its ID, then call .getNume() on it:
                 String pkgName = optionaleRepo.findById(pkgId)
                         .map(MateriiOptionale::getNume)
                         .orElse("acest pachet");
@@ -417,31 +386,23 @@ public class StudentContractService {
                 );
             }
         }
-
-
-        // ────────────────────────────────────────────────────
-
         validateMinCreditsPerSemester(materii);
-        // 4) Înregistrează nou-venitele ca ACTIV
+
         recordActiveCourses(student, studentCod, materii);
 
 
-
-        // 5) Salvează contractul
         Contract c = new Contract(studentCod, anContract);
         c.setCoduriMaterii(coduriMaterii);
         contractRepository.save(c);
 
-        // ───── Grupăm materiile după semestrul relativ (mod 2) ─────
+
         List<Materie> sem1 = materii.stream()
-                .filter(m -> (m.getSemestru() % 2) == 1) // sem absolut impare → sem I relativ
+                .filter(m -> (m.getSemestru() % 2) == 1)
                 .toList();
         List<Materie> sem2 = materii.stream()
-                .filter(m -> (m.getSemestru() % 2) == 0) // sem absolut pare → sem II relativ
+                .filter(m -> (m.getSemestru() % 2) == 0)
                 .toList();
-        // ────────────────────────────────────────────────────────────────
 
-        // 6) Generare PDF…
         Document document = new Document();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         PdfWriter.getInstance(document, out);

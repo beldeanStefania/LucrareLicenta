@@ -84,11 +84,6 @@ public class OrarService {
         return createOrar(orarDTO);
     }
 
-    /**
-     *
-     * @param orarDTO
-     * @return
-     */
     private Orar createOrar(OrarDTO orarDTO) {
         Orar newOrar = new Orar();
 
@@ -165,12 +160,6 @@ public class OrarService {
         return formatia;
     }
 
-
-    /**
-     *
-     * @param orarDTO
-     * @throws OrarAlreadyExistsException
-     */
     private void checkOrarExists(OrarDTO orarDTO) throws OrarAlreadyExistsException {
         List<Orar> overlappingOrar = orarRepository.findOverlappingOrar(orarDTO.getSalaId(), orarDTO.getZi(),
                 orarDTO.getOraInceput(), orarDTO.getOraSfarsit());
