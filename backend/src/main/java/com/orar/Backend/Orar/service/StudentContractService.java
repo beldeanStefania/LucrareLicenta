@@ -272,20 +272,17 @@ public class StudentContractService {
                 }
             }
         }
+
+        validateMinCreditsPerSemester(materii);
         // ────────────────────────────────────────────────────────────────────
 
-        // ───── Înlocuiește vechiul filtraj după semestru relativ cu filtraj pe rest la 2 ─────
-        // Semestrul I relativ (odd = 1, 3, 5 ...)
         List<Materie> sem1 = materii.stream()
                 .filter(m -> (m.getSemestru() % 2) == 1)
                 .toList();
-        // Semestrul II relativ (even = 2, 4, 6 ...)
         List<Materie> sem2 = materii.stream()
                 .filter(m -> (m.getSemestru() % 2) == 0)
                 .toList();
-        // ───────────────────────────────────────────────────────────────────────────────
 
-        // Construcție PDF (iText / com.lowagie)
         Document document = new Document();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         PdfWriter.getInstance(document, out);
@@ -328,20 +325,18 @@ public class StudentContractService {
             int anContract,
             List<String> coduriMaterii
     ) throws Exception {
-        // 1) Încarcă studentul
         Student student = studentRepository.findByCod(studentCod)
                 .orElseThrow(() -> new Exception("Studentul nu a fost găsit!"));
 
         int studentCurrentYear = student.getAn();
         int studentSpecId     = student.getSpecializare().getId();
 
-        // 2) Încarcă materiile selectate
         List<Materie> materii = materieRepository.findAllByCodIn(coduriMaterii);
         if (materii.isEmpty()) {
             throw new Exception("Nu au fost găsite materiile selectate.");
         }
 
-        // ───── Validare „nu poți alege obligatorii din anul următor” ─────
+
         for (Materie m : materii) {
             Optional<CurriculumEntry> maybeEntry =
                     curriculumEntryRepository.findBySpecializareIdAndMaterieId(studentSpecId, m.getId());
@@ -426,8 +421,11 @@ public class StudentContractService {
 
         // ────────────────────────────────────────────────────
 
+        validateMinCreditsPerSemester(materii);
         // 4) Înregistrează nou-venitele ca ACTIV
         recordActiveCourses(student, studentCod, materii);
+
+
 
         // 5) Salvează contractul
         Contract c = new Contract(studentCod, anContract);
@@ -485,4 +483,28 @@ public class StudentContractService {
                 .findByStudentCodAndAnContract(studentCod, anContract)
                 .isPresent();
     }
+
+    private void validateMinCreditsPerSemester(List<Materie> materii) {
+        var sem1 = materii.stream()
+                .filter(m -> m.getSemestru() % 2 == 1)
+                .toList();
+        var sem2 = materii.stream()
+                .filter(m -> m.getSemestru() % 2 == 0)
+                .toList();
+        int crediteSem1 = sem1.stream().mapToInt(Materie::getCredite).sum();
+        int crediteSem2 = sem2.stream().mapToInt(Materie::getCredite).sum();
+        if (crediteSem1 < 30) {
+            throw new ValidationException(
+                    "Nu poți genera contractul: în semestrul I ai doar "
+                            + crediteSem1 + " credite, trebuie minim 30."
+            );
+        }
+        if (crediteSem2 < 30) {
+            throw new ValidationException(
+                    "Nu poți genera contractul: în semestrul II ai doar "
+                            + crediteSem2 + " credite, trebuie minim 30."
+            );
+        }
+    }
+
 }

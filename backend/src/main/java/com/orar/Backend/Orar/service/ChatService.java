@@ -109,7 +109,7 @@ public class ChatService {
         String orarInfo = orar.stream()
                 .map(o -> String.format("%s: %s %s (%s), sala %s, prof. %s",
                         o.getZi(), o.getRepartizareProf().getMaterie().getNume(), o.getRepartizareProf().getTip(), o.getOraInceput() + ":00-" + o.getOraSfarsit() + ":00",
-                        o.getSala(), o.getRepartizareProf().getProfesor().getNume()))
+                        o.getSala().getNume(), o.getRepartizareProf().getProfesor().getNume()))
                 .collect(Collectors.joining("\n"));
         String contractStatus = hasContract
                 ? "Studentul are deja contracte active."
