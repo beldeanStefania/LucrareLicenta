@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import com.orar.Backend.Orar.service.StudentContractService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.orar.Backend.Orar.dto.ContractYearRequest;
@@ -43,7 +44,7 @@ public class StudentContractController {
     }
 
     @PostMapping("/generateContract")
-    public ResponseEntity<byte[]> generateContract(@RequestBody ContractYearRequest req) {
+    public ResponseEntity<?> generateContract(@RequestBody ContractYearRequest req) {
         try {
             byte[] pdf = contractService.generateContractFromSelection(
                     req.getStudentCod(),
@@ -57,9 +58,15 @@ public class StudentContractController {
                     .body(pdf);
 
         } catch (IllegalArgumentException | ValidationException e) {
-            return ResponseEntity.badRequest().body(e.getMessage().getBytes());
+            return ResponseEntity
+                    .badRequest()
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Eroare la generare.".getBytes());
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body("Eroare la generare.");
         }
     }
 
